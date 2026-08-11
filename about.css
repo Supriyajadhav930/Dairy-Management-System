@@ -1,450 +1,1218 @@
-/* --- Resets & Global Theme --- */
+/* =========================================================
+   RESET
+========================================================= */
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+
+/* =========================================================
+   ROOT VARIABLES
+========================================================= */
+
 :root {
     --primary-green: #0d4a2d;
     --text-dark: #111111;
-    --text-body: #2b2b2b;
-    --bg-page: #f8faf7;
-    --card-mv-bg: #f4f6f0;
+    --text-body: #222222;
+    --bg-page: #f4f7f4;
+    --card-mv-bg: #eef3ee;
+    --border-color: #e1e8e1;
 }
+
+
+/* =========================================================
+   BODY
+========================================================= */
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+}
+
 
 body {
     font-family: 'Poppins', sans-serif;
+
     background-color: var(--bg-page);
+
     color: var(--text-dark);
-    overflow-x: hidden;
 }
 
-/* --- Header / Navigation Bar --- */
+
+/* =========================================================
+   HEADER
+   Made compact to match Home page
+========================================================= */
+
 .navbar {
     width: 100%;
-    height: 90px;
+
+    /* Reduced header height */
+    height: 78px;
+
     background-color: #ffffff;
+
     display: flex;
     align-items: center;
-    position: relative;
-    z-index: 100;
-    border-bottom: 1px solid #eaeaea;
+
+    border-bottom: 1px solid #e2e8e2;
+
+    flex-shrink: 0;
 }
+
 
 .nav-container {
     width: 100%;
-    max-width: 1200px;
+
+    max-width: 1280px;
+
+    height: 100%;
+
     margin: 0 auto;
-    padding: 0 30px;
+
+    padding: 0 28px;
+
     display: flex;
-    justify-content: space-between;
+
     align-items: center;
+
+    justify-content: space-between;
 }
+
+
+/* =========================================================
+   LOGO
+========================================================= */
 
 .logo-link {
     text-decoration: none;
+
+    display: flex;
+
+    align-items: center;
 }
 
-/* Pure HTML/CSS Logo Fallback Component */
+
 .brand-logo {
     display: flex;
-    align-items: center;
-    gap: 12px;
-}
 
-.logo-circle {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background-color: var(--primary-green);
-    display: flex;
     align-items: center;
+
     justify-content: center;
 }
 
+
+/*
+   IMPORTANT:
+   Height is used instead of large width so the
+   logo does not become oversized.
+*/
+
+.logo-img {
+    height: 60px;
+
+    width: auto;
+
+    max-width: 200px;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+
+.logo-circle-fallback {
+    width: 50px;
+
+    height: 50px;
+
+    border-radius: 50%;
+
+    background-color: var(--primary-green);
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+
 .cow-icon {
-    font-size: 26px;
+    font-size: 25px;
 }
 
-.logo-text {
-    display: flex;
-    flex-direction: column;
-}
 
-.logo-title {
-    font-family: 'Crimson Pro', serif;
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--primary-green);
-    line-height: 1;
-}
-
-.logo-subtitle {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--primary-green);
-    letter-spacing: 0.5px;
-}
+/* =========================================================
+   NAVIGATION
+========================================================= */
 
 .nav-menu {
     display: flex;
-    gap: 35px;
+
+    align-items: center;
+
+    gap: 38px;
 }
+
 
 .nav-item {
     text-decoration: none;
-    font-size: 16.5px;
+
+    font-size: 17px;
+
     font-weight: 600;
-    color: #2b3e50;
+
+    color: #111111;
+
     position: relative;
-    padding-bottom: 4px;
-    transition: color 0.2s ease;
+
+    padding: 6px 0;
 }
+
+
+.nav-item:hover {
+    color: var(--primary-green);
+}
+
 
 .nav-item.active {
     color: var(--primary-green);
 }
 
+
 .nav-item.active::after {
     content: '';
+
     position: absolute;
-    bottom: 0;
+
     left: 0;
-    width: 100%;
+
+    right: 0;
+
+    bottom: 0;
+
     height: 3px;
+
     background-color: var(--primary-green);
-    border-radius: 2px;
+
+    border-radius: 3px;
 }
 
-/* --- Layout Container --- */
+
+/* =========================================================
+   MAIN PAGE
+========================================================= */
+
 .about-page {
     width: 100%;
-    padding: 30px 0 60px 0;
-}
 
-/* Main content width matches reference image #1 ratio */
-.main-container {
-    max-width: 1180px; 
-    margin: 0 auto;
-    padding: 0 30px;
+    min-height: calc(100vh - 78px);
+
     display: flex;
+
+    justify-content: center;
+
+    padding: 12px 0 14px;
+}
+
+
+/*
+   Reduced width so the About page doesn't stretch
+   excessively on large screens.
+*/
+
+.main-container {
+    width: 100%;
+
+    max-width: 1280px;
+
+    margin: 0 auto;
+
+    padding: 0 16px;
+
+    display: flex;
+
     flex-direction: column;
-    gap: 22px;
+
+    gap: 10px;
 }
 
-/* --- Hero Section --- */
+
+/* =========================================================
+   ABOUT HERO
+========================================================= */
+
 .about-hero {
-    position: relative;
-    text-align: center;
-    padding-top: 10px;
+    width: 100%;
+
+    height: 205px;
+
+    background-color: #ffffff;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 17px;
+
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+
+    display: grid;
+
+    grid-template-columns: minmax(0, 1fr) 245px;
+
+    align-items: center;
+
+    gap: 15px;
+
+    padding: 14px 28px;
 }
 
-/* Farm Illustration on Right */
-.farm-illustration {
-    position: absolute;
-    top: 5px;
-    right: 15px;
-    width: 260px;
-    height: auto;
-    z-index: 2;
-    pointer-events: none;
+
+/* =========================================================
+   HERO CENTER
+========================================================= */
+
+.hero-center-content {
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
 }
+
 
 .subheading-badge {
-    display: inline-flex;
+    display: flex;
+
     align-items: center;
+
+    justify-content: center;
+
     gap: 8px;
-    margin-bottom: 6px;
+
+    margin-bottom: 2px;
 }
+
 
 .badge-text {
-    font-size: 16px;
+    font-size: 13px;
+
     font-weight: 700;
+
     color: var(--primary-green);
+
+    text-transform: uppercase;
 }
 
+
 .badge-line {
-    display: inline-block;
-    width: 20px;
+    width: 23px;
+
     height: 1.5px;
+
     background-color: var(--primary-green);
 }
+
+
+/* =========================================================
+   HERO TITLE
+========================================================= */
 
 .hero-title {
     font-family: 'Crimson Pro', serif;
-    font-size: 48px;
+
+    font-size: 38px;
+
     font-weight: 800;
+
     color: var(--primary-green);
-    line-height: 1.08;
-    letter-spacing: -0.5px;
-    margin-bottom: 8px;
+
+    line-height: 1.04;
+
+    text-align: center;
+
+    margin: 4px 0 6px;
 }
 
-.bottle-divider {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    max-width: 280px;
-    margin: 0 auto 10px auto;
+
+.title-sub {
+    display: inline-block;
 }
+
+
+/* =========================================================
+   BOTTLE DIVIDER
+========================================================= */
+
+.bottle-divider {
+    width: 180px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 9px;
+
+    margin-bottom: 6px;
+}
+
 
 .bottle-divider .line {
     flex: 1;
+
     height: 1.5px;
+
     background-color: var(--primary-green);
+
     opacity: 0.5;
 }
 
+
 .bottle-icon {
-    font-size: 20px;
+    font-size: 16px;
+
+    line-height: 1;
 }
+
+
+/* =========================================================
+   HERO TAGLINE
+========================================================= */
 
 .hero-tagline {
-    font-size: 16.5px;
+    max-width: 700px;
+
+    font-size: 14px;
+
     font-weight: 600;
+
     color: #222222;
-    line-height: 1.45;
-}
 
-/* --- Common Card Styling --- */
-.card {
-    background-color: #ffffff;
-    border-radius: 14px;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.03);
-    position: relative;
-}
+    line-height: 1.35;
 
-/* --- Our Story Card --- */
-.story-card {
-    padding: 32px 50px;
     text-align: center;
-    border: 1px solid rgba(13, 74, 45, 0.06);
-    background-color: #ffffff;
 }
 
-.story-leaf {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 110px;
-    width: auto;
-    opacity: 0.7;
-    pointer-events: none;
-    z-index: 1;
-}
 
-.left-leaf {
-    left: 45px;
-}
+/* =========================================================
+   FARM IMAGE
+========================================================= */
 
-.right-leaf {
-    right: 45px;
-}
+.hero-right-illustration {
+    width: 100%;
 
-.story-title-header {
+    height: 100%;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 14px;
-    position: relative;
-    z-index: 2;
 }
 
-.story-title-header h2 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--primary-green);
-    letter-spacing: 0.5px;
-}
 
-.leaf-icon {
-    font-size: 16px;
-}
+.farm-illustration {
+    width: 220px;
 
-.story-content {
-    position: relative;
-    z-index: 2; /* Crisp visibility above leaves */
-}
+    height: 140px;
 
-.story-primary-text {
-    font-size: 16px;
-    font-weight: 500;
-    color: #111111;
-    line-height: 1.55;
-    margin-bottom: 8px;
-}
+    max-width: 100%;
 
-.story-primary-text strong {
-    font-weight: 700;
-}
-
-.story-secondary-text {
-    font-size: 15px;
-    font-weight: 400;
-    color: #444444;
-    line-height: 1.55;
-}
-
-/* --- Grid Structures --- */
-.grid-2-col {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-}
-
-.grid-4-col {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-}
-
-/* --- Mission & Vision --- */
-.mv-card {
-    background-color: var(--card-mv-bg);
-    padding: 24px 28px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    border-radius: 14px;
-    border: 1px solid rgba(13, 74, 45, 0.04);
-}
-
-.mv-icon-wrapper {
-    flex-shrink: 0;
-}
-
-.mv-icon {
-    width: 68px;
-    height: 68px;
     object-fit: contain;
-    border-radius: 50%;
+
     display: block;
 }
 
-.vertical-line {
-    width: 1px;
-    height: 60px;
-    background-color: rgba(13, 74, 45, 0.2);
-    flex-shrink: 0;
+
+/* =========================================================
+   COMMON CARD
+========================================================= */
+
+.card {
+    background-color: #ffffff;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 17px;
+
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
 }
+
+
+/* =========================================================
+   OVERVIEW
+========================================================= */
+
+.overview-card {
+    width: 100%;
+
+    padding: 15px 25px 16px;
+}
+
+
+/* =========================================================
+   OUR STORY
+========================================================= */
+
+.story-section {
+    width: 100%;
+}
+
+
+.section-title {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    margin-bottom: 5px;
+}
+
+
+.section-title h2 {
+    font-size: 16px;
+
+    font-weight: 700;
+
+    color: var(--primary-green);
+
+    letter-spacing: 0.4px;
+}
+
+
+.leaf-icon {
+    font-size: 15px;
+}
+
+
+.story-text {
+    width: 100%;
+
+    max-width: 1100px;
+
+    margin: 0 auto;
+
+    font-size: 13.5px;
+
+    line-height: 1.4;
+
+    color: #222222;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.card-divider {
+    border: none;
+
+    height: 1px;
+
+    background-color: #e5ebe5;
+
+    margin: 10px 0;
+}
+
+
+/* =========================================================
+   MISSION / VISION
+========================================================= */
+
+.mv-grid {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 15px;
+}
+
+
+.mv-box {
+    min-height: 72px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    background-color: var(--card-mv-bg);
+
+    border-radius: 11px;
+
+    padding: 8px 13px;
+}
+
+
+.mv-icon-wrapper {
+    width: 45px;
+
+    height: 45px;
+
+    flex-shrink: 0;
+
+    background-color: #ffffff;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+
+.mv-icon {
+    width: 40px;
+
+    height: 40px;
+
+    object-fit: contain;
+}
+
+
+.mv-details {
+    min-width: 0;
+}
+
 
 .mv-details h3 {
-    font-size: 16px;
+    font-size: 13px;
+
     font-weight: 700;
+
     color: var(--primary-green);
-    margin-bottom: 4px;
-    letter-spacing: 0.3px;
+
+    margin-bottom: 2px;
 }
+
 
 .mv-details p {
-    font-size: 13.5px;
-    line-height: 1.45;
-    color: #333333;
-    font-weight: 400;
+    font-size: 11.5px;
+
+    line-height: 1.3;
+
+    color: #222222;
 }
 
-/* --- Why Choose Us --- */
-.why-title-box {
-    text-align: center;
-    margin-bottom: 12px;
+
+/* =========================================================
+   WHY CHOOSE US
+========================================================= */
+
+.why-choose-section {
+    width: 100%;
 }
+
+
+.why-title-box {
+    width: 100%;
+
+    text-align: center;
+
+    margin-bottom: 6px;
+}
+
 
 .why-title-box h2 {
-    font-size: 18px;
+    font-size: 16px;
+
     font-weight: 700;
+
     color: var(--primary-green);
-    letter-spacing: 0.5px;
-    margin-bottom: 3px;
 }
+
 
 .small-divider {
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
     gap: 6px;
+
+    margin-top: 1px;
 }
 
+
 .mini-line {
-    width: 22px;
+    width: 25px;
+
     height: 1px;
+
     background-color: var(--primary-green);
+
     opacity: 0.6;
 }
 
+
 .mini-dot {
-    font-size: 12px;
+    font-size: 15px;
+
+    line-height: 1;
 }
 
-/* Feature Cards */
+
+/* =========================================================
+   FEATURES
+========================================================= */
+
+.features-grid {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 12px;
+}
+
+
 .feature-card {
-    padding: 18px 16px;
+    min-height: 100px;
+
+    padding: 11px;
+
     display: flex;
+
     align-items: center;
-    gap: 14px;
-    border: 1px solid rgba(0, 0, 0, 0.03);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    gap: 9px;
 }
 
-.feature-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(13, 74, 45, 0.08);
-}
 
 .feature-icon-wrapper {
-    width: 52px;
-    height: 52px;
-    background-color: #eaf1eb;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 42px;
+
+    height: 42px;
+
     flex-shrink: 0;
+
+    background-color: #e6efe8;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
 }
 
+
 .feature-icon {
-    width: 32px;
-    height: 32px;
+    width: 24px;
+
+    height: 24px;
+
     object-fit: contain;
-    display: block;
 }
+
 
 .feature-icon.round-img {
     border-radius: 50%;
 }
 
-.feature-info h4 {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--primary-green);
-    margin-bottom: 3px;
-    letter-spacing: 0.2px;
+
+.feature-info {
+    min-width: 0;
 }
+
+
+.feature-info h4 {
+    font-size: 11.5px;
+
+    font-weight: 700;
+
+    color: var(--primary-green);
+
+    margin-bottom: 2px;
+}
+
 
 .feature-info p {
-    font-size: 12px;
-    color: #555555;
-    line-height: 1.35;
-    font-weight: 400;
+    font-size: 10.5px;
+
+    color: #333333;
+
+    line-height: 1.25;
 }
 
-/* --- Responsive Layout --- */
-@media (max-width: 1100px) {
+
+/* =========================================================
+   LAPTOP
+========================================================= */
+
+@media (max-width: 1200px) {
+
+    .nav-container {
+        max-width: 1100px;
+    }
+
+
+    .main-container {
+        max-width: 1100px;
+    }
+
+
+    .logo-img {
+        height: 58px;
+
+        max-width: 195px;
+    }
+
+
+    .nav-menu {
+        gap: 32px;
+    }
+
+
+    .about-hero {
+        grid-template-columns: minmax(0, 1fr) 215px;
+
+        height: 195px;
+
+        padding: 12px 22px;
+    }
+
+
+    .hero-title {
+        font-size: 34px;
+    }
+
+
     .farm-illustration {
-        display: none;
+        width: 195px;
+
+        height: 125px;
     }
-    .grid-4-col {
-        grid-template-columns: repeat(2, 1fr);
+
+
+    .story-text {
+        font-size: 13px;
+    }
+
+
+    .mv-box {
+        padding: 8px 10px;
+    }
+
+
+    .feature-card {
+        padding: 10px;
     }
 }
 
-@media (max-width: 650px) {
-    .grid-2-col, .grid-4-col {
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1024px) {
+
+    .navbar {
+        height: 72px;
+    }
+
+
+    .nav-container {
+        padding: 0 18px;
+    }
+
+
+    .logo-img {
+        height: 54px;
+
+        max-width: 180px;
+    }
+
+
+    .nav-menu {
+        gap: 25px;
+    }
+
+
+    .nav-item {
+        font-size: 15px;
+    }
+
+
+    .about-page {
+        min-height: calc(100vh - 72px);
+
+        padding: 10px 0;
+    }
+
+
+    .main-container {
+        max-width: 900px;
+
+        padding: 0 12px;
+
+        gap: 8px;
+    }
+
+
+    .about-hero {
+        height: 180px;
+
+        grid-template-columns: minmax(0, 1fr) 190px;
+
+        padding: 10px 18px;
+    }
+
+
+    .hero-title {
+        font-size: 31px;
+    }
+
+
+    .hero-tagline {
+        font-size: 12px;
+    }
+
+
+    .farm-illustration {
+        width: 175px;
+
+        height: 110px;
+    }
+
+
+    .overview-card {
+        padding: 13px 18px;
+    }
+
+
+    .story-text {
+        font-size: 12px;
+    }
+
+
+    .mv-grid {
+        gap: 10px;
+    }
+
+
+    .mv-box {
+        min-height: 65px;
+
+        gap: 9px;
+    }
+
+
+    .mv-icon-wrapper {
+        width: 40px;
+
+        height: 40px;
+    }
+
+
+    .mv-icon {
+        width: 36px;
+
+        height: 36px;
+    }
+
+
+    .mv-details h3 {
+        font-size: 11.5px;
+    }
+
+
+    .mv-details p {
+        font-size: 10.5px;
+    }
+
+
+    .features-grid {
+        gap: 8px;
+    }
+
+
+    .feature-card {
+        min-height: 88px;
+
+        padding: 8px;
+
+        gap: 7px;
+    }
+
+
+    .feature-icon-wrapper {
+        width: 37px;
+
+        height: 37px;
+    }
+
+
+    .feature-icon {
+        width: 21px;
+
+        height: 21px;
+    }
+
+
+    .feature-info h4 {
+        font-size: 10.5px;
+    }
+
+
+    .feature-info p {
+        font-size: 9.5px;
+    }
+}
+
+
+/* =========================================================
+   SMALL TABLET
+========================================================= */
+
+@media (max-width: 768px) {
+
+    .navbar {
+        height: auto;
+
+        min-height: 68px;
+    }
+
+
+    .nav-container {
+        padding: 5px 14px;
+    }
+
+
+    .logo-img {
+        height: 50px;
+
+        max-width: 165px;
+    }
+
+
+    .nav-menu {
+        gap: 17px;
+    }
+
+
+    .nav-item {
+        font-size: 13px;
+    }
+
+
+    .about-page {
+        min-height: auto;
+
+        padding: 8px 0;
+    }
+
+
+    .main-container {
+        padding: 0 9px;
+    }
+
+
+    .about-hero {
+        height: auto;
+
+        min-height: 280px;
+
+        grid-template-columns: 1fr;
+
+        padding: 15px 12px;
+    }
+
+
+    .hero-right-illustration {
+        order: -1;
+    }
+
+
+    .farm-illustration {
+        width: 175px;
+
+        height: 100px;
+    }
+
+
+    .hero-title {
+        font-size: 29px;
+    }
+
+
+    .hero-tagline {
+        font-size: 12px;
+    }
+
+
+    .mv-grid {
+        grid-template-columns: 1fr;
+
+        gap: 7px;
+    }
+
+
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+
+        gap: 8px;
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 520px) {
+
+    .navbar {
+        min-height: 62px;
+    }
+
+
+    .nav-container {
+        padding: 4px 10px;
+    }
+
+
+    .logo-img {
+        height: 45px;
+
+        max-width: 145px;
+    }
+
+
+    .nav-menu {
+        gap: 10px;
+    }
+
+
+    .nav-item {
+        font-size: 11px;
+    }
+
+
+    .main-container {
+        padding: 0 7px;
+    }
+
+
+    .about-hero {
+        border-radius: 14px;
+
+        padding: 12px 9px;
+    }
+
+
+    .badge-text {
+        font-size: 10px;
+    }
+
+
+    .badge-line {
+        width: 17px;
+    }
+
+
+    .hero-title {
+        font-size: 25px;
+    }
+
+
+    .bottle-divider {
+        width: 145px;
+    }
+
+
+    .hero-tagline {
+        font-size: 11px;
+    }
+
+
+    .farm-illustration {
+        width: 155px;
+
+        height: 90px;
+    }
+
+
+    .overview-card {
+        padding: 12px 9px;
+    }
+
+
+    .section-title h2 {
+        font-size: 13px;
+    }
+
+
+    .story-text {
+        font-size: 11px;
+    }
+
+
+    .mv-box {
+        padding: 7px;
+
+        gap: 7px;
+    }
+
+
+    .mv-icon-wrapper {
+        width: 36px;
+
+        height: 36px;
+    }
+
+
+    .mv-icon {
+        width: 32px;
+
+        height: 32px;
+    }
+
+
+    .mv-details h3 {
+        font-size: 10.5px;
+    }
+
+
+    .mv-details p {
+        font-size: 9.5px;
+    }
+
+
+    .why-title-box h2 {
+        font-size: 13px;
+    }
+
+
+    .features-grid {
         grid-template-columns: 1fr;
     }
-    .left-leaf, .right-leaf {
-        display: none;
+
+
+    .feature-card {
+        min-height: 70px;
     }
 }
