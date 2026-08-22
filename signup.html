@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sairaj Milk - Sign Up</title>
+
+    <link rel="stylesheet" href="signup.css">
+</head>
+
+<body>
+
+    <div class="signup-container">
+
+        <!-- Logo -->
+        <img src="Signup_img/top.png.png" class="top-logo" alt="Sairaj Milk">
+
+        <h1>Create Account</h1>
+
+        <div class="heading-line">
+            <span></span>
+            <b>•</b>
+            <span></span>
+        </div>
+
+        <form id="signupForm">
+
+            <!-- Full Name -->
+            <div class="input-box">
+                <img src="Signup_img/person.png" class="input-icon" alt="Person">
+                <input type="text" id="name" placeholder="Full Name" required>
+            </div>
+
+            <!-- Email -->
+            <div class="input-box">
+                <img src="Signup_img/email.png" class="input-icon" alt="Email">
+                <input type="email" id="email" placeholder="Email Address" required>
+            </div>
+
+            <!-- Phone -->
+            <div class="input-box">
+                <img src="Signup_img/phone.png" class="input-icon" alt="Phone">
+                <input type="tel" id="phone" placeholder="Phone Number" required>
+            </div>
+
+            <!-- Password -->
+            <div class="input-box">
+                <img src="Signup_img/lock.png" class="input-icon" alt="Password">
+
+                <input type="password" id="password"
+                       placeholder="Password" required>
+
+                <img src="Signup_img/eye.png"
+                     class="eye-icon"
+                     onclick="togglePassword('password', this)"
+                     alt="Show password">
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="input-box">
+                <img src="Signup_img/lock.png" class="input-icon" alt="Password">
+
+                <input type="password" id="confirmPassword"
+                       placeholder="Confirm Password" required>
+
+                <img src="Signup_img/eye.png"
+                     class="eye-icon"
+                     onclick="togglePassword('confirmPassword', this)"
+                     alt="Show password">
+            </div>
+
+            <!-- Create Account Button -->
+            <button type="submit" class="create-btn">
+                <img src="Signup_img/arrow.png" alt="Arrow">
+                Create Account
+            </button>
+
+            <!-- OR -->
+            <div class="or-section">
+                <span></span>
+                <p>OR</p>
+                <span></span>
+            </div>
+
+            <!-- Google -->
+            <button type="button" class="google-btn" onclick="googleSignup()">
+                <img src="Signup_img/google.jpg.jpeg" alt="Google">
+                Sign up with Google
+            </button>
+
+            <!-- Login -->
+            <p class="login-text">
+                Already have an account?
+                <a href="login.html">Login</a>
+            </p>
+
+        </form>
+
+    </div>
+
+    <script src="signup.js"></script>
+
+</body>
+</html>
