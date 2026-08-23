@@ -3,6 +3,7 @@ import heroBg from "../assets/home/hero-bg.png";
 import bottle from "../assets/home/Bottle.png";
 import milkSplash from "../assets/home/Milk-Splash.png";
 import waveBg from "../assets/home/wave-bg.png";
+
 import "./Home.css";
 
 function Home() {
@@ -50,7 +51,6 @@ function Home() {
             </a>
 
           </nav>
-
         </div>
       </header>
 
@@ -134,7 +134,6 @@ function Home() {
             </div>
 
           </div>
-
         </div>
 
 

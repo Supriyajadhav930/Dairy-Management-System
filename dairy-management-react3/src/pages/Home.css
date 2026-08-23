@@ -1,6 +1,4 @@
-/* =========================================================
-   RESET + GLOBAL VARIABLES
-   ========================================================= */
+/* --- Resets and Global Variables --- */
 
 * {
     margin: 0;
@@ -16,14 +14,8 @@
     --bg-curve: #f5f8f4;
 }
 
-html,
-body,
-#root {
-    width: 100%;
-    min-height: 100%;
-}
-
 html {
+    width: 100%;
     overflow-x: hidden;
 }
 
@@ -31,6 +23,7 @@ body {
     font-family: 'Poppins', sans-serif;
     background-color: #ffffff;
     overflow-x: hidden;
+    width: 100%;
 }
 
 
@@ -42,20 +35,16 @@ body {
     width: 100%;
     height: 105px;
     background-color: #ffffff;
-
     position: relative;
     z-index: 50;
-
     display: flex;
     align-items: center;
-
     border-bottom: 1px solid #f0f0f0;
 }
 
 .header-container {
     width: 100%;
     max-width: 1400px;
-
     margin: 0 auto;
     padding: 0 50px;
 
@@ -65,25 +54,17 @@ body {
 }
 
 
-/* =========================================================
-   LOGO
-   ========================================================= */
+/* --- LOGO --- */
 
 .main-logo {
-    height: 85px;
-    width: 180px;
-
+    height: 150px;
+    width: 250px;
     display: block;
-
     object-fit: contain;
-
-    max-width: 100%;
 }
 
 
-/* =========================================================
-   NAVIGATION
-   ========================================================= */
+/* --- NAVIGATION --- */
 
 .nav {
     display: flex;
@@ -93,18 +74,12 @@ body {
 
 .nav-link {
     text-decoration: none;
-
     font-size: 18px;
     font-weight: 500;
-
     color: var(--text-dark);
-
     position: relative;
-
     padding-bottom: 6px;
-
     transition: color 0.25s ease;
-
     white-space: nowrap;
 }
 
@@ -119,80 +94,57 @@ body {
 
 .nav-link.active::after {
     content: '';
-
     position: absolute;
-
     bottom: 0;
     left: 0;
-
     width: 100%;
     height: 3px;
-
     background-color: var(--primary-green);
-
     border-radius: 2px;
 }
 
 
 /* =========================================================
-   MAIN HERO
+   MAIN HERO SECTION
    ========================================================= */
 
 .hero {
     position: relative;
-
     width: 100%;
-
     height: calc(100vh - 105px);
-
-    min-height: 600px;
-
+    min-height: 680px;
     overflow: hidden;
-
     background-color: #ffffff;
 }
 
 
-/* =========================================================
-   FARM BACKGROUND
-   ========================================================= */
+/* --- Farm Background Image --- */
 
 .hero-bg-container {
     position: absolute;
-
     top: 0;
     right: 0;
-
     width: 65%;
     height: 100%;
-
     z-index: 1;
-
     overflow: hidden;
 }
 
 .hero-bg-image {
     width: 100%;
     height: 100%;
-
     object-fit: cover;
-
     object-position: right center;
-
     display: block;
 }
 
 
-/* =========================================================
-   LEFT CURVED PANEL
-   ========================================================= */
+/* --- Left Off-White Curve --- */
 
 .curved-bg-panel {
     position: absolute;
-
     top: -5%;
     left: -5%;
-
     width: 45%;
     height: 110%;
 
@@ -211,16 +163,12 @@ body {
 
 .hero-container {
     position: relative;
-
     z-index: 20;
 
-    width: 100%;
     max-width: 1400px;
-
     height: 100%;
 
     margin: 0 auto;
-
     padding: 0 50px;
 
     display: flex;
@@ -228,31 +176,22 @@ body {
 }
 
 .hero-text-content {
-    width: 100%;
     max-width: 460px;
-
     margin-top: -50px;
 }
 
 
-/* =========================================================
-   HERO TITLE
-   ========================================================= */
+/* --- Hero Title --- */
 
 .hero-title {
     font-family: 'Crimson Pro', serif;
-
-    font-size: clamp(42px, 4vw, 58px);
-
+    font-size: 58px;
     font-weight: 800;
 
     color: var(--primary-green);
 
     line-height: 1.08;
-
     letter-spacing: -0.5px;
-
-    margin: 0;
 }
 
 
@@ -262,7 +201,6 @@ body {
 
 .icon-divider {
     display: flex;
-
     align-items: center;
 
     width: 82%;
@@ -272,22 +210,15 @@ body {
 
 .icon-divider .line {
     flex: 1;
-
-    min-width: 0;
-
     height: 1.5px;
 
     background-color: var(--primary-green);
-
     opacity: 0.5;
 }
 
 .divider-icon {
     height: 32px;
-
     width: auto;
-
-    max-width: 50px;
 
     margin: 0 14px;
 
@@ -300,13 +231,12 @@ body {
    ========================================================= */
 
 .hero-description {
-    font-size: clamp(15px, 1.25vw, 18px);
-
+    font-size: 18px;
     line-height: 1.6;
 
     color: var(--text-muted);
 
-    margin: 0 0 35px;
+    margin-bottom: 35px;
 }
 
 
@@ -316,15 +246,11 @@ body {
 
 .cta-buttons {
     display: flex;
-
     gap: 18px;
-
-    flex-wrap: wrap;
 }
 
 .btn {
     display: inline-flex;
-
     align-items: center;
     justify-content: center;
 
@@ -340,20 +266,13 @@ body {
     cursor: pointer;
 
     transition: all 0.25s ease;
-
-    text-decoration: none;
-
-    white-space: nowrap;
 }
 
 
-/* =========================================================
-   LOGIN BUTTON
-   ========================================================= */
+/* Login Button */
 
 .btn-login {
     background-color: var(--primary-green);
-
     color: #ffffff;
 
     border: 2px solid var(--primary-green);
@@ -361,10 +280,7 @@ body {
 
 .btn-login:hover {
     background-color: var(--hover-green);
-
     border-color: var(--hover-green);
-
-    color: #ffffff;
 
     transform: translateY(-2px);
 
@@ -372,13 +288,10 @@ body {
 }
 
 
-/* =========================================================
-   SIGN UP BUTTON
-   ========================================================= */
+/* Sign Up Button */
 
 .btn-signup {
     background-color: transparent;
-
     color: var(--primary-green);
 
     border: 2px solid var(--primary-green);
@@ -386,8 +299,6 @@ body {
 
 .btn-signup:hover {
     background-color: rgba(10, 79, 49, 0.08);
-
-    color: var(--primary-green);
 
     transform: translateY(-2px);
 }
@@ -404,7 +315,6 @@ body {
     left: -20px;
 
     width: 48%;
-
     max-width: 680px;
 
     z-index: 10;
@@ -435,8 +345,6 @@ body {
     z-index: 5;
 
     pointer-events: none;
-
-    overflow: hidden;
 }
 
 .wave-img {
@@ -463,38 +371,29 @@ body {
         padding: 0 35px;
     }
 
-    /*
-       Give the background slightly less width so the
-       curved panel and content have more room.
-    */
     .hero-bg-container {
-        width: 68%;
+        width: 70%;
     }
 
     .curved-bg-panel {
-        width: 48%;
+        width: 50%;
     }
 
     .hero-title {
-        font-size: clamp(40px, 4.2vw, 50px);
-    }
-
-    .hero-text-content {
-        max-width: 420px;
+        font-size: 50px;
     }
 
     .milk-splash-container {
-        width: 52%;
-        max-width: 620px;
+        width: 55%;
     }
 }
 
 
 /* =========================================================
-   TABLETS / SMALL LAPTOPS
+   TABLETS
    ========================================================= */
 
-@media (max-width: 992px) and (min-width: 769px) {
+@media (max-width: 992px) {
 
     .header {
         height: 90px;
@@ -505,164 +404,48 @@ body {
     }
 
     .main-logo {
-        height: 68px;
-        width: 145px;
+        height: 70px;
+        width: 150px;
     }
 
     .nav {
-        gap: 22px;
+        gap: 25px;
     }
 
     .nav-link {
-        font-size: 15px;
+        font-size: 16px;
     }
 
 
-    /* HERO */
+    /* Hero */
 
     .hero {
         height: calc(100vh - 90px);
-
-        /*
-           Prevent the hero from becoming excessively tall
-           when the browser window is resized.
-        */
-        min-height: 500px;
+        min-height: 650px;
     }
 
-
-    /*
-       IMPORTANT:
-       Keep the farm image from taking too much horizontal
-       space at intermediate widths.
-    */
     .hero-bg-container {
-        width: 66%;
+        width: 75%;
     }
 
-    .hero-bg-image {
-        object-position: 70% center;
-    }
-
-
-    /*
-       Reduce the curved panel slightly so it does not
-       cover the farm image or squeeze the text.
-    */
     .curved-bg-panel {
-        width: 52%;
-
-        top: -4%;
-        height: 108%;
-
-        border-top-right-radius: 45% 40%;
-        border-bottom-right-radius: 58% 60%;
-    }
-
-
-    /* HERO CONTENT */
-
-    .hero-container {
-        padding: 0 25px;
-    }
-
-    .hero-text-content {
-        max-width: 380px;
-
-        margin-top: -25px;
-    }
-
-
-    /* TITLE */
-
-    .hero-title {
-        font-size: clamp(36px, 4.3vw, 46px);
-
-        line-height: 1.08;
-    }
-
-
-    /* DIVIDER */
-
-    .icon-divider {
-        width: 85%;
-
-        margin: 18px 0;
-    }
-
-    .divider-icon {
-        height: 28px;
-
-        margin: 0 10px;
-    }
-
-
-    /* DESCRIPTION */
-
-    .hero-description {
-        font-size: 15px;
-
-        line-height: 1.55;
-
-        margin-bottom: 25px;
-    }
-
-
-    /* BUTTONS */
-
-    .cta-buttons {
-        gap: 14px;
-    }
-
-    .btn {
-        font-size: 15px;
-
-        padding: 10px 22px;
-    }
-
-
-    /* MILK SPLASH */
-
-    .milk-splash-container {
-        width: 50%;
-
-        max-width: 500px;
-
-        left: -10px;
-
-        bottom: -5px;
-    }
-}
-
-
-/* =========================================================
-   SMALL LAPTOP HEIGHT
-   ========================================================= */
-
-@media (max-height: 750px) and (min-width: 769px) {
-
-    .hero {
-        min-height: 480px;
-    }
-
-    .hero-text-content {
-        margin-top: -15px;
+        width: 58%;
     }
 
     .hero-title {
-        font-size: clamp(36px, 4vw, 48px);
+        font-size: 42px;
     }
 
-    .icon-divider {
-        margin: 14px 0;
+    .hero-text-content {
+        max-width: 400px;
     }
 
     .hero-description {
-        margin-bottom: 20px;
+        font-size: 16px;
     }
 
     .milk-splash-container {
-        width: 48%;
+        width: 60%;
     }
 }
 
@@ -673,68 +456,54 @@ body {
 
 @media (max-width: 768px) {
 
-    /* HEADER */
+    /* Header */
 
     .header {
         height: auto;
-
-        min-height: 75px;
+        min-height: 80px;
     }
 
     .header-container {
-        padding: 8px 15px;
+        padding: 10px 15px;
 
         flex-wrap: wrap;
-
         gap: 8px;
     }
 
     .main-logo {
         height: 55px;
-
         width: 120px;
     }
 
     .nav {
         gap: 15px;
-
-        flex-wrap: wrap;
-
-        justify-content: flex-end;
     }
 
     .nav-link {
         font-size: 14px;
-
         padding-bottom: 4px;
     }
 
 
-    /* HERO */
+    /* Hero */
 
     .hero {
         height: auto;
-
-        min-height: 0;
+        min-height: calc(100vh - 80px);
 
         display: flex;
-
         flex-direction: column;
 
         overflow: hidden;
     }
 
 
-    /* BACKGROUND IMAGE */
+    /* Background image */
 
     .hero-bg-container {
         position: relative;
 
-        top: auto;
-        right: auto;
-
         width: 100%;
-
         height: 350px;
 
         order: 1;
@@ -745,7 +514,7 @@ body {
     }
 
 
-    /* CURVE */
+    /* Curve */
 
     .curved-bg-panel {
         position: absolute;
@@ -762,7 +531,7 @@ body {
     }
 
 
-    /* HERO CONTENT */
+    /* Hero content */
 
     .hero-container {
         position: relative;
@@ -770,15 +539,12 @@ body {
         order: 2;
 
         width: 100%;
-
         height: auto;
 
         padding: 40px 20px 130px;
 
         display: flex;
-
         justify-content: center;
-
         align-items: center;
 
         background-color: var(--bg-curve);
@@ -786,7 +552,6 @@ body {
 
     .hero-text-content {
         width: 100%;
-
         max-width: 600px;
 
         margin-top: 0;
@@ -795,37 +560,33 @@ body {
     }
 
 
-    /* TITLE */
+    /* Title */
 
     .hero-title {
-        font-size: clamp(34px, 8vw, 48px);
-
+        font-size: clamp(36px, 8vw, 48px);
         line-height: 1.1;
 
         text-align: center;
     }
 
 
-    /* DIVIDER */
+    /* Divider */
 
     .icon-divider {
         width: 80%;
-
         margin: 20px auto;
     }
 
     .divider-icon {
         height: 28px;
-
         margin: 0 10px;
     }
 
 
-    /* DESCRIPTION */
+    /* Description */
 
     .hero-description {
         font-size: 16px;
-
         line-height: 1.6;
 
         max-width: 550px;
@@ -834,11 +595,10 @@ body {
     }
 
 
-    /* BUTTONS */
+    /* Buttons */
 
     .cta-buttons {
         justify-content: center;
-
         flex-wrap: wrap;
 
         gap: 15px;
@@ -853,7 +613,7 @@ body {
     }
 
 
-    /* MILK SPLASH */
+    /* Milk Splash */
 
     .milk-splash-container {
         width: 90%;
@@ -861,7 +621,6 @@ body {
         max-width: 600px;
 
         left: 50%;
-
         transform: translateX(-50%);
 
         bottom: 0;
@@ -870,21 +629,15 @@ body {
     }
 
 
-    /* WAVE */
+    /* Wave */
 
     .bottom-wave-container {
         z-index: 5;
-
-        overflow: hidden;
     }
 
     .wave-img {
         width: 100%;
-
-        height: auto;
-
-        min-width: 0;
-
+        min-width: 700px;
         max-width: none;
     }
 }
@@ -896,7 +649,7 @@ body {
 
 @media (max-width: 576px) {
 
-    /* HEADER */
+    /* Header */
 
     .header {
         min-height: 75px;
@@ -908,7 +661,6 @@ body {
 
     .main-logo {
         height: 50px;
-
         width: 105px;
     }
 
@@ -921,10 +673,10 @@ body {
     }
 
 
-    /* HERO */
+    /* Hero */
 
     .hero {
-        min-height: 0;
+        min-height: auto;
     }
 
     .hero-bg-container {
@@ -933,7 +685,6 @@ body {
 
     .curved-bg-panel {
         top: 220px;
-
         height: 220px;
     }
 
@@ -942,7 +693,7 @@ body {
     }
 
 
-    /* TITLE */
+    /* Title */
 
     .hero-title {
         font-size: 36px;
@@ -951,11 +702,10 @@ body {
     }
 
 
-    /* DIVIDER */
+    /* Divider */
 
     .icon-divider {
         width: 90%;
-
         margin: 18px auto;
     }
 
@@ -966,7 +716,7 @@ body {
     }
 
 
-    /* DESCRIPTION */
+    /* Description */
 
     .hero-description {
         font-size: 14px;
@@ -977,7 +727,7 @@ body {
     }
 
 
-    /* BUTTONS */
+    /* Buttons */
 
     .cta-buttons {
         flex-direction: column;
@@ -989,19 +739,16 @@ body {
 
     .btn {
         width: 85%;
-
         max-width: 280px;
 
         font-size: 15px;
     }
 
 
-    /* MILK SPLASH */
+    /* Milk splash */
 
     .milk-splash-container {
         width: 110%;
-
-        max-width: none;
 
         left: 50%;
 
@@ -1009,12 +756,10 @@ body {
     }
 
 
-    /* WAVE */
+    /* Wave */
 
     .wave-img {
-        min-width: 0;
-
-        width: 100%;
+        min-width: 600px;
     }
 }
 
@@ -1027,7 +772,6 @@ body {
 
     .main-logo {
         height: 45px;
-
         width: 95px;
     }
 
@@ -1057,55 +801,5 @@ body {
 
     .btn {
         width: 90%;
-    }
-}
-
-
-/* =========================================================
-   EXTRA SMALL WIDTH
-   Prevent header/content from becoming cramped
-   ========================================================= */
-
-@media (max-width: 340px) {
-
-    .header-container {
-        padding-left: 8px;
-        padding-right: 8px;
-
-        justify-content: center;
-    }
-
-    .main-logo {
-        width: 90px;
-        height: 42px;
-    }
-
-    .nav {
-        width: 100%;
-
-        justify-content: center;
-
-        gap: 10px;
-    }
-
-    .nav-link {
-        font-size: 11px;
-    }
-
-    .hero-container {
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-
-    .hero-title {
-        font-size: 29px;
-    }
-
-    .hero-description {
-        font-size: 12px;
-    }
-
-    .btn {
-        width: 95%;
     }
 }

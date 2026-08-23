@@ -49,7 +49,6 @@ function Signup() {
 
                     {/* FULL NAME */}
                     <div className="input-box">
-
                         <img
                             src={personIcon}
                             alt="Person"
@@ -62,12 +61,10 @@ function Signup() {
                             placeholder="Full Name"
                             required
                         />
-
                     </div>
 
                     {/* EMAIL */}
                     <div className="input-box">
-
                         <img
                             src={emailIcon}
                             alt="Email"
@@ -80,12 +77,10 @@ function Signup() {
                             placeholder="Email Address"
                             required
                         />
-
                     </div>
 
                     {/* PHONE */}
                     <div className="input-box">
-
                         <img
                             src={phoneIcon}
                             alt="Phone"
@@ -98,12 +93,10 @@ function Signup() {
                             placeholder="Phone Number"
                             required
                         />
-
                     </div>
 
                     {/* PASSWORD */}
                     <div className="input-box">
-
                         <img
                             src={lockIcon}
                             alt="Password"
@@ -125,12 +118,10 @@ function Signup() {
                                 setShowPassword(!showPassword)
                             }
                         />
-
                     </div>
 
                     {/* CONFIRM PASSWORD */}
                     <div className="input-box">
-
                         <img
                             src={lockIcon}
                             alt="Confirm Password"
@@ -158,7 +149,6 @@ function Signup() {
                                 )
                             }
                         />
-
                     </div>
 
                     {/* CREATE ACCOUNT */}
@@ -176,34 +166,29 @@ function Signup() {
 
                     {/* OR */}
                     <div className="or-section">
-
                         <span></span>
-
                         <p>OR</p>
-
                         <span></span>
-
                     </div>
 
-                    {/* GOOGLE */}
+                    {/* GOOGLE SIGNUP */}
                     <button
                         type="button"
                         className="google-btn"
                         onClick={handleGoogleSignup}
                     >
-
                         <img
                             src={googleIcon}
                             alt="Google"
                         />
 
                         <span>Sign up with Google</span>
-
                     </button>
 
-                    {/* LOGIN */}
+                    {/* LOGIN LINK */}
                     <p className="login-text">
                         Already have an account?
+
                         <Link to="/login">
                             Login
                         </Link>

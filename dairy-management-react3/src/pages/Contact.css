@@ -203,13 +203,13 @@ body {
 .bottle-icon {
     position: absolute;
 
-    top: -55px;
+    top: -25px;
     left: 50%;
 
     transform: translateX(-50%);
 
-    width: 110px;
-    height: 110px;
+    width: 80px;
+    height: 70px;
 
     border-radius: 50%;
 
