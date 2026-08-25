@@ -11,10 +11,70 @@ import googleIcon from "../assets/login/google.jpg.jpeg";
 function Login() {
     const [showPassword, setShowPassword] = useState(false);
 
-    const handleSubmit = (e) => {
+    // Login form data
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+    });
+
+    // Loading state
+    const [loading, setLoading] = useState(false);
+
+    // Handle input changes
+    const handleChange = (e) => {
+        const { id, value } = e.target;
+
+        setFormData((prev) => ({
+            ...prev,
+            [id]: value,
+        }));
+    };
+
+    // Handle login
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        console.log("Login form submitted");
+        setLoading(true);
+
+        try {
+            const response = await fetch(
+                "http://localhost:5000/api/auth/login",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(formData),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.message || "Login failed.");
+                return;
+            }
+
+            // Login successful
+            alert(data.message || "Login successful!");
+
+            console.log("Logged-in user:", data.user);
+
+            // Clear form
+            setFormData({
+                email: "",
+                password: "",
+            });
+
+        } catch (error) {
+            console.error("Login error:", error);
+
+            alert(
+                "Unable to connect to the server. Please make sure your backend is running."
+            );
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -57,6 +117,8 @@ function Login() {
                             type="email"
                             id="email"
                             placeholder="Enter your email"
+                            value={formData.email}
+                            onChange={handleChange}
                             required
                         />
 
@@ -80,6 +142,8 @@ function Login() {
                             type={showPassword ? "text" : "password"}
                             id="password"
                             placeholder="Enter your password"
+                            value={formData.password}
+                            onChange={handleChange}
                             required
                         />
 
@@ -119,9 +183,11 @@ function Login() {
                     <button
                         type="submit"
                         className="login-btn"
+                        disabled={loading}
                     >
                         <span>➜</span>
-                        Login
+
+                        {loading ? "Logging in..." : "Login"}
                     </button>
 
 

@@ -12,12 +12,83 @@ import arrowIcon from "../assets/signup/arrow.png";
 import googleIcon from "../assets/signup/google.jpg.jpeg";
 
 function Signup() {
+    // Password visibility
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const handleSubmit = (e) => {
+    // Signup form data
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+    });
+
+    // Loading state
+    const [loading, setLoading] = useState(false);
+
+    // Handle input changes
+    const handleChange = (e) => {
+        const { id, value } = e.target;
+
+        setFormData((prev) => ({
+            ...prev,
+            [id]: value,
+        }));
+    };
+
+    // Handle signup
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Signup form submitted");
+
+        // Check password confirmation
+        if (formData.password !== formData.confirmPassword) {
+            alert("Passwords do not match.");
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const response = await fetch(
+                "http://localhost:5000/api/auth/signup",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(formData),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.message || "Signup failed.");
+                return;
+            }
+
+            // Success
+            alert(data.message || "Account created successfully!");
+
+            // Clear form
+            setFormData({
+                name: "",
+                email: "",
+                phone: "",
+                password: "",
+                confirmPassword: "",
+            });
+        } catch (error) {
+            console.error("Signup error:", error);
+
+            alert(
+                "Unable to connect to the server. Please make sure your backend is running."
+            );
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleGoogleSignup = () => {
@@ -59,6 +130,8 @@ function Signup() {
                             type="text"
                             id="name"
                             placeholder="Full Name"
+                            value={formData.name}
+                            onChange={handleChange}
                             required
                         />
                     </div>
@@ -75,6 +148,8 @@ function Signup() {
                             type="email"
                             id="email"
                             placeholder="Email Address"
+                            value={formData.email}
+                            onChange={handleChange}
                             required
                         />
                     </div>
@@ -91,6 +166,8 @@ function Signup() {
                             type="tel"
                             id="phone"
                             placeholder="Phone Number"
+                            value={formData.phone}
+                            onChange={handleChange}
                             required
                         />
                     </div>
@@ -107,6 +184,8 @@ function Signup() {
                             type={showPassword ? "text" : "password"}
                             id="password"
                             placeholder="Password"
+                            value={formData.password}
+                            onChange={handleChange}
                             required
                         />
 
@@ -136,6 +215,8 @@ function Signup() {
                             }
                             id="confirmPassword"
                             placeholder="Confirm Password"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
                             required
                         />
 
@@ -155,13 +236,18 @@ function Signup() {
                     <button
                         type="submit"
                         className="create-btn"
+                        disabled={loading}
                     >
                         <img
                             src={arrowIcon}
                             alt="Arrow"
                         />
 
-                        <span>Create Account</span>
+                        <span>
+                            {loading
+                                ? "Creating Account..."
+                                : "Create Account"}
+                        </span>
                     </button>
 
                     {/* OR */}
