@@ -1,0 +1,450 @@
+/* ==============================
+   RESET
+================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+/* ==============================
+   BODY
+================================ */
+
+body {
+    min-height: 100vh;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    background-image:
+        linear-gradient(
+            rgba(255, 255, 255, 0.72),
+            rgba(255, 255, 255, 0.72)
+        ),
+        url("../assets/Dashboard/background.jpg.jpeg");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 20px;
+}
+
+
+/* ==============================
+   PAGE
+================================ */
+
+.page {
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* ==============================
+   MAIN DASHBOARD CONTAINER
+================================ */
+
+.dashboard-container {
+    width: 90%;
+    max-width: 1000px;
+
+    background: rgba(255, 255, 255, 0.94);
+
+    border-radius: 18px;
+
+    padding: 35px 50px 40px;
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.10);
+
+    backdrop-filter: blur(4px);
+}
+
+
+/* ==============================
+   HEADER
+================================ */
+
+.dashboard-header {
+    text-align: center;
+
+    margin-bottom: 25px;
+}
+
+
+.dashboard-header h1 {
+    font-size: 38px;
+
+    font-weight: 700;
+
+    color: #185b36;
+
+    margin-bottom: 12px;
+}
+
+
+/* ==============================
+   LEAF LINE
+================================ */
+
+.leaf-line {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 14px;
+}
+
+
+.leaf-line span {
+    width: 100px;
+
+    height: 2px;
+
+    background: #cbdcc8;
+}
+
+
+.leaf {
+    font-size: 25px;
+
+    line-height: 1;
+}
+
+
+/* ==============================
+   DASHBOARD GRID
+================================ */
+
+.dashboard-grid {
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        1px
+        1fr;
+
+    column-gap: 30px;
+
+    align-items: stretch;
+}
+
+
+/* ==============================
+   COLUMNS
+================================ */
+
+.dashboard-column {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+
+/* ==============================
+   CENTER DIVIDER
+================================ */
+
+.divider {
+    width: 1px;
+
+    background: #d7e1d3;
+
+    min-height: 100%;
+}
+
+
+/* ==============================
+   DASHBOARD CARD
+================================ */
+
+.dashboard-card {
+    width: 100%;
+
+    height: 82px;
+
+    border: none;
+
+    border-radius: 13px;
+
+    background: #ffffff;
+
+    display: flex;
+
+    align-items: center;
+
+    text-align: left;
+
+    padding: 12px 18px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.06);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+}
+
+
+/* ==============================
+   CARD HOVER
+================================ */
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 6px 15px rgba(0, 0, 0, 0.10);
+
+    background: #ffffff;
+}
+
+
+/* ==============================
+   CARD CLICK
+================================ */
+
+.dashboard-card:active {
+    transform: scale(0.98);
+}
+
+
+/* ==============================
+   ICON CONTAINER
+================================ */
+
+.icon-container {
+    width: 58px;
+
+    height: 58px;
+
+    min-width: 58px;
+
+    border-radius: 12px;
+
+    background: #f0f8e6;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    margin-right: 18px;
+}
+
+
+/* ==============================
+   ICON IMAGE
+================================ */
+
+.icon-container img {
+    width: 42px;
+
+    height: 42px;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+
+/* ==============================
+   CARD TEXT
+================================ */
+
+.dashboard-card span {
+    font-size: 19px;
+
+    font-weight: 500;
+
+    color: #202020;
+
+    white-space: nowrap;
+}
+
+
+/* ==============================
+   TABLET
+================================ */
+
+@media (max-width: 900px) {
+
+    .dashboard-container {
+        width: 95%;
+
+        padding: 30px 35px 35px;
+    }
+
+    .dashboard-header h1 {
+        font-size: 34px;
+    }
+
+    .dashboard-grid {
+        column-gap: 22px;
+    }
+
+    .dashboard-card {
+        height: 76px;
+    }
+
+    .icon-container {
+        width: 52px;
+        height: 52px;
+        min-width: 52px;
+
+        margin-right: 14px;
+    }
+
+    .icon-container img {
+        width: 38px;
+        height: 38px;
+    }
+
+    .dashboard-card span {
+        font-size: 17px;
+    }
+}
+
+
+/* ==============================
+   MOBILE
+================================ */
+
+@media (max-width: 600px) {
+
+    body {
+        padding: 10px;
+
+        align-items: flex-start;
+    }
+
+    .page {
+        min-height: auto;
+
+        margin-top: 15px;
+    }
+
+    .dashboard-container {
+        width: 100%;
+
+        padding: 25px 15px 30px;
+
+        border-radius: 16px;
+    }
+
+    .dashboard-header {
+        margin-bottom: 20px;
+    }
+
+    .dashboard-header h1 {
+        font-size: 28px;
+    }
+
+    .leaf-line {
+        gap: 8px;
+    }
+
+    .leaf-line span {
+        width: 60px;
+    }
+
+    .leaf {
+        font-size: 21px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+
+        gap: 10px;
+    }
+
+    .divider {
+        display: none;
+    }
+
+    .dashboard-column {
+        gap: 10px;
+    }
+
+    .dashboard-card {
+        height: 70px;
+
+        padding: 8px 12px;
+    }
+
+    .icon-container {
+        width: 48px;
+        height: 48px;
+
+        min-width: 48px;
+
+        margin-right: 13px;
+    }
+
+    .icon-container img {
+        width: 34px;
+        height: 34px;
+    }
+
+    .dashboard-card span {
+        font-size: 16px;
+    }
+}
+
+
+/* ==============================
+   SMALL MOBILE
+================================ */
+
+@media (max-width: 400px) {
+
+    .dashboard-container {
+        padding: 20px 12px 25px;
+    }
+
+    .dashboard-header h1 {
+        font-size: 25px;
+    }
+
+    .dashboard-card {
+        height: 64px;
+    }
+
+    .icon-container {
+        width: 44px;
+        height: 44px;
+
+        min-width: 44px;
+    }
+
+    .icon-container img {
+        width: 30px;
+        height: 30px;
+    }
+
+    .dashboard-card span {
+        font-size: 14px;
+    }
+}
