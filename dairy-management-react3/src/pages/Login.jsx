@@ -30,9 +30,43 @@ function Login() {
         }));
     };
 
+    // VALIDATION
+    const validateForm = () => {
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!formData.email.trim()) {
+            alert("Please enter your email address.");
+            return false;
+        }
+
+        if (!emailRegex.test(formData.email.trim())) {
+            alert("Please enter a valid email address.");
+            return false;
+        }
+
+        // Password validation
+        if (!formData.password) {
+            alert("Please enter your password.");
+            return false;
+        }
+
+        if (formData.password.length < 8) {
+            alert("Password must contain at least 8 characters.");
+            return false;
+        }
+
+        return true;
+    };
+
     // Handle login
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Run validation before login
+        if (!validateForm()) {
+            return;
+        }
 
         setLoading(true);
 

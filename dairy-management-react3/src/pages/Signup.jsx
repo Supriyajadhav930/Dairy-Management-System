@@ -38,13 +38,68 @@ function Signup() {
         }));
     };
 
+    // VALIDATION
+    const validateForm = () => {
+        // Name validation
+        const nameRegex = /^[A-Za-z ]+$/;
+
+        if (!formData.name.trim()) {
+            alert("Please enter your full name.");
+            return false;
+        }
+
+        if (!nameRegex.test(formData.name.trim())) {
+            alert("Name should contain only letters.");
+            return false;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!formData.email.trim()) {
+            alert("Please enter your email address.");
+            return false;
+        }
+
+        if (!emailRegex.test(formData.email.trim())) {
+            alert("Please enter a valid email address.");
+            return false;
+        }
+
+        // Phone validation
+        const phoneRegex = /^[0-9]{10}$/;
+
+        if (!phoneRegex.test(formData.phone)) {
+            alert("Phone number must contain exactly 10 digits.");
+            return false;
+        }
+
+        // Password validation
+        const passwordRegex =
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        if (!passwordRegex.test(formData.password)) {
+            alert(
+                "Password must contain at least 8 characters, one capital letter, one small letter, one number, and one special symbol."
+            );
+            return false;
+        }
+
+        // Confirm password validation
+        if (formData.password !== formData.confirmPassword) {
+            alert("Passwords do not match.");
+            return false;
+        }
+
+        return true;
+    };
+
     // Handle signup
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Check password confirmation
-        if (formData.password !== formData.confirmPassword) {
-            alert("Passwords do not match.");
+        // Run validation before sending data
+        if (!validateForm()) {
             return;
         }
 
