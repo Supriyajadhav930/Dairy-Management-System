@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import logo from "../assets/home/logo.png";
 import heroBg from "../assets/home/hero-bg.png";
 import bottle from "../assets/home/Bottle.png";
@@ -27,28 +29,28 @@ function Home() {
           <nav className="nav">
 
             {/* HOME */}
-            <a
-              href="/"
+            <Link
+              to="/"
               className="nav-link active"
             >
               Home
-            </a>
+            </Link>
 
             {/* ABOUT */}
-            <a
-              href="/about"
+            <Link
+              to="/about"
               className="nav-link"
             >
               About Us
-            </a>
+            </Link>
 
             {/* CONTACT */}
-            <a
-              href="/contact"
+            <Link
+              to="/contact"
               className="nav-link"
             >
               Contact
-            </a>
+            </Link>
 
           </nav>
         </div>
@@ -113,23 +115,23 @@ function Home() {
             <div className="cta-buttons">
 
               {/* LOGIN BUTTON */}
-              <a
-                href="/login"
+              <Link
+                to="/login"
                 className="btn btn-login"
               >
                 <i className="fa-solid fa-right-to-bracket"></i>
                 Login
-              </a>
+              </Link>
 
 
               {/* SIGN UP BUTTON */}
-              <a
-                href="/signup"
+              <Link
+                to="/signup"
                 className="btn btn-signup"
               >
                 <i className="fa-solid fa-user"></i>
                 Sign Up
-              </a>
+              </Link>
 
             </div>
 

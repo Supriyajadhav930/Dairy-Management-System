@@ -1,5 +1,7 @@
 import "./Contact.css";
 
+import { Link } from "react-router-dom";
+
 import logo from "../assets/contact/logo.png";
 import leftLeaf from "../assets/contact/left leaf.png";
 import rightLeaf from "../assets/contact/right leaf.png";
@@ -25,13 +27,13 @@ function Contact() {
 
                     {/* LOGO */}
 
-                    <a className="navbar-brand" href="/">
+                    <Link className="navbar-brand" to="/">
                         <img
                             src={logo}
                             alt="Sairaj Milk Collection Centre Logo"
                             className="brand-logo"
                         />
-                    </a>
+                    </Link>
 
 
                     {/* MOBILE MENU BUTTON */}
@@ -61,36 +63,36 @@ function Contact() {
                             {/* HOME */}
 
                             <li className="nav-item">
-                                <a
+                                <Link
                                     className="nav-link"
-                                    href="/"
+                                    to="/"
                                 >
                                     Home
-                                </a>
+                                </Link>
                             </li>
 
 
                             {/* ABOUT */}
 
                             <li className="nav-item">
-                                <a
+                                <Link
                                     className="nav-link"
-                                    href="/about"
+                                    to="/about"
                                 >
                                     About Us
-                                </a>
+                                </Link>
                             </li>
 
 
                             {/* CONTACT */}
 
                             <li className="nav-item">
-                                <a
+                                <Link
                                     className="nav-link active"
-                                    href="/contact"
+                                    to="/contact"
                                 >
                                     Contact
-                                </a>
+                                </Link>
                             </li>
 
                         </ul>
