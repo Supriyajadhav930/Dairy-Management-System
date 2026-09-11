@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Login.css";
 
 import secureLogin from "../assets/login/secure-login.png";
@@ -9,6 +9,7 @@ import eyeIcon from "../assets/login/eye_transparent.png";
 import googleIcon from "../assets/login/google.jpg.jpeg";
 
 function Login() {
+    const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
 
     // Login form data
@@ -94,11 +95,22 @@ function Login() {
 
             console.log("Logged-in user:", data.user);
 
+            // Store user session/token if returned by your API
+            if (data.token) {
+                localStorage.setItem("token", data.token);
+            }
+            if (data.user) {
+                localStorage.setItem("user", JSON.stringify(data.user));
+            }
+
             // Clear form
             setFormData({
                 email: "",
                 password: "",
             });
+
+            // Redirect to dashboard
+            navigate("/dashboard");
 
         } catch (error) {
             console.error("Login error:", error);
