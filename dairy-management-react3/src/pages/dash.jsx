@@ -1,4 +1,5 @@
 import "./dash.css";
+import { useEffect } from "react";
 
 import morningCollection from "../assets/Dashboard/morning_collection.png";
 import eveningCollection from "../assets/Dashboard/evening_collection.png";
@@ -16,6 +17,21 @@ function openPage(pageName) {
 }
 
 function Dash() {
+
+    // =========================
+    // BACKEND CONNECTION
+    // =========================
+    useEffect(() => {
+        fetch("http://localhost:5000/")
+            .then((response) => response.text())
+            .then((data) => {
+                console.log("Backend connected:", data);
+            })
+            .catch((error) => {
+                console.error("Backend connection error:", error);
+            });
+    }, []);
+
     return (
         <div className="page">
 
