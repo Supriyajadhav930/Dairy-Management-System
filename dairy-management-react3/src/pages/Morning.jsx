@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./morning.css";
 
 /* ================= IMAGE IMPORTS ================= */
@@ -72,6 +72,10 @@ function Morning() {
     const [farmerSearch, setFarmerSearch] = useState("");
 
     const [recordsDate, setRecordsDate] = useState("");
+
+    const litresRef = useRef(null);
+    const fatRef = useRef(null);
+    const snfRef = useRef(null);
 
 
     /* ================= SET DATE + LOAD RECORDS ================= */
@@ -437,11 +441,13 @@ function Morning() {
                             <input
                                 type="date"
                                 value={date}
-                                onChange={(e) =>
-                                    setDate(
-                                        e.target.value
-                                    )
-                                }
+                                min="1000-01-01"
+                                max="9999-12-31"
+                                onChange={(e) => {
+                                    if (/^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) {
+                                        setDate(e.target.value);
+                                    }
+                                }}
                             />
 
                             <img
@@ -470,6 +476,8 @@ function Morning() {
                         label="Litres"
                         value={litres}
                         setValue={setLitres}
+                        inputRef={litresRef}
+                        nextRef={fatRef}
                     />
 
 
@@ -478,6 +486,8 @@ function Morning() {
                         label="Fat"
                         value={fat}
                         setValue={setFat}
+                        inputRef={fatRef}
+                        nextRef={snfRef}
                     />
 
 
@@ -486,6 +496,7 @@ function Morning() {
                         label="SNF"
                         value={snf}
                         setValue={setSnf}
+                        inputRef={snfRef}
                     />
 
 
@@ -620,11 +631,13 @@ function Morning() {
                         <input
                             type="date"
                             value={recordsDate}
-                            onChange={(e) =>
-                                setRecordsDate(
-                                    e.target.value
-                                )
-                            }
+                            min="1000-01-01"
+                            max="9999-12-31"
+                            onChange={(e) => {
+                                if (/^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) {
+                                    setRecordsDate(e.target.value);
+                                }
+                            }}
                         />
 
                     </div>
@@ -925,7 +938,9 @@ function MilkField({
     icon,
     label,
     value,
-    setValue
+    setValue,
+    inputRef,
+    nextRef
 }) {
 
     return (
@@ -945,11 +960,18 @@ function MilkField({
 
 
             <input
+                ref={inputRef}
                 type="number"
                 value={value}
                 onChange={(e) =>
                     setValue(e.target.value)
                 }
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" && nextRef) {
+                        e.preventDefault();
+                        nextRef.current?.focus();
+                    }
+                }}
                 placeholder="0.00"
                 min="0"
                 step="0.01"

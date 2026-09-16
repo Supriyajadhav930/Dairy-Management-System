@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./evening.css";
 
 /* ================= IMAGE IMPORTS ================= */
@@ -72,6 +72,10 @@ function Evening() {
     const [farmerSearch, setFarmerSearch] = useState("");
 
     const [recordsDate, setRecordsDate] = useState("");
+
+    const litresRef = useRef(null);
+    const fatRef = useRef(null);
+    const snfRef = useRef(null);
 
 
     /* ================= SET DATE + LOAD RECORDS ================= */
@@ -470,6 +474,8 @@ function Evening() {
                         label="Litres"
                         value={litres}
                         setValue={setLitres}
+                        inputRef={litresRef}
+                        nextRef={fatRef}
                     />
 
 
@@ -478,6 +484,8 @@ function Evening() {
                         label="Fat"
                         value={fat}
                         setValue={setFat}
+                        inputRef={fatRef}
+                        nextRef={snfRef}
                     />
 
 
@@ -486,6 +494,7 @@ function Evening() {
                         label="SNF"
                         value={snf}
                         setValue={setSnf}
+                        inputRef={snfRef}
                     />
 
 
@@ -887,7 +896,9 @@ function MilkField({
     icon,
     label,
     value,
-    setValue
+    setValue,
+    inputRef,
+    nextRef
 }) {
 
     return (
@@ -907,11 +918,18 @@ function MilkField({
 
 
             <input
+                ref={inputRef}
                 type="number"
                 value={value}
                 onChange={(e) =>
                     setValue(e.target.value)
                 }
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" && nextRef) {
+                        e.preventDefault();
+                        nextRef.current?.focus();
+                    }
+                }}
                 placeholder="0.00"
                 min="0"
                 step="0.01"
