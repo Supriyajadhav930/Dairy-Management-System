@@ -1,0 +1,752 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+/* =====================================================
+   MAIN PAGE
+   ===================================================== */
+
+.add-farmer-page {
+    min-height: 100vh;
+    width: 100%;
+
+    padding: 4px 10px;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    color: #075c35;
+
+    background:
+        linear-gradient(
+            rgba(240, 255, 246, 0.82),
+            rgba(240, 255, 246, 0.82)
+        ),
+        url("../assets/Add_Farmer_img/background.png");
+
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+
+/* =====================================================
+   TOP BAGH IMAGE
+   ===================================================== */
+
+.add-farmer-page::before {
+    content: "";
+
+    display: block;
+
+    width: 100%;
+    height: 45px;
+
+    margin-bottom: 5px;
+
+    background-image:
+        url("../assets/Add_Farmer_img/bagh.png");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    border-radius: 8px;
+}
+
+
+/* =====================================================
+   MAIN CONTAINER
+   ===================================================== */
+
+.farmer-main-container {
+    width: 80%;
+    max-width: 1100px;
+
+    margin: 0 auto;
+
+    padding: 10px 20px 14px;
+
+    background: rgba(255, 255, 255, 0.90);
+
+    border-radius: 14px;
+
+    box-shadow:
+        0 5px 20px rgba(0, 70, 35, 0.12);
+}
+
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+
+.farmer-header {
+    width: 100%;
+
+    text-align: center;
+
+    margin-bottom: 8px;
+
+    overflow: visible;
+}
+
+
+.header-title-wrapper {
+    width: 100%;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 8px;
+
+    overflow: visible;
+}
+
+
+/* =====================================================
+   LEAF ICONS
+   ===================================================== */
+
+.leaf-icon {
+    width: 26px;
+    height: 26px;
+
+    min-width: 26px;
+    min-height: 26px;
+
+    flex-shrink: 0;
+
+    display: block;
+
+    color: #0b7845;
+
+    overflow: visible;
+}
+
+
+/* =====================================================
+   HEADER TITLE
+   ===================================================== */
+
+.header-title-section {
+    flex-shrink: 0;
+
+    text-align: center;
+}
+
+.header-title-section h1 {
+    font-size: 26px;
+
+    line-height: 1.1;
+
+    color: #075c35;
+}
+
+.header-title-section p {
+    margin-top: 2px;
+
+    font-size: 11px;
+
+    color: #55836b;
+}
+
+
+/* =====================================================
+   FARMER FORM
+   ===================================================== */
+
+.farmer-form {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    column-gap: 20px;
+    row-gap: 7px;
+
+    padding: 12px 18px;
+
+    border:
+        1.5px solid #cbe8d7;
+
+    border-radius: 11px;
+
+    background:
+        rgba(255, 255, 255, 0.78);
+}
+
+
+/* =====================================================
+   FORM LABEL
+   ===================================================== */
+
+.form-group label {
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    margin-bottom: 3px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    color: #075c35;
+}
+
+
+.form-group label svg {
+    width: 19px;
+    height: 19px;
+
+    min-width: 19px;
+    min-height: 19px;
+
+    flex-shrink: 0;
+
+    color: #087440;
+
+    display: block;
+}
+
+
+/* =====================================================
+   INPUT
+   ===================================================== */
+
+.form-group input {
+    width: 100%;
+
+    height: 34px;
+
+    padding: 0 10px;
+
+    border:
+        1.5px solid #b9d9c6;
+
+    border-radius: 7px;
+
+    outline: none;
+
+    font-size: 13px;
+
+    color: #174d34;
+
+    background: #ffffff;
+}
+
+
+.form-group input:focus {
+    border-color: #0b7845;
+
+    box-shadow:
+        0 0 0 2px rgba(11, 120, 69, 0.10);
+}
+
+
+.form-group input::placeholder {
+    color: #8ba797;
+}
+
+
+/* =====================================================
+   FORM BUTTONS
+   ===================================================== */
+
+.form-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    margin-top: 7px;
+}
+
+
+.form-buttons button {
+    width: 135px;
+
+    height: 34px;
+
+    border-radius: 7px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 6px;
+
+    transition: 0.2s;
+}
+
+
+.form-buttons button svg {
+    width: 18px;
+    height: 18px;
+
+    flex-shrink: 0;
+
+    display: block;
+}
+
+
+/* =====================================================
+   CLEAR BUTTON
+   ===================================================== */
+
+.clear-button {
+    color: #075c35;
+
+    background: #ffffff;
+
+    border:
+        1.5px solid #0b7845;
+}
+
+
+.clear-button:hover {
+    background: #edf9f2;
+}
+
+
+/* =====================================================
+   SAVE BUTTON
+   ===================================================== */
+
+.save-button {
+    color: #ffffff;
+
+    background: #087440;
+
+    border:
+        1.5px solid #087440;
+}
+
+
+.save-button:hover {
+    background: #065d34;
+}
+
+
+/* =====================================================
+   FARMERS SECTION
+   ===================================================== */
+
+.farmers-section {
+    margin-top: 10px;
+}
+
+
+.farmers-top {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 6px;
+}
+
+
+/* =====================================================
+   FARMERS HEADING
+   ===================================================== */
+
+.farmers-heading {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    flex-shrink: 0;
+}
+
+
+.farmers-heading > svg {
+    width: 22px;
+    height: 22px;
+
+    min-width: 22px;
+    min-height: 22px;
+
+    flex-shrink: 0;
+
+    color: #087440;
+
+    display: block;
+
+    overflow: visible;
+}
+
+
+.farmers-heading h2 {
+    font-size: 18px;
+
+    color: #075c35;
+
+    white-space: nowrap;
+}
+
+
+/* =====================================================
+   FARMER COUNT
+   ===================================================== */
+
+.farmer-count {
+    display: inline-block;
+
+    margin-left: 5px;
+
+    padding: 3px 9px;
+
+    border-radius: 15px;
+
+    background: #dff3e7;
+
+    color: #075c35;
+
+    font-size: 11px;
+
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   SEARCH BOX
+   ===================================================== */
+
+.search-box {
+    width: 210px;
+
+    height: 32px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 0 9px;
+
+    border:
+        1.5px solid #b9d9c6;
+
+    border-radius: 7px;
+
+    background: #ffffff;
+}
+
+
+.search-box svg {
+    width: 17px;
+    height: 17px;
+
+    min-width: 17px;
+    min-height: 17px;
+
+    flex-shrink: 0;
+
+    color: #087440;
+
+    display: block;
+}
+
+
+.search-box input {
+    width: 100%;
+
+    border: none;
+
+    outline: none;
+
+    font-size: 12px;
+
+    color: #174d34;
+}
+
+
+/* =====================================================
+   TABLE WRAPPER
+   ===================================================== */
+
+.table-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+
+    border-radius: 8px;
+
+    border:
+        1px solid #cbe8d7;
+}
+
+
+/* =====================================================
+   TABLE
+   ===================================================== */
+
+.farmer-table {
+    width: 100%;
+
+    min-width: 800px;
+
+    border-collapse: collapse;
+
+    background: #ffffff;
+}
+
+
+/* =====================================================
+   TABLE HEADER
+   ===================================================== */
+
+.farmer-table th {
+    height: 32px;
+
+    padding: 5px 7px;
+
+    background: #087440;
+
+    color: #ffffff;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    text-align: center;
+}
+
+
+/* =====================================================
+   TABLE DATA
+   ===================================================== */
+
+.farmer-table td {
+    height: 30px;
+
+    padding: 4px 7px;
+
+    border-bottom:
+        1px solid #dceee3;
+
+    text-align: center;
+
+    color: #315c45;
+
+    font-size: 12px;
+}
+
+
+.farmer-table tbody tr:hover {
+    background: #f3fbf6;
+}
+
+
+.farmer-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* =====================================================
+   FARMER CODE
+   ===================================================== */
+
+.farmer-code {
+    font-weight: 700;
+
+    color: #087440;
+}
+
+
+/* =====================================================
+   ACTION BUTTONS
+   ===================================================== */
+
+.action-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 5px;
+}
+
+
+.action-buttons button {
+    width: 27px;
+
+    height: 27px;
+
+    border-radius: 5px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    cursor: pointer;
+}
+
+
+.action-buttons svg {
+    width: 15px;
+    height: 15px;
+
+    min-width: 15px;
+    min-height: 15px;
+
+    display: block;
+}
+
+
+/* =====================================================
+   EDIT BUTTON
+   ===================================================== */
+
+.edit-button {
+    color: #075c35;
+
+    background: #e5f5eb;
+
+    border:
+        1px solid #a7d7b8;
+}
+
+
+.edit-button:hover {
+    background: #cdebd8;
+}
+
+
+/* =====================================================
+   DELETE BUTTON
+   ===================================================== */
+
+.delete-button {
+    color: #b42318;
+
+    background: #fff0ef;
+
+    border:
+        1px solid #f0b5b0;
+}
+
+
+.delete-button:hover {
+    background: #ffe0dd;
+}
+
+
+/* =====================================================
+   NO DATA
+   ===================================================== */
+
+.no-data {
+    height: 45px;
+
+    color: #7a9585 !important;
+
+    font-weight: 600;
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 700px) {
+
+    .add-farmer-page {
+        padding: 3px 6px;
+    }
+
+
+    .add-farmer-page::before {
+        height: 45px;
+
+        margin-bottom: 4px;
+    }
+
+
+    .farmer-main-container {
+        width: 100%;
+
+        padding: 10px;
+
+        border-radius: 10px;
+    }
+
+
+    .header-title-wrapper {
+        gap: 5px;
+    }
+
+
+    .leaf-icon {
+        width: 23px;
+        height: 23px;
+
+        min-width: 23px;
+        min-height: 23px;
+    }
+
+
+    .header-title-section h1 {
+        font-size: 24px;
+    }
+
+
+    .header-title-section p {
+        font-size: 11px;
+    }
+
+
+    .farmer-form {
+        grid-template-columns: 1fr;
+
+        padding: 12px;
+
+        row-gap: 8px;
+    }
+
+
+    .form-buttons {
+        flex-direction: row;
+    }
+
+
+    .form-buttons button {
+        width: 130px;
+    }
+
+
+    .farmers-top {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+
+    .search-box {
+        width: 100%;
+    }
+}
