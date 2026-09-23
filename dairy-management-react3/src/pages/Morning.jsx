@@ -101,6 +101,18 @@ function Morning() {
             ? (Number(litres) * Number(rate)).toFixed(2)
             : "0.00";
 
+    /* ================= CALCULATE DEGREE FROM FAT + SNF ================= */
+    useEffect(() => {
+        if (fat !== "" && snf !== "") {
+            const calculatedDegree =
+                4 * (Number(snf) - (0.21 * Number(fat)) - 0.36);
+
+            setDegree(calculatedDegree.toFixed(1));
+        } else {
+            setDegree("");
+        }
+    }, [fat, snf]);
+
     /* ================= CLEAR FORM ================= */
     const handleClear = () => {
         setFarmerCode("");
@@ -167,7 +179,7 @@ function Morning() {
 
         setRecords(updatedRecords);
         handleClear();
-        alert("Morning collection saved successfully.");
+       
     };
 
     /* ================= DELETE RECORD ================= */
@@ -306,7 +318,7 @@ function Morning() {
                         value={snf}
                         setValue={setSnf}
                         inputRef={snfRef}
-                        nextRef={degreeRef}
+                        nextRef={rateRef}
                         placeholder="Enter SNF"
                     />
 
@@ -314,10 +326,10 @@ function Morning() {
                         icon={degreeIcon}
                         label="Degree"
                         value={degree}
-                        setValue={setDegree}
                         inputRef={degreeRef}
                         nextRef={rateRef}
-                        placeholder="Enter Degree"
+                        placeholder="Auto Calculated"
+                        readOnly
                     />
 
                     <div className="milk-field">
@@ -330,6 +342,12 @@ function Morning() {
                             type="number"
                             value={rate}
                             onChange={(e) => setRate(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    handleSave();
+                                }
+                            }}
                             placeholder="Enter Rate"
                             min="0"
                             step="0.01"
@@ -552,7 +570,8 @@ function MilkField({
     setValue,
     inputRef,
     nextRef,
-    placeholder
+    placeholder,
+    readOnly = false
 }) {
     return (
         <div className="milk-field">
@@ -564,7 +583,11 @@ function MilkField({
                 ref={inputRef}
                 type="number"
                 value={value}
-                onChange={(e) => setValue(e.target.value)}
+                onChange={(e) => {
+                    if (!readOnly && setValue) {
+                        setValue(e.target.value);
+                    }
+                }}
                 onKeyDown={(e) => {
                     if (e.key === "Enter" && nextRef) {
                         e.preventDefault();
@@ -572,6 +595,7 @@ function MilkField({
                     }
                 }}
                 placeholder={placeholder}
+                readOnly={readOnly}
                 min="0"
                 step="0.01"
             />
