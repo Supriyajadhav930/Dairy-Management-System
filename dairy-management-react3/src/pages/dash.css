@@ -14,39 +14,59 @@
 ================================ */
 
 body {
-    min-height: 100vh;
+    margin: 0;
+    padding: 0;
 
     font-family: Arial, Helvetica, sans-serif;
-
-    background-image:
-        linear-gradient(
-            rgba(255, 255, 255, 0.72),
-            rgba(255, 255, 255, 0.72)
-        ),
-        url("../assets/Dashboard/background.jpg.jpeg");
-
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    padding: 20px;
 }
 
 
 /* ==============================
    PAGE
+   Dashboard-specific background
 ================================ */
 
 .page {
     width: 100%;
+    min-height: 100vh;
 
     display: flex;
     justify-content: center;
     align-items: center;
+
+    padding: 40px;
+
+    position: relative;
+    overflow: hidden;
+}
+
+
+/* ==============================
+   BLURRED DASHBOARD BACKGROUND
+================================ */
+
+.page::before {
+    content: "";
+
+    position: fixed;
+    inset: -10px;
+
+    background-image:
+        linear-gradient(
+            rgba(255, 255, 255, 0.50),
+            rgba(255, 255, 255, 0.50)
+        ),
+        url("../assets/Dashboard/background.jpeg");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    filter: blur(5px);
+
+    transform: scale(1.02);
+
+    z-index: -1;
 }
 
 
@@ -57,6 +77,8 @@ body {
 .dashboard-container {
     width: 90%;
     max-width: 1000px;
+
+    margin: 0 auto;
 
     background: rgba(255, 255, 255, 0.94);
 
@@ -291,8 +313,14 @@ body {
 
 @media (max-width: 900px) {
 
+    .page {
+        padding: 30px;
+    }
+
     .dashboard-container {
         width: 95%;
+
+        margin: 0 auto;
 
         padding: 30px 35px 35px;
     }
@@ -311,7 +339,9 @@ body {
 
     .icon-container {
         width: 52px;
+
         height: 52px;
+
         min-width: 52px;
 
         margin-right: 14px;
@@ -319,6 +349,7 @@ body {
 
     .icon-container img {
         width: 38px;
+
         height: 38px;
     }
 
@@ -334,20 +365,18 @@ body {
 
 @media (max-width: 600px) {
 
-    body {
-        padding: 10px;
+    .page {
+        min-height: 100vh;
+
+        padding: 15px 10px;
 
         align-items: flex-start;
     }
 
-    .page {
-        min-height: auto;
-
-        margin-top: 15px;
-    }
-
     .dashboard-container {
         width: 100%;
+
+        margin: 15px auto 0;
 
         padding: 25px 15px 30px;
 
@@ -396,6 +425,7 @@ body {
 
     .icon-container {
         width: 48px;
+
         height: 48px;
 
         min-width: 48px;
@@ -405,6 +435,7 @@ body {
 
     .icon-container img {
         width: 34px;
+
         height: 34px;
     }
 
@@ -434,6 +465,7 @@ body {
 
     .icon-container {
         width: 44px;
+
         height: 44px;
 
         min-width: 44px;
@@ -441,6 +473,7 @@ body {
 
     .icon-container img {
         width: 30px;
+
         height: 30px;
     }
 

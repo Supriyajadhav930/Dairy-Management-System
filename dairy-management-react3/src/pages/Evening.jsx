@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./evening.css";
 
 /* ================= IMAGE IMPORTS ================= */
@@ -24,37 +24,19 @@ import farmerListIcon from "../assets/Evening_collection_img/farmer_list.png";
 import noRecordsIcon from "../assets/Evening_collection_img/no_records_document.png";
 import recordsCalendarIcon from "../assets/Evening_collection_img/records_calendar.png";
 
-
 /* ================= FARMER DATA ================= */
 
 const farmers = [
-    {
-        code: "F001",
-        name: "Ramesh Patil"
-    },
-    {
-        code: "F002",
-        name: "Suresh Jadhav"
-    },
-    {
-        code: "F003",
-        name: "Ganesh Shinde"
-    },
-    {
-        code: "F004",
-        name: "Mahesh Pawar"
-    },
-    {
-        code: "F005",
-        name: "Vijay Chavan"
-    }
+    { code: "F001", name: "Ramesh Patil" },
+    { code: "F002", name: "Suresh Jadhav" },
+    { code: "F003", name: "Ganesh Shinde" },
+    { code: "F004", name: "Mahesh Pawar" },
+    { code: "F005", name: "Vijay Chavan" }
 ];
-
 
 /* ================= MAIN COMPONENT ================= */
 
 function Evening() {
-
     const [farmerCode, setFarmerCode] = useState("");
     const [farmerName, setFarmerName] = useState("");
 
@@ -73,11 +55,14 @@ function Evening() {
 
     const [recordsDate, setRecordsDate] = useState("");
 
+    const litresRef = useRef(null);
+    const fatRef = useRef(null);
+    const snfRef = useRef(null);
+    const rateRef = useRef(null);
 
     /* ================= SET DATE + LOAD RECORDS ================= */
 
     useEffect(() => {
-
         const today = new Date();
 
         const year = today.getFullYear();
@@ -89,38 +74,42 @@ function Evening() {
         setDate(todayDate);
         setRecordsDate(todayDate);
 
-        const savedRecords =
-            JSON.parse(
-                localStorage.getItem("eveningCollectionRecords")
-            ) || [];
+        /* ================= LOAD EVENING RECORDS FROM BACKEND ================= */
 
-        setRecords(savedRecords);
+        fetch("http://localhost:5000/api/collections?type=evening")
+            .then((response) => response.json())
+            .then((data) => {
+                const formattedRecords = data.map((record) => ({
+                    ...record,
+                    id: record._id,
+                    code: record.farmerCode
+                }));
 
+                setRecords(formattedRecords);
+            })
+            .catch((error) => {
+                console.error(
+                    "Error loading evening records:",
+                    error
+                );
+            });
     }, []);
-
 
     /* ================= FORMAT DATE ================= */
 
     const formatDate = (dateString) => {
-
-        if (!dateString) {
-            return "";
-        }
+        if (!dateString) return "";
 
         const parts = dateString.split("-");
 
-        if (parts.length !== 3) {
-            return dateString;
-        }
+        if (parts.length !== 3) return dateString;
 
         return `${parts[2]}/${parts[1]}/${parts[0]}`;
     };
 
-
     /* ================= SEARCH FARMER ================= */
 
     const handleFarmerSearch = () => {
-
         const code = farmerCode.trim().toUpperCase();
 
         if (!code) {
@@ -133,17 +122,13 @@ function Evening() {
         );
 
         if (!farmer) {
-
             alert("Farmer not found.");
-
             setFarmerName("");
-
             return;
         }
 
         setFarmerName(farmer.name);
     };
-
 
     /* ================= CALCULATE AMOUNT ================= */
 
@@ -152,14 +137,29 @@ function Evening() {
             ? (Number(litres) * Number(rate)).toFixed(2)
             : "0.00";
 
+    /* ================= CALCULATE DEGREE FROM FAT + SNF ================= */
+
+    useEffect(() => {
+        if (fat !== "" && snf !== "") {
+            const calculatedDegree =
+                4 *
+                (
+                    Number(snf) -
+                    (0.21 * Number(fat)) -
+                    0.36
+                );
+
+            setDegree(calculatedDegree.toFixed(1));
+        } else {
+            setDegree("");
+        }
+    }, [fat, snf]);
 
     /* ================= CLEAR FORM ================= */
 
     const handleClear = () => {
-
         setFarmerCode("");
         setFarmerName("");
-
         setLitres("");
         setFat("");
         setSnf("");
@@ -167,11 +167,9 @@ function Evening() {
         setRate("");
     };
 
-
     /* ================= SAVE RECORD ================= */
 
-    const handleSave = () => {
-
+    const handleSave = async () => {
         if (!farmerCode.trim()) {
             alert("Please enter Farmer Code.");
             return;
@@ -207,459 +205,451 @@ function Evening() {
             return;
         }
 
-
         const newRecord = {
-            id: Date.now(),
-
-            code: farmerCode.trim().toUpperCase(),
-
+            type: "evening",
+            farmerCode: farmerCode.trim().toUpperCase(),
             farmerName: farmerName,
-
             litres: Number(litres),
-
             fat: Number(fat),
-
             snf: Number(snf),
-
             degree: Number(degree),
-
             rate: Number(rate),
-
             amount: Number(amount),
-
             date: date
         };
 
+        try {
+            const response = await fetch(
+                "http://localhost:5000/api/collections",
+                {
+                    method: "POST",
 
-        const oldRecords =
-            JSON.parse(
-                localStorage.getItem(
-                    "eveningCollectionRecords"
-                )
-            ) || [];
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
 
+                    body: JSON.stringify(newRecord)
+                }
+            );
 
-        const updatedRecords = [
-            ...oldRecords,
-            newRecord
-        ];
+            const result = await response.json();
 
+            if (!response.ok) {
+                throw new Error(
+                    result.message ||
+                    "Failed to save collection record"
+                );
+            }
 
-        localStorage.setItem(
-            "eveningCollectionRecords",
-            JSON.stringify(updatedRecords)
-        );
+            const savedRecord = {
+                ...result.data,
+                id: result.data._id,
+                code: result.data.farmerCode
+            };
 
+            setRecords((previousRecords) => [
+                ...previousRecords,
+                savedRecord
+            ]);
 
-        setRecords(updatedRecords);
+            alert("Evening collection saved successfully!");
 
-        handleClear();
+            handleClear();
 
-        alert(
-            "Evening collection saved successfully."
-        );
+        } catch (error) {
+            console.error(
+                "Error saving evening record:",
+                error
+            );
+
+            alert("Failed to save evening collection.");
+        }
     };
 
+    /* ================= DELETE RECORD ================= */
 
+  const handleDeleteRecord = async (id) => {
+    if (
+        !window.confirm(
+            "Are you sure you want to delete this record?"
+        )
+    ) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `http://localhost:5000/api/collections/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message ||
+                    "Failed to delete collection record"
+            );
+        }
+
+        setRecords((previousRecords) =>
+            previousRecords.filter(
+                (record) => record.id !== id
+            )
+        );
+
+        alert(
+            "Evening collection record deleted successfully!"
+        );
+
+    } catch (error) {
+        console.error(
+            "Error deleting evening record:",
+            error
+        );
+
+        alert(
+            "Failed to delete evening collection record."
+        );
+    }
+};
     /* ================= OPEN FARMER MODAL ================= */
 
     const openFarmerModal = () => {
-
         setFarmerSearch("");
-
         setShowModal(true);
     };
-
 
     /* ================= CLOSE FARMER MODAL ================= */
 
     const closeFarmerModal = () => {
-
         setShowModal(false);
     };
-
 
     /* ================= SELECT FARMER ================= */
 
     const selectFarmer = (farmer) => {
-
         setFarmerCode(farmer.code);
-
         setFarmerName(farmer.name);
-
         setShowModal(false);
     };
-
 
     /* ================= FILTER FARMERS ================= */
 
     const filteredFarmers = farmers.filter((farmer) => {
-
-        const search = farmerSearch
-            .trim()
-            .toLowerCase();
+        const search = farmerSearch.trim().toLowerCase();
 
         return (
-            farmer.code
-                .toLowerCase()
-                .includes(search) ||
-
-            farmer.name
-                .toLowerCase()
-                .includes(search)
+            farmer.code.toLowerCase().includes(search) ||
+            farmer.name.toLowerCase().includes(search)
         );
     });
-
 
     /* ================= FILTER RECORDS ================= */
 
     const todayRecords = records.filter(
-        (record) =>
-            record.date === recordsDate
+        (record) => record.date === recordsDate
     );
-
 
     /* ================= JSX ================= */
 
     return (
-
         <div className="container">
 
-            {/* ================= TITLE ================= */}
+            {/* ================= OUTER WHITE PAGE CARD ================= */}
 
-            <h1>
-                Evening Collection
-            </h1>
+            <div className="page-outer-card">
 
+                {/* ================= TITLE ================= */}
 
-            {/* ================= COLLECTION CARD ================= */}
+                <h1 className="page-main-heading">
+                    Evening Collection
+                </h1>
 
-            <div className="collection-card">
+                {/* ================= COLLECTION CARD ================= */}
 
-                {/* ================= TOP ROW ================= */}
+                <div className="collection-card">
 
-                <div className="top-row">
+                    {/* ================= TOP ROW ================= */}
 
-                    {/* FARMER CODE */}
+                    <div className="top-row">
 
-                    <div className="field-group">
+                        {/* FARMER CODE */}
 
-                        <label>
+                        <div className="field-group">
 
-                            <img
-                                src={farmerCodeIcon}
-                                alt="Farmer Code"
-                            />
+                            <label>
+                                <img
+                                    src={farmerCodeIcon}
+                                    alt="Farmer Code"
+                                />
 
-                            Farmer Code
+                                Farmer Code
+                            </label>
 
-                        </label>
+                            <div className="input-wrapper">
 
+                                <input
+                                    type="text"
+                                    value={farmerCode}
+                                    onChange={(e) =>
+                                        setFarmerCode(
+                                            e.target.value
+                                        )
+                                    }
+                                    placeholder="Enter Farmer Code"
+                                />
 
-                        <div className="input-wrapper">
+                                <button
+                                    type="button"
+                                    className="farmer-search-btn"
+                                    onClick={handleFarmerSearch}
+                                >
+                                    <img
+                                        src={searchIcon}
+                                        alt="Search"
+                                    />
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        {/* FARMER NAME */}
+
+                        <div className="field-group">
+
+                            <label>
+                                <img
+                                    src={farmerNameIcon}
+                                    alt="Farmer Name"
+                                />
+
+                                Farmer Name
+                            </label>
 
                             <input
                                 type="text"
-                                value={farmerCode}
-                                onChange={(e) =>
-                                    setFarmerCode(
-                                        e.target.value
-                                    )
-                                }
-                                placeholder="Enter farmer code"
+                                value={farmerName}
+                                readOnly
+                                placeholder="(Name will appear here)"
                             />
 
+                        </div>
 
-                            <button
-                                type="button"
-                                className="farmer-search-btn"
-                                onClick={
-                                    handleFarmerSearch
-                                }
-                            >
+                        {/* DATE */}
 
+                        <div className="field-group">
+
+                            <label>
                                 <img
-                                    src={searchIcon}
-                                    alt="Search"
+                                    src={calendarIcon}
+                                    alt="Date"
                                 />
 
-                            </button>
+                                Date
+                            </label>
+
+                            <div className="date-wrapper">
+
+                                <input
+                                    type="date"
+                                    value={date}
+                                    onChange={(e) =>
+                                        setDate(
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+                                <img
+                                    src={dateChevronIcon}
+                                    alt=""
+                                />
+
+                            </div>
 
                         </div>
 
                     </div>
 
+                    {/* ================= MILK DETAILS ================= */}
 
-                    {/* FARMER NAME */}
+                    <div className="milk-details">
 
-                    <div className="field-group">
-
-                        <label>
-
-                            <img
-                                src={farmerNameIcon}
-                                alt="Farmer Name"
-                            />
-
-                            Farmer Name
-
-                        </label>
-
-
-                        <input
-                            type="text"
-                            value={farmerName}
-                            readOnly
-                            placeholder="Farmer name"
+                        <MilkField
+                            icon={litresIcon}
+                            label="Litres (L)"
+                            value={litres}
+                            setValue={setLitres}
+                            inputRef={litresRef}
+                            nextRef={fatRef}
+                            placeholder="Enter Litres"
                         />
 
-                    </div>
+                        <MilkField
+                            icon={fatIcon}
+                            label="Fat"
+                            value={fat}
+                            setValue={setFat}
+                            inputRef={fatRef}
+                            nextRef={snfRef}
+                            placeholder="Enter Fat"
+                        />
 
+                        <MilkField
+                            icon={snfIcon}
+                            label="SNF"
+                            value={snf}
+                            setValue={setSnf}
+                            inputRef={snfRef}
+                            nextRef={rateRef}
+                            placeholder="Enter SNF"
+                        />
 
-                    {/* DATE */}
+                        <MilkField
+                            icon={degreeIcon}
+                            label="Degree"
+                            value={degree}
+                            placeholder="Auto Calculated"
+                            readOnly
+                        />
 
-                    <div className="field-group">
+                        <MilkField
+                            icon={rateIcon}
+                            label="Rate (₹/L)"
+                            value={rate}
+                            setValue={setRate}
+                            inputRef={rateRef}
+                            placeholder="Enter Rate"
+                            onEnter={handleSave}
+                        />
 
-                        <label>
+                        {/* AMOUNT */}
 
-                            <img
-                                src={calendarIcon}
-                                alt="Date"
-                            />
+                        <div className="milk-field">
 
-                            Date
+                            <label>
+                                <img
+                                    src={amountIcon}
+                                    alt="Amount"
+                                />
 
-                        </label>
-
-
-                        <div className="date-wrapper">
+                                Amount (₹)
+                            </label>
 
                             <input
-                                type="date"
-                                value={date}
-                                onChange={(e) =>
-                                    setDate(
-                                        e.target.value
-                                    )
+                                type="text"
+                                value={
+                                    amount === "0.00"
+                                        ? ""
+                                        : amount
                                 }
-                            />
-
-                            <img
-                                src={dateChevronIcon}
-                                alt=""
+                                placeholder="Auto Calculated"
+                                readOnly
                             />
 
                         </div>
 
                     </div>
 
-                </div>
+                    {/* ================= ACTION BUTTONS ================= */}
 
+                    <div className="action-buttons">
 
-                {/* ================= MILK DETAILS ================= */}
-
-                <div className="milk-details-title">
-                    Milk Details
-                </div>
-
-
-                <div className="milk-details">
-
-                    <MilkField
-                        icon={litresIcon}
-                        label="Litres"
-                        value={litres}
-                        setValue={setLitres}
-                    />
-
-
-                    <MilkField
-                        icon={fatIcon}
-                        label="Fat"
-                        value={fat}
-                        setValue={setFat}
-                    />
-
-
-                    <MilkField
-                        icon={snfIcon}
-                        label="SNF"
-                        value={snf}
-                        setValue={setSnf}
-                    />
-
-
-                    <MilkField
-                        icon={degreeIcon}
-                        label="Degree"
-                        value={degree}
-                        setValue={setDegree}
-                    />
-
-
-                    <MilkField
-                        icon={rateIcon}
-                        label="Rate (₹/L)"
-                        value={rate}
-                        setValue={setRate}
-                    />
-
-
-                    {/* AMOUNT */}
-
-                    <div className="milk-field">
-
-                        <label>
-
+                        <button
+                            type="button"
+                            className="save-btn"
+                            onClick={handleSave}
+                        >
                             <img
-                                src={amountIcon}
-                                alt="Amount"
+                                src={saveIcon}
+                                alt="Save"
                             />
 
-                            Amount (₹)
+                            Save
+                        </button>
 
-                        </label>
+                        <button
+                            type="button"
+                            className="clear-btn"
+                            onClick={handleClear}
+                        >
+                            <img
+                                src={clearIcon}
+                                alt="Clear"
+                            />
 
+                            Clear
+                        </button>
 
-                        <input
-                            type="text"
-                            value={amount}
-                            readOnly
-                        />
+                        <button
+                            type="button"
+                            className="farmer-list-btn"
+                            onClick={openFarmerModal}
+                        >
+                            <img
+                                src={farmerListIcon}
+                                alt="Farmer List"
+                            />
 
-                    </div>
-
-                </div>
-
-
-                {/* ================= ACTION BUTTONS ================= */}
-
-                <div className="action-buttons">
-
-                    <button
-                        type="button"
-                        className="save-btn"
-                        onClick={handleSave}
-                    >
-
-                        <img
-                            src={saveIcon}
-                            alt="Save"
-                        />
-
-                        Save
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        className="clear-btn"
-                        onClick={handleClear}
-                    >
-
-                        <img
-                            src={clearIcon}
-                            alt="Clear"
-                        />
-
-                        Clear
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        className="farmer-list-btn"
-                        onClick={
-                            openFarmerModal
-                        }
-                    >
-
-                        <img
-                            src={farmerListIcon}
-                            alt="Farmer List"
-                        />
-
-                        Farmer List
-
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            {/* ================= RECORDS SECTION ================= */}
-
-            <div className="records-section">
-
-                <div className="records-header">
-
-                    <div className="records-title">
-
-                        <img
-                            src={noRecordsIcon}
-                            alt="Records"
-                        />
-
-                        <h2>
-                            Today's Records
-                        </h2>
-
-                    </div>
-
-
-                    <div className="records-date">
-
-                        <img
-                            src={recordsCalendarIcon}
-                            alt="Date"
-                        />
-
-                        <input
-                            type="date"
-                            value={recordsDate}
-                            onChange={(e) =>
-                                setRecordsDate(
-                                    e.target.value
-                                )
-                            }
-                        />
+                            Farmer List
+                        </button>
 
                     </div>
 
                 </div>
 
+                {/* ================= RECORDS SECTION ================= */}
 
-                {/* TOTAL */}
+                <div className="records-section">
 
-                <div className="total-records">
+                    <div className="records-header">
 
-                    Total Records:{" "}
-                    {todayRecords.length}
+                        <div className="records-title">
 
-                </div>
+                            <img
+                                src={noRecordsIcon}
+                                alt="Records"
+                            />
 
+                            <h2>
+                                Today's Records
+                            </h2>
 
-                {/* ================= TABLE / NO RECORDS ================= */}
+                        </div>
 
-                {todayRecords.length === 0 ? (
+                        <div className="records-summary">
 
-                    <div className="no-records">
+                            <div className="records-date">
 
-                        <img
-                            src={noRecordsIcon}
-                            alt="No records"
-                        />
+                                <img
+                                    src={recordsCalendarIcon}
+                                    alt="Date"
+                                />
 
-                        <p>
-                            No records found
-                        </p>
+                                <span>
+                                    Date:
+                                </span>
+
+                                <strong>
+                                    {formatDate(recordsDate)}
+                                </strong>
+
+                            </div>
+
+                            <div className="total-records">
+                                Total Records:{" "}
+                                {todayRecords.length}
+                            </div>
+
+                        </div>
 
                     </div>
 
-                ) : (
+                    {/* ================= TABLE ================= */}
 
                     <div className="table-container">
 
@@ -670,92 +660,157 @@ function Evening() {
                                 <tr>
 
                                     <th>Sr. No.</th>
-
                                     <th>Code</th>
-
                                     <th>Farmer Name</th>
-
                                     <th>Litres (L)</th>
-
                                     <th>Fat</th>
-
                                     <th>SNF</th>
-
                                     <th>Degree</th>
-
                                     <th>Rate (₹/L)</th>
-
                                     <th>Amount (₹)</th>
-
-                                    <th>Date</th>
+                                    <th>Action</th>
 
                                 </tr>
 
                             </thead>
 
-
                             <tbody>
 
-                                {todayRecords.map(
-                                    (record, index) => (
+                                {todayRecords.length > 0 ? (
 
-                                        <tr
-                                            key={
-                                                record.id
-                                            }
-                                        >
+                                    todayRecords.map(
+                                        (record, index) => (
 
-                                            <td>
-                                                {index + 1}
-                                            </td>
+                                            <tr
+                                                key={record.id}
+                                            >
 
-                                            <td>
-                                                {record.code}
-                                            </td>
+                                                <td>
+                                                    {index + 1}
+                                                </td>
 
-                                            <td>
-                                                {record.farmerName}
-                                            </td>
+                                                <td>
+                                                    {record.code}
+                                                </td>
 
-                                            <td>
-                                                {record.litres}
-                                            </td>
+                                                <td>
+                                                    {record.farmerName}
+                                                </td>
 
-                                            <td>
-                                                {record.fat}
-                                            </td>
+                                                <td>
+                                                    {record.litres}
+                                                </td>
 
-                                            <td>
-                                                {record.snf}
-                                            </td>
+                                                <td>
+                                                    {record.fat}
+                                                </td>
 
-                                            <td>
-                                                {record.degree}
-                                            </td>
+                                                <td>
+                                                    {record.snf}
+                                                </td>
 
-                                            <td>
-                                                ₹
-                                                {Number(
-                                                    record.rate
-                                                ).toFixed(2)}
-                                            </td>
+                                                <td>
+                                                    {record.degree}
+                                                </td>
 
-                                            <td>
-                                                ₹
-                                                {Number(
-                                                    record.amount
-                                                ).toFixed(2)}
-                                            </td>
+                                                <td>
+                                                    ₹
+                                                    {Number(
+                                                        record.rate
+                                                    ).toFixed(2)}
+                                                </td>
 
-                                            <td>
-                                                {formatDate(
-                                                    record.date
-                                                )}
-                                            </td>
+                                                <td>
+                                                    ₹
+                                                    {Number(
+                                                        record.amount
+                                                    ).toFixed(2)}
+                                                </td>
 
-                                        </tr>
+                                                <td>
 
+                                                    <button
+                                                        type="button"
+                                                        className="table-delete-btn"
+                                                        title="Delete record"
+                                                        onClick={() =>
+                                                            handleDeleteRecord(
+                                                                record.id
+                                                            )
+                                                        }
+                                                    >
+
+                                                        <svg
+                                                            width="16"
+                                                            height="16"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="2"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                        >
+
+                                                            <polyline points="3 6 5 6 21 6"></polyline>
+
+                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+
+                                                            <line
+                                                                x1="10"
+                                                                y1="11"
+                                                                x2="10"
+                                                                y2="17"
+                                                            ></line>
+
+                                                            <line
+                                                                x1="14"
+                                                                y1="11"
+                                                                x2="14"
+                                                                y2="17"
+                                                            ></line>
+
+                                                        </svg>
+
+                                                    </button>
+
+                                                </td>
+
+                                            </tr>
+
+                                        )
                                     )
+
+                                ) : (
+
+                                    <tr className="empty-record-row">
+
+                                        <td colSpan="10">
+
+                                            <div className="no-records">
+
+                                                <div className="no-records-decoration">
+
+                                                    <span></span>
+
+                                                    <img
+                                                        src={noRecordsIcon}
+                                                        alt="No records"
+                                                    />
+
+                                                    <span></span>
+
+                                                </div>
+
+                                                <p>
+                                                    No records found
+                                                </p>
+
+                                            </div>
+
+                                        </td>
+
+                                    </tr>
+
                                 )}
 
                             </tbody>
@@ -764,10 +819,9 @@ function Evening() {
 
                     </div>
 
-                )}
+                </div>
 
             </div>
-
 
             {/* ================= FARMER MODAL ================= */}
 
@@ -778,7 +832,8 @@ function Evening() {
                     onClick={(e) => {
 
                         if (
-                            e.target === e.currentTarget
+                            e.target ===
+                            e.currentTarget
                         ) {
                             closeFarmerModal();
                         }
@@ -794,19 +849,15 @@ function Evening() {
                                 Farmer List
                             </h2>
 
-
                             <button
                                 type="button"
                                 className="close-modal"
-                                onClick={
-                                    closeFarmerModal
-                                }
+                                onClick={closeFarmerModal}
                             >
                                 ×
                             </button>
 
                         </div>
-
 
                         <div className="farmer-search">
 
@@ -823,7 +874,6 @@ function Evening() {
 
                         </div>
 
-
                         <div className="farmer-list">
 
                             {filteredFarmers.length > 0 ? (
@@ -833,9 +883,7 @@ function Evening() {
 
                                         <div
                                             className="farmer-item"
-                                            key={
-                                                farmer.code
-                                            }
+                                            key={farmer.code}
                                             onClick={() =>
                                                 selectFarmer(
                                                     farmer
@@ -880,18 +928,20 @@ function Evening() {
     );
 }
 
-
 /* ================= MILK FIELD COMPONENT ================= */
 
 function MilkField({
     icon,
     label,
     value,
-    setValue
+    setValue,
+    inputRef,
+    nextRef,
+    placeholder,
+    readOnly = false,
+    onEnter
 }) {
-
     return (
-
         <div className="milk-field">
 
             <label>
@@ -905,14 +955,43 @@ function MilkField({
 
             </label>
 
-
             <input
+                ref={inputRef}
                 type="number"
                 value={value}
-                onChange={(e) =>
-                    setValue(e.target.value)
-                }
-                placeholder="0.00"
+                onChange={(e) => {
+
+                    if (
+                        !readOnly &&
+                        setValue
+                    ) {
+                        setValue(
+                            e.target.value
+                        );
+                    }
+
+                }}
+                onKeyDown={(e) => {
+
+                    if (e.key === "Enter") {
+
+                        e.preventDefault();
+
+                        if (onEnter) {
+
+                            onEnter();
+
+                        } else if (nextRef) {
+
+                            nextRef.current?.focus();
+
+                        }
+
+                    }
+
+                }}
+                placeholder={placeholder}
+                readOnly={readOnly}
                 min="0"
                 step="0.01"
             />
@@ -920,6 +999,5 @@ function MilkField({
         </div>
     );
 }
-
 
 export default Evening;

@@ -1,5 +1,6 @@
 import "./dash.css";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import morningCollection from "../assets/Dashboard/morning_collection.png";
 import eveningCollection from "../assets/Dashboard/evening_collection.png";
@@ -17,6 +18,8 @@ function openPage(pageName) {
 }
 
 function Dash() {
+
+    const navigate = useNavigate();
 
     // =========================
     // BACKEND CONNECTION
@@ -57,7 +60,7 @@ function Dash() {
 
                         <button
                             className="dashboard-card"
-                            onClick={() => openPage("Morning Collection")}
+                            onClick={() => navigate("/morning")}
                         >
                             <div className="icon-container">
                                 <img
@@ -72,7 +75,7 @@ function Dash() {
 
                         <button
                             className="dashboard-card"
-                            onClick={() => openPage("Evening Collection")}
+                            onClick={() => navigate("/evening")}
                         >
                             <div className="icon-container">
                                 <img

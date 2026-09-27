@@ -1,5 +1,6 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const router = express.Router();
@@ -122,16 +123,29 @@ router.post("/login", async (req, res) => {
             });
         }
 
-        // 6. Login successful
-        res.status(200).json({
-            message: "Login successful",
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-            },
-        });
+        // 6. Generate JWT token
+const token = jwt.sign(
+    {
+        userId: user._id,
+        email: user.email
+    },
+    process.env.JWT_SECRET,
+    {
+        expiresIn: "1h"
+    }
+);
+
+// 7. Login successful
+res.status(200).json({
+    message: "Login successful",
+    token,
+    user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+    },
+});
 
     } catch (error) {
         console.error("Login error:", error);

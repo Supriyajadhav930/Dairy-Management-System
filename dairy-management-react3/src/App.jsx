@@ -6,6 +6,8 @@ import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dash from "./pages/dash"; // Import the dashboard component
+import Morning from "./pages/Morning";
+import Evening from "./pages/Evening";
 
 function App() {
   return (
@@ -16,7 +18,9 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/dashboard" element={<Dash />} /> {/* Add the dashboard route */}
+        <Route path="/dashboard" element={<Dash />} /> 
+        <Route path="/morning" element={<Morning />} />
+        <Route path="/evening" element={<Evening />} />
       </Routes>
     </HashRouter>
   );

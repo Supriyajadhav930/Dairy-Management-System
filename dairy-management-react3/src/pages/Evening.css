@@ -8,21 +8,33 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     background: #f4faf6;
     color: #075c35;
-    padding: 18px;
+    padding: 20px 0;
 }
 
 /* ================= MAIN CONTAINER ================= */
 
 .container {
-    max-width: 1380px;
+    width: 100%;
+    max-width: 1180px;
     margin: 0 auto;
 }
 
-/* ================= TITLE ================= */
+/* ================= OUTER WHITE PAGE CARD ================= */
 
-h1 {
+.page-outer-card {
+    width: 100%;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 25px 22px 30px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* ================= MAIN HEADING (OUTSIDE CARD) ================= */
+
+.page-main-heading {
     text-align: center;
-    font-size: 42px;
+    font-size: 34px;
+    line-height: 1.2;
     color: #075c35;
     margin-bottom: 22px;
     font-weight: 700;
@@ -31,11 +43,12 @@ h1 {
 /* ================= COLLECTION CARD ================= */
 
 .collection-card {
-    background: rgba(255, 255, 255, 0.95);
+    width: 100%;
+    background: #ffffff;
     border: 1px solid #d5e8dc;
-    border-radius: 20px;
-    padding: 22px;
-    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.08);
+    border-radius: 18px;
+    padding: 22px 24px 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     margin-bottom: 25px;
 }
 
@@ -43,9 +56,9 @@ h1 {
 
 .top-row {
     display: grid;
-    grid-template-columns: 1fr 1.1fr 0.95fr;
-    gap: 28px;
-    margin-bottom: 25px;
+    grid-template-columns: 1fr 1.15fr 0.95fr;
+    gap: 24px;
+    margin-bottom: 22px;
 }
 
 /* ================= FIELD GROUP ================= */
@@ -59,14 +72,14 @@ h1 {
     align-items: center;
     gap: 8px;
     color: #075c35;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
     margin-bottom: 8px;
 }
 
 .field-group label img {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     object-fit: contain;
 }
 
@@ -81,13 +94,13 @@ h1 {
 .input-wrapper input,
 .field-group > input {
     width: 100%;
-    height: 52px;
+    height: 50px;
     padding: 0 14px;
     border: 1px solid #cbded2;
     border-radius: 10px;
     background: #ffffff;
     color: #222;
-    font-size: 16px;
+    font-size: 15px;
     outline: none;
     transition: 0.2s ease;
 }
@@ -95,19 +108,19 @@ h1 {
 .input-wrapper input:focus,
 .field-group > input:focus {
     border-color: #16804b;
-    box-shadow: 0 0 0 3px rgba(22, 128, 75, 0.1);
+    box-shadow: 0 0 0 3px rgba(22, 128, 75, 0.08);
 }
 
 /* ================= SEARCH BUTTON ================= */
 
 .farmer-search-btn {
-    width: 58px;
-    height: 52px;
-    min-width: 58px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
     margin-left: 8px;
-    border: none;
-    border-radius: 10px;
-    background: #087a43;
+    border: 1px solid #b9dcc7;
+    border-radius: 8px;
+    background: #ffffff;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -116,12 +129,12 @@ h1 {
 }
 
 .farmer-search-btn:hover {
-    background: #056536;
+    background: #eef8f1;
 }
 
 .farmer-search-btn img {
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     object-fit: contain;
 }
 
@@ -134,13 +147,13 @@ h1 {
 
 .date-wrapper input {
     width: 100%;
-    height: 52px;
+    height: 50px;
     padding: 0 45px 0 14px;
     border: 1px solid #cbded2;
     border-radius: 10px;
     background: #ffffff;
     color: #222;
-    font-size: 16px;
+    font-size: 15px;
     outline: none;
 }
 
@@ -153,19 +166,10 @@ h1 {
     right: 14px;
     top: 50%;
     transform: translateY(-50%);
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     object-fit: contain;
     pointer-events: none;
-}
-
-/* ================= MILK DETAILS TITLE ================= */
-
-.milk-details-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #075c35;
-    margin-bottom: 15px;
 }
 
 /* ================= MILK DETAILS ================= */
@@ -177,11 +181,14 @@ h1 {
     margin-bottom: 22px;
 }
 
+/* ================= MILK FIELD ================= */
+
 .milk-field {
     background: #f5fbf5;
     border: 1px solid #d5e8dc;
-    border-radius: 12px;
-    padding: 12px;
+    border-radius: 11px;
+    padding: 11px 12px;
+    min-width: 0;
 }
 
 .milk-field label {
@@ -192,11 +199,12 @@ h1 {
     font-size: 15px;
     font-weight: 700;
     margin-bottom: 8px;
+    white-space: nowrap;
 }
 
 .milk-field label img {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     object-fit: contain;
 }
 
@@ -224,12 +232,13 @@ h1 {
     align-items: center;
     gap: 15px;
     flex-wrap: wrap;
+    margin-top: 6px;
 }
 
 .action-buttons button {
+    width: 205px;
     min-width: 205px;
-    height: 52px;
-    border: none;
+    height: 50px;
     border-radius: 10px;
     padding: 0 18px;
     font-size: 16px;
@@ -243,40 +252,41 @@ h1 {
 }
 
 .action-buttons button img {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     object-fit: contain;
 }
 
-/* Save */
+/* ================= SAVE ================= */
 
 .save-btn {
-    background: #087a43;
-    color: white;
+    background: #ffffff;
+    color: #075c35;
+    border: 1px solid #b9dcc7;
 }
 
 .save-btn:hover {
-    background: #056536;
+    background: #f0f9f3;
 }
 
-/* Clear */
+/* ================= CLEAR ================= */
 
 .clear-btn {
-    background: #e9f4ec;
+    background: #ffffff;
     color: #075c35;
-    border: 1px solid #cbded2 !important;
+    border: 1px solid #cbded2;
 }
 
 .clear-btn:hover {
-    background: #dceee2;
+    background: #f0f9f3;
 }
 
-/* Farmer List */
+/* ================= FARMER LIST ================= */
 
 .farmer-list-btn {
     background: #ffffff;
     color: #075c35;
-    border: 1px solid #9fc8ae !important;
+    border: 1px solid #9fc8ae;
 }
 
 .farmer-list-btn:hover {
@@ -286,11 +296,12 @@ h1 {
 /* ================= RECORDS SECTION ================= */
 
 .records-section {
-    background: rgba(255, 255, 255, 0.95);
+    width: 100%;
+    background: #ffffff;
     border: 1px solid #d5e8dc;
-    border-radius: 20px;
-    padding: 22px;
-    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.08);
+    border-radius: 18px;
+    padding: 22px 24px 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
 /* ================= RECORDS HEADER ================= */
@@ -300,8 +311,7 @@ h1 {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 15px;
+    gap: 20px;
 }
 
 .records-title {
@@ -319,35 +329,38 @@ h1 {
 .records-title h2 {
     color: #075c35;
     font-size: 24px;
+    font-weight: 700;
 }
 
-/* ================= RECORDS DATE ================= */
+/* ================= RECORDS SUMMARY ================= */
+
+.records-summary {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
 
 .records-date {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
+    color: #075c35;
+    font-size: 14px;
 }
 
 .records-date img {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     object-fit: contain;
 }
 
-.records-date input {
-    height: 42px;
-    padding: 0 10px;
-    border: 1px solid #cbded2;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #333;
-    font-size: 14px;
-    outline: none;
+.records-date span {
+    color: #075c35;
 }
 
-.records-date input:focus {
-    border-color: #16804b;
+.records-date strong {
+    color: #075c35;
+    font-weight: 700;
 }
 
 /* ================= TOTAL RECORDS ================= */
@@ -356,12 +369,11 @@ h1 {
     background: #edf8f0;
     border: 1px solid #d2e8d8;
     border-radius: 10px;
-    padding: 10px 15px;
+    padding: 10px 16px;
     color: #075c35;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
-    margin-bottom: 15px;
-    display: inline-block;
+    white-space: nowrap;
 }
 
 /* ================= TABLE ================= */
@@ -369,15 +381,19 @@ h1 {
 .table-container {
     width: 100%;
     overflow-x: auto;
-    border-radius: 12px;
+    border-radius: 11px;
 }
 
 .records-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     min-width: 1000px;
-    background: white;
+    background: #ffffff;
+    overflow: hidden;
 }
+
+/* ================= TABLE HEADER ================= */
 
 .records-table thead {
     background: #e8f5eb;
@@ -388,46 +404,87 @@ h1 {
     font-size: 14px;
     font-weight: 700;
     padding: 14px 10px;
-    border: 1px solid #d5e8dc;
+    border-top: 1px solid #d5e8dc;
+    border-bottom: 1px solid #d5e8dc;
+    border-right: 1px solid #d5e8dc;
     text-align: center;
     white-space: nowrap;
 }
+
+.records-table th:first-child {
+    border-left: 1px solid #d5e8dc;
+    border-top-left-radius: 10px;
+}
+
+.records-table th:last-child {
+    border-top-right-radius: 10px;
+}
+
+/* ================= TABLE DATA ================= */
 
 .records-table td {
     color: #333;
     font-size: 14px;
     padding: 13px 10px;
-    border: 1px solid #e0e8e2;
+    border-right: 1px solid #e0e8e2;
+    border-bottom: 1px solid #e0e8e2;
     text-align: center;
     white-space: nowrap;
+}
+
+.records-table td:first-child {
+    border-left: 1px solid #e0e8e2;
 }
 
 .records-table tbody tr:hover {
     background: #f7fbf8;
 }
 
-/* ================= NO RECORDS ================= */
+/* ================= EMPTY RECORD AREA ================= */
+
+.empty-record-row:hover {
+    background: #ffffff !important;
+}
+
+.empty-record-row td {
+    height: 250px;
+    border-left: 1px solid #e0e8e2;
+    border-bottom: 1px solid #e0e8e2;
+}
 
 .no-records {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 45px 20px;
     color: #777;
     text-align: center;
+    min-height: 220px;
+}
+
+.no-records-decoration {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    margin-bottom: 18px;
+}
+
+.no-records-decoration span {
+    width: 85px;
+    height: 1px;
+    background: #dcebe1;
 }
 
 .no-records img {
-    width: 65px;
-    height: 65px;
+    width: 50px;
+    height: 50px;
     object-fit: contain;
-    margin-bottom: 12px;
-    opacity: 0.75;
+    opacity: 0.8;
 }
 
 .no-records p {
-    font-size: 17px;
+    font-size: 16px;
     color: #777;
 }
 
@@ -458,8 +515,6 @@ h1 {
     position: relative;
 }
 
-/* ================= MODAL HEADER ================= */
-
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -471,8 +526,6 @@ h1 {
     color: #075c35;
     font-size: 25px;
 }
-
-/* ================= CLOSE BUTTON ================= */
 
 .close-modal {
     width: 35px;
@@ -492,8 +545,6 @@ h1 {
     background: #dceee1;
 }
 
-/* ================= FARMER SEARCH ================= */
-
 .farmer-search {
     margin-bottom: 18px;
 }
@@ -511,8 +562,6 @@ h1 {
 .farmer-search input:focus {
     border-color: #16804b;
 }
-
-/* ================= FARMER LIST ================= */
 
 .farmer-list {
     display: flex;
@@ -546,9 +595,33 @@ h1 {
     font-size: 14px;
 }
 
+/* ================= DELETE BUTTON ================= */
+
+.table-delete-btn {
+    width: 34px;
+    height: 34px;
+    border: 1px solid #f0c6c6;
+    border-radius: 8px;
+    background: #fff5f5;
+    color: #c0392b;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.table-delete-btn:hover {
+    background: #fbe4e4;
+    border-color: #e59a9a;
+}
+
 /* ================= RESPONSIVE ================= */
 
 @media (max-width: 1100px) {
+    .container {
+        max-width: calc(100% - 30px);
+    }
 
     .top-row {
         grid-template-columns: 1fr 1fr;
@@ -558,28 +631,30 @@ h1 {
     .milk-details {
         grid-template-columns: repeat(3, 1fr);
     }
-
-    h1 {
-        font-size: 36px;
-    }
 }
 
-
 @media (max-width: 750px) {
-
     body {
-        padding: 12px;
+        padding: 12px 0;
     }
 
-    .collection-card,
-    .records-section {
+    .container {
+        max-width: calc(100% - 24px);
+    }
+
+    .page-outer-card {
         padding: 18px;
         border-radius: 16px;
     }
 
-    h1 {
-        font-size: 32px;
-        margin-bottom: 18px;
+    .collection-card {
+        padding: 18px;
+        border-radius: 16px;
+    }
+
+    .page-main-heading {
+        font-size: 28px;
+        margin-bottom: 16px;
     }
 
     .top-row {
@@ -600,32 +675,44 @@ h1 {
         min-width: 0;
     }
 
+    .records-section {
+        padding: 18px;
+        border-radius: 16px;
+    }
+
     .records-header {
         flex-direction: column;
         align-items: flex-start;
     }
 
-    .records-title h2 {
-        font-size: 22px;
+    .records-summary {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
     }
 }
 
-
 @media (max-width: 500px) {
-
     body {
-        padding: 8px;
+        padding: 8px 0;
     }
 
-    .collection-card,
-    .records-section {
+    .container {
+        max-width: calc(100% - 16px);
+    }
+
+    .page-outer-card {
         padding: 14px;
         border-radius: 14px;
     }
 
-    h1 {
-        font-size: 27px;
-        margin-bottom: 15px;
+    .collection-card {
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .page-main-heading {
+        font-size: 25px;
     }
 
     .field-group label {
@@ -633,20 +720,15 @@ h1 {
     }
 
     .field-group label img {
-        width: 23px;
-        height: 23px;
+        width: 22px;
+        height: 22px;
     }
 
     .input-wrapper input,
-    .field-group > input {
+    .field-group > input,
+    .date-wrapper input {
         height: 48px;
         font-size: 14px;
-    }
-
-    .farmer-search-btn {
-        height: 48px;
-        width: 52px;
-        min-width: 52px;
     }
 
     .milk-details {
@@ -658,14 +740,6 @@ h1 {
         padding: 10px;
     }
 
-    .milk-field input {
-        height: 43px;
-    }
-
-    .milk-details-title {
-        font-size: 18px;
-    }
-
     .action-buttons button {
         height: 48px;
         font-size: 15px;
@@ -675,16 +749,8 @@ h1 {
         font-size: 20px;
     }
 
-    .records-date {
-        font-size: 14px;
-    }
-
-    .modal-content {
-        padding: 18px;
-        border-radius: 15px;
-    }
-
-    .modal-header h2 {
-        font-size: 22px;
+    .records-summary {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
