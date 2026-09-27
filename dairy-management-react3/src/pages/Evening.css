@@ -595,6 +595,27 @@ body {
     font-size: 14px;
 }
 
+/* ================= DELETE BUTTON ================= */
+
+.table-delete-btn {
+    width: 34px;
+    height: 34px;
+    border: 1px solid #f0c6c6;
+    border-radius: 8px;
+    background: #fff5f5;
+    color: #c0392b;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.table-delete-btn:hover {
+    background: #fbe4e4;
+    border-color: #e59a9a;
+}
+
 /* ================= RESPONSIVE ================= */
 
 @media (max-width: 1100px) {
