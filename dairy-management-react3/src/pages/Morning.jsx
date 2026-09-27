@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import "./morning.css";
 
 /* ================= IMAGE IMPORTS ================= */
+
 import farmerCodeIcon from "../assets/Morning_collections_img/farmer_code_user.png";
 import searchIcon from "../assets/Morning_collections_img/search.png";
 import farmerNameIcon from "../assets/Morning_collections_img/farmer_name_user.png";
@@ -23,6 +24,7 @@ import noRecordsIcon from "../assets/Morning_collections_img/no_records_document
 import recordsCalendarIcon from "../assets/Morning_collections_img/records_calendar.png";
 
 /* ================= FARMER DATA ================= */
+
 const farmers = [
     { code: "F001", name: "Ramesh Patil" },
     { code: "F002", name: "Suresh Jadhav" },
@@ -32,6 +34,7 @@ const farmers = [
 ];
 
 /* ================= MAIN COMPONENT ================= */
+
 function Morning() {
     const [farmerCode, setFarmerCode] = useState("");
     const [farmerName, setFarmerName] = useState("");
@@ -55,6 +58,7 @@ function Morning() {
     const rateRef = useRef(null);
 
     /* ================= SET DATE + LOAD RECORDS ================= */
+
     useEffect(() => {
         const today = new Date();
         const year = today.getFullYear();
@@ -62,50 +66,82 @@ function Morning() {
         const day = String(today.getDate()).padStart(2, "0");
 
         const todayDate = `${year}-${month}-${day}`;
+
         setDate(todayDate);
         setRecordsDate(todayDate);
 
-        const savedRecords =
-            JSON.parse(localStorage.getItem("morningCollectionRecords")) || [];
-        setRecords(savedRecords);
+        /* ================= LOAD MORNING RECORDS FROM BACKEND ================= */
+
+        fetch("http://localhost:5000/api/collections?type=morning")
+            .then((response) => response.json())
+            .then((data) => {
+                const formattedRecords = data.map((record) => ({
+                    ...record,
+                    id: record._id,
+                    code: record.farmerCode
+                }));
+
+                setRecords(formattedRecords);
+            })
+            .catch((error) => {
+                console.error(
+                    "Error loading morning records:",
+                    error
+                );
+            });
     }, []);
 
     /* ================= FORMAT DATE ================= */
+
     const formatDate = (dateString) => {
         if (!dateString) return "";
+
         const parts = dateString.split("-");
+
         if (parts.length !== 3) return dateString;
+
         return `${parts[2]}/${parts[1]}/${parts[0]}`;
     };
 
     /* ================= SEARCH FARMER ================= */
+
     const handleFarmerSearch = () => {
         const code = farmerCode.trim().toUpperCase();
+
         if (!code) {
             alert("Please enter Farmer Code.");
             return;
         }
 
-        const farmer = farmers.find((item) => item.code === code);
+        const farmer = farmers.find(
+            (item) => item.code === code
+        );
+
         if (!farmer) {
             alert("Farmer not found.");
             setFarmerName("");
             return;
         }
+
         setFarmerName(farmer.name);
     };
 
     /* ================= CALCULATE AMOUNT ================= */
+
     const amount =
         litres && rate
             ? (Number(litres) * Number(rate)).toFixed(2)
             : "0.00";
 
     /* ================= CALCULATE DEGREE FROM FAT + SNF ================= */
+
     useEffect(() => {
         if (fat !== "" && snf !== "") {
             const calculatedDegree =
-                4 * (Number(snf) - (0.21 * Number(fat)) - 0.36);
+                4 *
+                (Number(snf) -
+                    0.21 * Number(fat) -
+                    0.36);
 
             setDegree(calculatedDegree.toFixed(1));
         } else {
@@ -114,6 +150,7 @@ function Morning() {
     }, [fat, snf]);
 
     /* ================= CLEAR FORM ================= */
+
     const handleClear = () => {
         setFarmerCode("");
         setFarmerName("");
@@ -125,76 +162,174 @@ function Morning() {
     };
 
     /* ================= SAVE RECORD ================= */
-    const handleSave = () => {
+
+    const handleSave = async () => {
         if (!farmerCode.trim()) {
             alert("Please enter Farmer Code.");
             return;
         }
+
         if (!farmerName.trim()) {
             alert("Please search the Farmer Code first.");
             return;
         }
+
         if (!litres) {
             alert("Please enter Litres.");
             return;
         }
+
         if (!fat) {
             alert("Please enter Fat.");
             return;
         }
+
         if (!snf) {
             alert("Please enter SNF.");
             return;
         }
+
         if (!degree) {
             alert("Please enter Degree.");
             return;
         }
+
         if (!rate) {
             alert("Please enter Rate.");
             return;
         }
 
+        /* ================= DATA SENT TO BACKEND ================= */
+
         const newRecord = {
-            id: Date.now(),
-            code: farmerCode.trim().toUpperCase(),
+            type: "morning",
+
+            farmerCode: farmerCode.trim().toUpperCase(),
+
             farmerName: farmerName,
+
+            date: date,
+
             litres: Number(litres),
+
             fat: Number(fat),
+
             snf: Number(snf),
+
             degree: Number(degree),
+
             rate: Number(rate),
-            amount: Number(amount),
-            date: date
+
+            amount: Number(amount)
         };
 
-        const oldRecords =
-            JSON.parse(localStorage.getItem("morningCollectionRecords")) || [];
-        const updatedRecords = [...oldRecords, newRecord];
+        try {
+            const response = await fetch(
+                "http://localhost:5000/api/collections",
+                {
+                    method: "POST",
 
-        localStorage.setItem(
-            "morningCollectionRecords",
-            JSON.stringify(updatedRecords)
-        );
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
 
-        setRecords(updatedRecords);
-        handleClear();
-       
-    };
-
-    /* ================= DELETE RECORD ================= */
-    const handleDeleteRecord = (id) => {
-        if (window.confirm("Are you sure you want to delete this record?")) {
-            const updatedRecords = records.filter((record) => record.id !== id);
-            localStorage.setItem(
-                "morningCollectionRecords",
-                JSON.stringify(updatedRecords)
+                    body: JSON.stringify(newRecord)
+                }
             );
-            setRecords(updatedRecords);
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ||
+                        "Failed to save collection record"
+                );
+            }
+
+            /* ================= ADD SAVED RECORD TO TABLE ================= */
+
+            const savedRecord = {
+                ...result.data,
+
+                id: result.data._id,
+
+                code: result.data.farmerCode
+            };
+
+            setRecords((previousRecords) => [
+                ...previousRecords,
+                savedRecord
+            ]);
+
+            alert(
+                "Morning collection saved successfully!"
+            );
+
+            handleClear();
+
+        } catch (error) {
+            console.error(
+                "Error saving morning record:",
+                error
+            );
+
+            alert(
+                "Failed to save morning collection."
+            );
         }
     };
 
+    /* ================= DELETE RECORD ================= */
+
+  const handleDeleteRecord = async (id) => {
+    if (
+        !window.confirm(
+            "Are you sure you want to delete this record?"
+        )
+    ) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `http://localhost:5000/api/collections/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message ||
+                    "Failed to delete collection record"
+            );
+        }
+
+        setRecords((previousRecords) =>
+            previousRecords.filter(
+                (record) => record.id !== id
+            )
+        );
+
+        alert(
+            "Morning collection record deleted successfully!"
+        );
+
+    } catch (error) {
+        console.error(
+            "Error deleting morning record:",
+            error
+        );
+
+        alert(
+            "Failed to delete morning collection record."
+        );
+    }
+};
     /* ================= FARMER MODAL ================= */
+
     const openFarmerModal = () => {
         setFarmerSearch("");
         setShowModal(true);
@@ -211,12 +346,21 @@ function Morning() {
     };
 
     const filteredFarmers = farmers.filter((farmer) => {
-        const search = farmerSearch.trim().toLowerCase();
+        const search = farmerSearch
+            .trim()
+            .toLowerCase();
+
         return (
-            farmer.code.toLowerCase().includes(search) ||
-            farmer.name.toLowerCase().includes(search)
+            farmer.code
+                .toLowerCase()
+                .includes(search) ||
+            farmer.name
+                .toLowerCase()
+                .includes(search)
         );
     });
+
+    /* ================= TODAY'S RECORDS ================= */
 
     const todayRecords = records.filter(
         (record) => record.date === recordsDate
@@ -224,42 +368,74 @@ function Morning() {
 
     return (
         <div className="morning-container">
+
             {/* ================= TITLE ================= */}
+
             <h1>Morning Collection</h1>
 
             {/* ================= COLLECTION CARD ================= */}
+
             <div className="collection-card">
+
                 {/* ================= TOP ROW ================= */}
+
                 <div className="top-row">
+
                     {/* FARMER CODE */}
+
                     <div className="field-group">
+
                         <label>
-                            <img src={farmerCodeIcon} alt="Farmer Code" />
+                            <img
+                                src={farmerCodeIcon}
+                                alt="Farmer Code"
+                            />
+
                             Farmer Code
                         </label>
+
                         <div className="input-wrapper">
+
                             <input
                                 type="text"
                                 value={farmerCode}
-                                onChange={(e) => setFarmerCode(e.target.value)}
+                                onChange={(e) =>
+                                    setFarmerCode(
+                                        e.target.value
+                                    )
+                                }
                                 placeholder="Enter Farmer Code"
                             />
+
                             <button
                                 type="button"
                                 className="farmer-search-btn"
-                                onClick={handleFarmerSearch}
+                                onClick={
+                                    handleFarmerSearch
+                                }
                             >
-                                <img src={searchIcon} alt="Search" />
+                                <img
+                                    src={searchIcon}
+                                    alt="Search"
+                                />
                             </button>
+
                         </div>
                     </div>
 
                     {/* FARMER NAME */}
+
                     <div className="field-group">
+
                         <label>
-                            <img src={farmerNameIcon} alt="Farmer Name" />
+                            <img
+                                src={farmerNameIcon}
+                                alt="Farmer Name"
+                            />
+
                             Farmer Name
                         </label>
+
                         <input
                             type="text"
                             value={farmerName}
@@ -267,31 +443,55 @@ function Morning() {
                             className="readonly-input"
                             placeholder="(Name will appear here)"
                         />
+
                     </div>
 
                     {/* DATE */}
+
                     <div className="field-group">
+
                         <label>
-                            <img src={calendarIcon} alt="Date" />
+                            <img
+                                src={calendarIcon}
+                                alt="Date"
+                            />
+
                             Date
                         </label>
+
                         <div className="date-wrapper">
+
                             <input
                                 type="date"
                                 value={date}
                                 onChange={(e) => {
-                                    if (/^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) {
-                                        setDate(e.target.value);
+                                    if (
+                                        /^\d{4}-\d{2}-\d{2}$/.test(
+                                            e.target.value
+                                        )
+                                    ) {
+                                        setDate(
+                                            e.target.value
+                                        );
                                     }
                                 }}
                             />
-                            <img src={dateChevronIcon} alt="" />
+
+                            <img
+                                src={dateChevronIcon}
+                                alt=""
+                            />
+
                         </div>
+
                     </div>
+
                 </div>
 
                 {/* ================= MILK DETAILS ================= */}
+
                 <div className="milk-details">
+
                     <MilkField
                         icon={litresIcon}
                         label="Litres (L)"
@@ -333,17 +533,27 @@ function Morning() {
                     />
 
                     <div className="milk-field">
+
                         <label>
-                            <span className="rupee-icon-badge">₹</span>
+                            <span className="rupee-icon-badge">
+                                ₹
+                            </span>
+
                             Rate (₹/L)
                         </label>
+
                         <input
                             ref={rateRef}
                             type="number"
                             value={rate}
-                            onChange={(e) => setRate(e.target.value)}
+                            onChange={(e) =>
+                                setRate(e.target.value)
+                            }
                             onKeyDown={(e) => {
-                                if (e.key === "Enter") {
+                                if (
+                                    e.key ===
+                                    "Enter"
+                                ) {
                                     e.preventDefault();
                                     handleSave();
                                 }
@@ -352,32 +562,52 @@ function Morning() {
                             min="0"
                             step="0.01"
                         />
+
                     </div>
 
                     {/* AMOUNT */}
+
                     <div className="milk-field">
+
                         <label>
-                            <img src={amountIcon} alt="Amount" />
+                            <img
+                                src={amountIcon}
+                                alt="Amount"
+                            />
+
                             Amount (₹)
                         </label>
+
                         <input
                             type="text"
-                            value={amount === "0.00" ? "" : amount}
+                            value={
+                                amount === "0.00"
+                                    ? ""
+                                    : amount
+                            }
                             placeholder="Auto Calculated"
                             readOnly
                             className="amount-input"
                         />
+
                     </div>
+
                 </div>
 
                 {/* ================= ACTION BUTTONS ================= */}
+
                 <div className="action-buttons">
+
                     <button
                         type="button"
                         className="save-btn"
                         onClick={handleSave}
                     >
-                        <img src={saveIcon} alt="Save" />
+                        <img
+                            src={saveIcon}
+                            alt="Save"
+                        />
+
                         Save
                     </button>
 
@@ -386,7 +616,11 @@ function Morning() {
                         className="clear-btn"
                         onClick={handleClear}
                     >
-                        <img src={clearIcon} alt="Clear" />
+                        <img
+                            src={clearIcon}
+                            alt="Clear"
+                        />
+
                         Clear
                     </button>
 
@@ -395,174 +629,431 @@ function Morning() {
                         className="farmer-list-btn"
                         onClick={openFarmerModal}
                     >
-                        <img src={farmerListIcon} alt="Farmer List" />
+                        <img
+                            src={farmerListIcon}
+                            alt="Farmer List"
+                        />
+
                         Farmer List
                     </button>
+
                 </div>
+
             </div>
 
             {/* ================= RECORDS SECTION ================= */}
+
             <div className="records-section">
+
                 <div className="records-header">
+
                     <div className="records-title">
-                        <img src={noRecordsIcon} alt="Records" />
-                        <h2>Today's Records</h2>
+
+                        <img
+                            src={noRecordsIcon}
+                            alt="Records"
+                        />
+
+                        <h2>
+                            Today's Records
+                        </h2>
+
                     </div>
 
                     <div className="records-right">
+
                         <div className="records-date">
-                            <img src={recordsCalendarIcon} alt="Date" />
-                            <span>Date:</span>
-                            <span className="date-display-text">{formatDate(recordsDate)}</span>
+
+                            <img
+                                src={recordsCalendarIcon}
+                                alt="Date"
+                            />
+
+                            <span>
+                                Date:
+                            </span>
+
+                            <span className="date-display-text">
+                                {formatDate(
+                                    recordsDate
+                                )}
+                            </span>
+
                             <input
                                 type="date"
                                 className="hidden-date-picker"
                                 value={recordsDate}
                                 onChange={(e) => {
-                                    if (/^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) {
-                                        setRecordsDate(e.target.value);
+                                    if (
+                                        /^\d{4}-\d{2}-\d{2}$/.test(
+                                            e.target.value
+                                        )
+                                    ) {
+                                        setRecordsDate(
+                                            e.target.value
+                                        );
                                     }
                                 }}
                             />
+
                         </div>
 
                         <div className="total-records">
-                            Total Records: <span>{todayRecords.length}</span>
+
+                            Total Records:{" "}
+
+                            <span>
+                                {todayRecords.length}
+                            </span>
+
                         </div>
+
                     </div>
+
                 </div>
 
                 {/* ================= TABLE / NO RECORDS ================= */}
+
                 <div className="table-container">
+
                     <table className="records-table">
+
                         <thead>
+
                             <tr>
-                                <th>Sr. No.</th>
-                                <th>Code</th>
-                                <th>Farmer Name</th>
-                                <th>Litres (L)</th>
-                                <th>Fat</th>
-                                <th>SNF</th>
-                                <th>Degree</th>
-                                <th>Rate (₹/L)</th>
-                                <th>Amount (₹)</th>
-                                <th>Action</th>
+
+                                <th>
+                                    Sr. No.
+                                </th>
+
+                                <th>
+                                    Code
+                                </th>
+
+                                <th>
+                                    Farmer Name
+                                </th>
+
+                                <th>
+                                    Litres (L)
+                                </th>
+
+                                <th>
+                                    Fat
+                                </th>
+
+                                <th>
+                                    SNF
+                                </th>
+
+                                <th>
+                                    Degree
+                                </th>
+
+                                <th>
+                                    Rate (₹/L)
+                                </th>
+
+                                <th>
+                                    Amount (₹)
+                                </th>
+
+                                <th>
+                                    Action
+                                </th>
+
                             </tr>
+
                         </thead>
+
                         <tbody>
-                            {todayRecords.length === 0 ? (
+
+                            {todayRecords.length ===
+                            0 ? (
+
                                 <tr className="empty-record-row">
+
                                     <td colSpan="10">
+
                                         <div className="no-records">
+
                                             <div className="no-records-divider">
+
                                                 <span className="divider-line"></span>
+
                                                 <img
-                                                    src={noRecordsIcon}
+                                                    src={
+                                                        noRecordsIcon
+                                                    }
                                                     alt="No records"
                                                 />
+
                                                 <span className="divider-line"></span>
+
                                             </div>
-                                            <p>No records found</p>
+
+                                            <p>
+                                                No records found
+                                            </p>
+
                                         </div>
+
                                     </td>
+
                                 </tr>
+
                             ) : (
-                                todayRecords.map((record, index) => (
-                                    <tr key={record.id}>
-                                        <td>{index + 1}</td>
-                                        <td>{record.code}</td>
-                                        <td>{record.farmerName}</td>
-                                        <td>{record.litres}</td>
-                                        <td>{record.fat}</td>
-                                        <td>{record.snf}</td>
-                                        <td>{record.degree}</td>
-                                        <td>₹{Number(record.rate).toFixed(2)}</td>
-                                        <td>₹{Number(record.amount).toFixed(2)}</td>
-                                        <td>
-                                            <button
-                                                type="button"
-                                                className="table-delete-btn"
-                                                title="Delete record"
-                                                onClick={() => handleDeleteRecord(record.id)}
-                                            >
-                                                <svg
-                                                    width="16"
-                                                    height="16"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
+
+                                todayRecords.map(
+                                    (
+                                        record,
+                                        index
+                                    ) => (
+
+                                        <tr
+                                            key={
+                                                record.id
+                                            }
+                                        >
+
+                                            <td>
+                                                {index +
+                                                    1}
+                                            </td>
+
+                                            <td>
+                                                {
+                                                    record.code
+                                                }
+                                            </td>
+
+                                            <td>
+                                                {
+                                                    record.farmerName
+                                                }
+                                            </td>
+
+                                            <td>
+                                                {
+                                                    record.litres
+                                                }
+                                            </td>
+
+                                            <td>
+                                                {
+                                                    record.fat
+                                                }
+                                            </td>
+
+                                            <td>
+                                                {
+                                                    record.snf
+                                                }
+                                            </td>
+
+                                            <td>
+                                                {
+                                                    record.degree
+                                                }
+                                            </td>
+
+                                            <td>
+                                                ₹
+                                                {Number(
+                                                    record.rate
+                                                ).toFixed(
+                                                    2
+                                                )}
+                                            </td>
+
+                                            <td>
+                                                ₹
+                                                {Number(
+                                                    record.amount
+                                                ).toFixed(
+                                                    2
+                                                )}
+                                            </td>
+
+                                            <td>
+
+                                                <button
+                                                    type="button"
+                                                    className="table-delete-btn"
+                                                    title="Delete record"
+                                                    onClick={() =>
+                                                        handleDeleteRecord(
+                                                            record.id
+                                                        )
+                                                    }
                                                 >
-                                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                                                </svg>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
+
+                                                    <svg
+                                                        width="16"
+                                                        height="16"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    >
+
+                                                        <polyline points="3 6 5 6 21 6"></polyline>
+
+                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+
+                                                        <line
+                                                            x1="10"
+                                                            y1="11"
+                                                            x2="10"
+                                                            y2="17"
+                                                        ></line>
+
+                                                        <line
+                                                            x1="14"
+                                                            y1="11"
+                                                            x2="14"
+                                                            y2="17"
+                                                        ></line>
+
+                                                    </svg>
+
+                                                </button>
+
+                                            </td>
+
+                                        </tr>
+
+                                    )
+                                )
+
                             )}
+
                         </tbody>
+
                     </table>
+
                 </div>
+
             </div>
 
             {/* ================= FARMER MODAL ================= */}
+
             {showModal && (
+
                 <div
                     className="modal active"
                     onClick={(e) => {
-                        if (e.target === e.currentTarget) closeFarmerModal();
+                        if (
+                            e.target ===
+                            e.currentTarget
+                        ) {
+                            closeFarmerModal();
+                        }
                     }}
                 >
+
                     <div className="modal-content">
+
                         <div className="modal-header">
-                            <h2>Farmer List</h2>
+
+                            <h2>
+                                Farmer List
+                            </h2>
+
                             <button
                                 type="button"
                                 className="close-modal"
-                                onClick={closeFarmerModal}
+                                onClick={
+                                    closeFarmerModal
+                                }
                             >
                                 ×
                             </button>
+
                         </div>
+
                         <div className="farmer-search">
+
                             <input
                                 type="text"
                                 placeholder="Search farmer..."
-                                value={farmerSearch}
-                                onChange={(e) => setFarmerSearch(e.target.value)}
+                                value={
+                                    farmerSearch
+                                }
+                                onChange={(e) =>
+                                    setFarmerSearch(
+                                        e.target.value
+                                    )
+                                }
                             />
+
                         </div>
+
                         <div className="farmer-list">
-                            {filteredFarmers.length > 0 ? (
-                                filteredFarmers.map((farmer) => (
-                                    <div
-                                        className="farmer-item"
-                                        key={farmer.code}
-                                        onClick={() => selectFarmer(farmer)}
-                                    >
-                                        <strong>{farmer.code}</strong>
-                                        <span>{farmer.name}</span>
-                                    </div>
-                                ))
+
+                            {filteredFarmers.length >
+                            0 ? (
+
+                                filteredFarmers.map(
+                                    (farmer) => (
+
+                                        <div
+                                            className="farmer-item"
+                                            key={
+                                                farmer.code
+                                            }
+                                            onClick={() =>
+                                                selectFarmer(
+                                                    farmer
+                                                )
+                                            }
+                                        >
+
+                                            <strong>
+                                                {
+                                                    farmer.code
+                                                }
+                                            </strong>
+
+                                            <span>
+                                                {
+                                                    farmer.name
+                                                }
+                                            </span>
+
+                                        </div>
+
+                                    )
+                                )
+
                             ) : (
+
                                 <div className="no-records">
-                                    <p>No farmer found</p>
+
+                                    <p>
+                                        No farmer found
+                                    </p>
+
                                 </div>
+
                             )}
+
                         </div>
+
                     </div>
+
                 </div>
+
             )}
+
         </div>
     );
 }
 
 /* ================= MILK FIELD COMPONENT ================= */
+
 function MilkField({
     icon,
     label,
@@ -575,22 +1066,39 @@ function MilkField({
 }) {
     return (
         <div className="milk-field">
+
             <label>
-                <img src={icon} alt={label} />
+
+                <img
+                    src={icon}
+                    alt={label}
+                />
+
                 {label}
+
             </label>
+
             <input
                 ref={inputRef}
                 type="number"
                 value={value}
                 onChange={(e) => {
-                    if (!readOnly && setValue) {
-                        setValue(e.target.value);
+                    if (
+                        !readOnly &&
+                        setValue
+                    ) {
+                        setValue(
+                            e.target.value
+                        );
                     }
                 }}
                 onKeyDown={(e) => {
-                    if (e.key === "Enter" && nextRef) {
+                    if (
+                        e.key === "Enter" &&
+                        nextRef
+                    ) {
                         e.preventDefault();
+
                         nextRef.current?.focus();
                     }
                 }}
@@ -599,6 +1107,7 @@ function MilkField({
                 min="0"
                 step="0.01"
             />
+
         </div>
     );
 }

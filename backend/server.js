@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
+const collectionRoutes = require("./routes/collectionRoutes");
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 
 // Authentication routes
 app.use("/api/auth", authRoutes);
+app.use("/api/collections", collectionRoutes);
 
 // MongoDB connection
 mongoose
