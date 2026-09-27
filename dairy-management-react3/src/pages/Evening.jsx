@@ -239,7 +239,10 @@ function Evening() {
     return (
         <div className="container">
 
-            {/* ================= TITLE OUTSIDE CARD ================= */}
+          {/* ================= OUTER WHITE PAGE CARD ================= */}
+          <div className="page-outer-card">
+
+            {/* ================= TITLE ================= */}
             <h1 className="page-main-heading">Evening Collection</h1>
 
             {/* ================= COLLECTION CARD ================= */}
@@ -477,6 +480,8 @@ function Evening() {
                 </div>
 
             </div>
+
+          </div>{/* end page-outer-card */}
 
             {/* ================= FARMER MODAL ================= */}
             {showModal && (

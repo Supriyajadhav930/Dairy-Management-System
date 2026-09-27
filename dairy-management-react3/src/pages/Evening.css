@@ -19,6 +19,16 @@ body {
     margin: 0 auto;
 }
 
+/* ================= OUTER WHITE PAGE CARD ================= */
+
+.page-outer-card {
+    width: 100%;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 25px 22px 30px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
 /* ================= MAIN HEADING (OUTSIDE CARD) ================= */
 
 .page-main-heading {
@@ -611,6 +621,11 @@ body {
         max-width: calc(100% - 24px);
     }
 
+    .page-outer-card {
+        padding: 18px;
+        border-radius: 16px;
+    }
+
     .collection-card {
         padding: 18px;
         border-radius: 16px;
@@ -663,6 +678,11 @@ body {
 
     .container {
         max-width: calc(100% - 16px);
+    }
+
+    .page-outer-card {
+        padding: 14px;
+        border-radius: 14px;
     }
 
     .collection-card {
