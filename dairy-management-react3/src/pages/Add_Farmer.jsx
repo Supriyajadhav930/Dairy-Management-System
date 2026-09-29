@@ -88,48 +88,12 @@ const DeleteIcon = () => (
 ========================= */
 
 function AddFarmer() {
-
     const [farmers, setFarmers] = useState([
-        {
-            id: 1,
-            code: "1",
-            name: "-",
-            phone: "-",
-            email: "-",
-            phonePay: "-"
-        },
-        {
-            id: 2,
-            code: "2",
-            name: "-",
-            phone: "-",
-            email: "-",
-            phonePay: "-"
-        },
-        {
-            id: 3,
-            code: "3",
-            name: "-",
-            phone: "-",
-            email: "-",
-            phonePay: "-"
-        },
-        {
-            id: 4,
-            code: "4",
-            name: "-",
-            phone: "-",
-            email: "-",
-            phonePay: "-"
-        },
-        {
-            id: 5,
-            code: "5",
-            name: "-",
-            phone: "-",
-            email: "-",
-            phonePay: "-"
-        }
+        { id: 1, code: "1", name: "-", phone: "-", email: "-", phonePay: "-" },
+        { id: 2, code: "2", name: "-", phone: "-", email: "-", phonePay: "-" },
+        { id: 3, code: "3", name: "-", phone: "-", email: "-", phonePay: "-" },
+        { id: 4, code: "4", name: "-", phone: "-", email: "-", phonePay: "-" },
+        { id: 5, code: "5", name: "-", phone: "-", email: "-", phonePay: "-" }
     ]);
 
     const [formData, setFormData] = useState({
@@ -143,67 +107,24 @@ function AddFarmer() {
     const [editingId, setEditingId] = useState(null);
     const [search, setSearch] = useState("");
 
-    /* =========================
-       HANDLE INPUT
-    ========================= */
-
     const handleChange = (e) => {
-
         const { name, value } = e.target;
-
         if (name === "code") {
-
-            setFormData({
-                ...formData,
-                [name]: value.replace(/\D/g, "")
-            });
-
+            setFormData({ ...formData, [name]: value.replace(/\D/g, "") });
         } else if (name === "phone" || name === "phonePay") {
-
-            setFormData({
-                ...formData,
-                [name]: value.replace(/\D/g, "").slice(0, 10)
-            });
-
+            setFormData({ ...formData, [name]: value.replace(/\D/g, "").slice(0, 10) });
         } else {
-
-            setFormData({
-                ...formData,
-                [name]: value
-            });
+            setFormData({ ...formData, [name]: value });
         }
     };
 
-    /* =========================
-       CLEAR FORM
-    ========================= */
-
     const handleClear = () => {
-
-        setFormData({
-            code: "",
-            name: "",
-            phone: "",
-            email: "",
-            phonePay: ""
-        });
-
+        setFormData({ code: "", name: "", phone: "", email: "", phonePay: "" });
         setEditingId(null);
     };
 
-    /* =========================
-       SAVE / UPDATE FARMER
-    ========================= */
-
     const handleSave = () => {
-
-        const {
-            code,
-            name,
-            phone,
-            email,
-            phonePay
-        } = formData;
+        const { code, name, phone, email, phonePay } = formData;
 
         if (!code || !name || !phone || !email || !phonePay) {
             alert("Please fill all fields.");
@@ -221,16 +142,13 @@ function AddFarmer() {
         }
 
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
         if (!emailPattern.test(email)) {
             alert("Please enter a valid email address.");
             return;
         }
 
         const duplicateCode = farmers.some(
-            (farmer) =>
-                farmer.code === code &&
-                farmer.id !== editingId
+            (farmer) => farmer.code === code && farmer.id !== editingId
         );
 
         if (duplicateCode) {
@@ -238,33 +156,16 @@ function AddFarmer() {
             return;
         }
 
-        /* UPDATE */
-
         if (editingId) {
-
             setFarmers(
                 farmers.map((farmer) =>
                     farmer.id === editingId
-                        ? {
-                              ...farmer,
-                              code,
-                              name,
-                              phone,
-                              email,
-                              phonePay
-                          }
+                        ? { ...farmer, code, name, phone, email, phonePay }
                         : farmer
                 )
             );
-
             alert("Farmer updated successfully.");
-
-        }
-
-        /* SAVE NEW FARMER */
-
-        else {
-
+        } else {
             const newFarmer = {
                 id: Date.now(),
                 code,
@@ -273,21 +174,14 @@ function AddFarmer() {
                 email,
                 phonePay
             };
-
             setFarmers([...farmers, newFarmer]);
-
             alert("Farmer saved successfully.");
         }
 
         handleClear();
     };
 
-    /* =========================
-       EDIT FARMER
-    ========================= */
-
     const handleEdit = (farmer) => {
-
         setFormData({
             code: farmer.code,
             name: farmer.name === "-" ? "" : farmer.name,
@@ -295,97 +189,45 @@ function AddFarmer() {
             email: farmer.email === "-" ? "" : farmer.email,
             phonePay: farmer.phonePay === "-" ? "" : farmer.phonePay
         });
-
         setEditingId(farmer.id);
-
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
-
-    /* =========================
-       DELETE FARMER
-    ========================= */
 
     const handleDelete = (id) => {
-
-        const confirmDelete = window.confirm(
-            "Are you sure you want to delete this farmer?"
-        );
-
+        const confirmDelete = window.confirm("Are you sure you want to delete this farmer?");
         if (!confirmDelete) return;
-
-        setFarmers(
-            farmers.filter((farmer) => farmer.id !== id)
-        );
+        setFarmers(farmers.filter((farmer) => farmer.id !== id));
     };
 
-    /* =========================
-       SEARCH
-    ========================= */
-
     const filteredFarmers = farmers.filter((farmer) => {
-
         const searchText = search.toLowerCase();
-
         return (
             farmer.code.toLowerCase().includes(searchText) ||
             farmer.name.toLowerCase().includes(searchText)
         );
     });
 
-    /* =========================
-       JSX
-    ========================= */
-
     return (
-
         <div className="add-farmer-page">
-
             <div className="farmer-main-container">
-
-                {/* =========================
-                    HEADER
-                ========================= */}
-
+                {/* HEADER */}
                 <header className="farmer-header">
-
                     <div className="header-title-section">
-
                         <h1>Add Farmers</h1>
-
                         <div className="title-decoration">
-
                             <span></span>
-
                             <div className="leaf-decoration">
                                 <span>❧</span>
                             </div>
-
                             <span></span>
-
                         </div>
-
                     </div>
-
                 </header>
 
-                {/* =========================
-                    FORM
-                ========================= */}
-
+                {/* FORM */}
                 <div className="farmer-form">
-
-                    {/* FARMER CODE */}
-
                     <div className="form-group">
-
-                        <label>
-                            <UserCodeIcon />
-                            Farmer Code
-                        </label>
-
+                        <label><UserCodeIcon /> Farmer Code</label>
                         <input
                             type="text"
                             name="code"
@@ -393,18 +235,10 @@ function AddFarmer() {
                             onChange={handleChange}
                             placeholder="Enter Farmer Code"
                         />
-
                     </div>
 
-                    {/* FARMER NAME */}
-
                     <div className="form-group">
-
-                        <label>
-                            <UserIcon />
-                            Farmer Name
-                        </label>
-
+                        <label><UserIcon /> Farmer Name</label>
                         <input
                             type="text"
                             name="name"
@@ -412,18 +246,10 @@ function AddFarmer() {
                             onChange={handleChange}
                             placeholder="Enter Farmer Name"
                         />
-
                     </div>
 
-                    {/* PHONE */}
-
                     <div className="form-group">
-
-                        <label>
-                            <PhoneIcon />
-                            Phone No
-                        </label>
-
+                        <label><PhoneIcon /> Phone No</label>
                         <input
                             type="text"
                             name="phone"
@@ -432,18 +258,10 @@ function AddFarmer() {
                             placeholder="Enter Phone Number"
                             maxLength="10"
                         />
-
                     </div>
 
-                    {/* EMAIL */}
-
                     <div className="form-group">
-
-                        <label>
-                            <MailIcon />
-                            Email No
-                        </label>
-
+                        <label><MailIcon /> Email No</label>
                         <input
                             type="email"
                             name="email"
@@ -451,18 +269,10 @@ function AddFarmer() {
                             onChange={handleChange}
                             placeholder="Enter Email Address"
                         />
-
                     </div>
 
-                    {/* PHONE PAY */}
-
                     <div className="form-group phone-pay-group">
-
-                        <label>
-                            <RupeeIcon />
-                            Phone Pay No
-                        </label>
-
+                        <label><RupeeIcon /> Phone Pay No</label>
                         <input
                             type="text"
                             name="phonePay"
@@ -471,215 +281,99 @@ function AddFarmer() {
                             placeholder="Enter Phone Pay Number"
                             maxLength="10"
                         />
-
                     </div>
-
-                    {/* BUTTONS */}
 
                     <div className="form-buttons">
-
-                        <button
-                            type="button"
-                            className="clear-button"
-                            onClick={handleClear}
-                        >
-                            <RefreshIcon />
-                            Clear
+                        <button type="button" className="clear-button" onClick={handleClear}>
+                            <RefreshIcon /> Clear
                         </button>
-
-                        <button
-                            type="button"
-                            className="save-button"
-                            onClick={handleSave}
-                        >
-                            <SaveIcon />
-                            {editingId ? "Update" : "Save"}
+                        <button type="button" className="save-button" onClick={handleSave}>
+                            <SaveIcon /> {editingId ? "Update" : "Save"}
                         </button>
-
                     </div>
-
                 </div>
 
-                {/* =========================
-                    FARMERS SECTION
-                ========================= */}
-
+                {/* FARMERS TABLE SECTION */}
                 <section className="farmers-section">
-
                     <div className="farmers-top">
-
-                        {/* LEFT */}
-
                         <div className="farmers-heading">
-
                             <ListIcon />
-
-                            <h2>
-                                Available Farmers
-                            </h2>
-
+                            <h2>Available Farmers</h2>
                         </div>
-
-                        {/* TOTAL FARMERS */}
 
                         <div className="total-farmer-box">
-
-                            <span className="total-farmer-icon">
-                                👥
-                            </span>
-
-                            <span className="total-farmer-text">
-                                Total Farmer
-                            </span>
-
-                            <span className="total-farmer-number">
-                                {farmers.length}
-                            </span>
-
+                            <span className="total-farmer-icon">👥</span>
+                            <span className="total-farmer-text">Total Farmer</span>
+                            <span className="total-farmer-number">{farmers.length}</span>
                         </div>
 
-                        {/* SEARCH */}
-
                         <div className="search-box">
-
                             <SearchIcon />
-
                             <input
                                 type="text"
                                 placeholder="Search by code or name..."
                                 value={search}
-                                onChange={(e) =>
-                                    setSearch(e.target.value)
-                                }
+                                onChange={(e) => setSearch(e.target.value)}
                             />
-
                         </div>
-
                     </div>
 
-                    {/* TABLE */}
-
                     <div className="table-wrapper">
-
                         <table className="farmer-table">
-
                             <thead>
-
                                 <tr>
-
                                     <th>Code</th>
-
                                     <th>Name</th>
-
                                     <th>Phone No</th>
-
                                     <th>Email No</th>
-
                                     <th>Phone Pay No</th>
-
-                                    <th>Action</th>
-
+                                    <th className="action-header">Action</th>
                                 </tr>
-
                             </thead>
-
                             <tbody>
-
                                 {filteredFarmers.length > 0 ? (
-
                                     filteredFarmers.map((farmer) => (
-
                                         <tr key={farmer.id}>
-
-                                            <td className="farmer-code">
-                                                {farmer.code}
-                                            </td>
-
-                                            <td>
-                                                {farmer.name}
-                                            </td>
-
-                                            <td>
-                                                {farmer.phone}
-                                            </td>
-
-                                            <td>
-                                                {farmer.email}
-                                            </td>
-
-                                            <td>
-                                                {farmer.phonePay}
-                                            </td>
-
-                                            <td>
-
+                                            <td className="farmer-code">{farmer.code}</td>
+                                            <td>{farmer.name}</td>
+                                            <td>{farmer.phone}</td>
+                                            <td>{farmer.email}</td>
+                                            <td>{farmer.phonePay}</td>
+                                            <td className="action-cell">
                                                 <div className="action-buttons">
-
                                                     <button
                                                         type="button"
                                                         className="edit-button"
-                                                        onClick={() =>
-                                                            handleEdit(farmer)
-                                                        }
+                                                        title="Update"
+                                                        onClick={() => handleEdit(farmer)}
                                                     >
-
                                                         <EditIcon />
-
-                                                        <span>
-                                                            Update
-                                                        </span>
-
                                                     </button>
 
                                                     <button
                                                         type="button"
                                                         className="delete-button"
-                                                        onClick={() =>
-                                                            handleDelete(farmer.id)
-                                                        }
+                                                        title="Delete"
+                                                        onClick={() => handleDelete(farmer.id)}
                                                     >
-
                                                         <DeleteIcon />
-
-                                                        <span>
-                                                            Delete
-                                                        </span>
-
                                                     </button>
-
                                                 </div>
-
                                             </td>
-
                                         </tr>
-
                                     ))
-
                                 ) : (
-
                                     <tr>
-
-                                        <td
-                                            colSpan="6"
-                                            className="no-data"
-                                        >
+                                        <td colSpan="6" className="no-data">
                                             No farmers found.
                                         </td>
-
                                     </tr>
-
                                 )}
-
                             </tbody>
-
                         </table>
-
                     </div>
-
                 </section>
-
             </div>
-
         </div>
     );
 }
