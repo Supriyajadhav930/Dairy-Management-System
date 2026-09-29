@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import "./Add_farmer.css";
 
 import farmerCodeImg from "../assets/Add_Farmer_img/farmercode.jpg.png";
@@ -51,8 +51,16 @@ const initialFarmers = [
   },
 ];
 
-function Add_Farmer() {
+const AddFarmer = () => {
   const [formData, setFormData] = useState({
+    code: "",
+    name: "",
+    phone: "",
+    email: "",
+    phonePay: "",
+  });
+
+  const [errors, setErrors] = useState({
     code: "",
     name: "",
     phone: "",
@@ -64,16 +72,282 @@ function Add_Farmer() {
   const [search, setSearch] = useState("");
   const [editIndex, setEditIndex] = useState(null);
 
+  const codeRef = useRef(null);
+  const nameRef = useRef(null);
+  const phoneRef = useRef(null);
+  const emailRef = useRef(null);
+  const phonePayRef = useRef(null);
+
+  // --------------------------------------------------
+  // VALIDATION
+  // --------------------------------------------------
+
+  const validateField = (field, value) => {
+    const trimmedValue = value.trim();
+
+    switch (field) {
+      case "code":
+        if (!trimmedValue) {
+          return "Please enter Farmer Code.";
+        }
+
+        // Whole number only
+        if (!/^\d+$/.test(trimmedValue)) {
+          return "Farmer Code must be a whole number.";
+        }
+
+        return "";
+
+      case "name":
+        if (!trimmedValue) {
+          return "Please enter Farmer Name.";
+        }
+
+        // Letters and spaces only
+        if (!/^[A-Za-z]+(?:\s[A-Za-z]+)*$/.test(trimmedValue)) {
+          return "Farmer Name should contain letters only.";
+        }
+
+        return "";
+
+      case "phone":
+        if (!trimmedValue) {
+          return "Please enter Phone Number.";
+        }
+
+        if (!/^\d{10}$/.test(trimmedValue)) {
+          return "Phone Number must be exactly 10 digits.";
+        }
+
+        return "";
+
+      case "email":
+        if (!trimmedValue) {
+          return "Please enter Email Address.";
+        }
+
+        // Lowercase Gmail address only
+        if (!/^[a-z0-9._%+-]+@gmail\.com$/.test(trimmedValue)) {
+          return "Email must be lowercase and end with @gmail.com.";
+        }
+
+        return "";
+
+      case "phonePay":
+        if (!trimmedValue) {
+          return "Please enter Phone Pay Number.";
+        }
+
+        if (!/^\d{10}$/.test(trimmedValue)) {
+          return "Phone Pay Number must be exactly 10 digits.";
+        }
+
+        return "";
+
+      default:
+        return "";
+    }
+  };
+
+  // --------------------------------------------------
+  // HANDLE INPUT CHANGE
+  // --------------------------------------------------
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
+    let newValue = value;
+
+    // Farmer Code
+    if (name === "code") {
+      newValue = value;
+
+      if (value !== "" && !/^\d*$/.test(value)) {
+        setErrors((prev) => ({
+          ...prev,
+          code: "Farmer Code must be a whole number.",
+        }));
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          code: "",
+        }));
+      }
+    }
+
+    // Farmer Name
+    if (name === "name") {
+      newValue = value.replace(/[^A-Za-z ]/g, "");
+      newValue = newValue.replace(/\s{2,}/g, " ");
+
+      setErrors((prev) => ({
+        ...prev,
+        name: "",
+      }));
+    }
+
+    // Phone
+    if (name === "phone") {
+      newValue = value.replace(/\D/g, "").slice(0, 10);
+
+      setErrors((prev) => ({
+        ...prev,
+        phone: "",
+      }));
+    }
+
+    // Phone Pay
+    if (name === "phonePay") {
+      newValue = value.replace(/\D/g, "").slice(0, 10);
+
+      setErrors((prev) => ({
+        ...prev,
+        phonePay: "",
+      }));
+    }
+
+    // Email
+    if (name === "email") {
+      newValue = value;
+
+      setErrors((prev) => ({
+        ...prev,
+        email: "",
+      }));
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: newValue,
     }));
   };
 
-  const clearForm = () => {
+  // --------------------------------------------------
+  // ENTER KEY NAVIGATION
+  // --------------------------------------------------
+
+  const handleKeyDown = (e, field) => {
+    if (e.key !== "Enter") return;
+
+    e.preventDefault();
+
+    const error = validateField(field, formData[field]);
+
+    if (error) {
+      setErrors((prev) => ({
+        ...prev,
+        [field]: error,
+      }));
+      return;
+    }
+
+    if (field === "code") {
+      nameRef.current?.focus();
+    }
+
+    if (field === "name") {
+      phoneRef.current?.focus();
+    }
+
+    if (field === "phone") {
+      emailRef.current?.focus();
+    }
+
+    if (field === "email") {
+      phonePayRef.current?.focus();
+    }
+
+    if (field === "phonePay") {
+      handleSave();
+    }
+  };
+
+  // --------------------------------------------------
+  // VALIDATE COMPLETE FORM
+  // --------------------------------------------------
+
+  const validateForm = () => {
+    const newErrors = {
+      code: validateField("code", formData.code),
+      name: validateField("name", formData.name),
+      phone: validateField("phone", formData.phone),
+      email: validateField("email", formData.email),
+      phonePay: validateField("phonePay", formData.phonePay),
+    };
+
+    setErrors(newErrors);
+
+    return !Object.values(newErrors).some((error) => error);
+  };
+
+  // --------------------------------------------------
+  // SAVE FARMER
+  // --------------------------------------------------
+
+  const handleSave = () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    const code = formData.code.trim();
+
+    // Check duplicate farmer code
+    const duplicateIndex = farmers.findIndex(
+      (farmer, index) =>
+        farmer.code === code && index !== editIndex
+    );
+
+    if (duplicateIndex !== -1) {
+      setErrors((prev) => ({
+        ...prev,
+        code: "This Farmer Code already exists.",
+      }));
+
+      codeRef.current?.focus();
+      return;
+    }
+
+    if (editIndex !== null) {
+      // Update existing farmer
+      setFarmers((prev) =>
+        prev.map((farmer, index) =>
+          index === editIndex
+            ? {
+                ...formData,
+                code: formData.code.trim(),
+                name: formData.name.trim(),
+                phone: formData.phone.trim(),
+                email: formData.email.trim(),
+                phonePay: formData.phonePay.trim(),
+              }
+            : farmer
+        )
+      );
+
+      setEditIndex(null);
+    } else {
+      // Add new farmer
+      setFarmers((prev) => [
+        ...prev,
+        {
+          ...formData,
+          code: formData.code.trim(),
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+          email: formData.email.trim(),
+          phonePay: formData.phonePay.trim(),
+        },
+      ]);
+    }
+
+    handleClear();
+  };
+
+  // --------------------------------------------------
+  // CLEAR FORM
+  // --------------------------------------------------
+
+  const handleClear = () => {
     setFormData({
       code: "",
       name: "",
@@ -82,268 +356,353 @@ function Add_Farmer() {
       phonePay: "",
     });
 
+    setErrors({
+      code: "",
+      name: "",
+      phone: "",
+      email: "",
+      phonePay: "",
+    });
+
     setEditIndex(null);
+
+    setTimeout(() => {
+      codeRef.current?.focus();
+    }, 0);
   };
 
-  const handleSave = () => {
-    if (!formData.code.trim() || !formData.name.trim()) {
-      alert("Please enter Farmer Code and Farmer Name.");
-      return;
-    }
-
-    if (editIndex !== null) {
-      const updatedFarmers = [...farmers];
-
-      updatedFarmers[editIndex] = {
-        ...formData,
-      };
-
-      setFarmers(updatedFarmers);
-      clearForm();
-      return;
-    }
-
-    const existingFarmer = farmers.find(
-      (farmer) =>
-        farmer.code.toLowerCase() === formData.code.trim().toLowerCase()
-    );
-
-    if (existingFarmer) {
-      alert("Farmer Code already exists.");
-      return;
-    }
-
-    setFarmers((prev) => [
-      ...prev,
-      {
-        code: formData.code.trim(),
-        name: formData.name.trim(),
-        phone: formData.phone.trim(),
-        email: formData.email.trim(),
-        phonePay: formData.phonePay.trim(),
-      },
-    ]);
-
-    clearForm();
-  };
+  // --------------------------------------------------
+  // UPDATE
+  // --------------------------------------------------
 
   const handleUpdate = (index) => {
     const farmer = farmers[index];
 
     setFormData({
-      code: farmer.code,
-      name: farmer.name,
-      phone: farmer.phone,
-      email: farmer.email,
-      phonePay: farmer.phonePay,
+      code: farmer.code || "",
+      name: farmer.name || "",
+      phone: farmer.phone || "",
+      email: farmer.email || "",
+      phonePay: farmer.phonePay || "",
+    });
+
+    setErrors({
+      code: "",
+      name: "",
+      phone: "",
+      email: "",
+      phonePay: "",
     });
 
     setEditIndex(index);
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    setTimeout(() => {
+      codeRef.current?.focus();
+    }, 0);
   };
+
+  // --------------------------------------------------
+  // DELETE
+  // --------------------------------------------------
 
   const handleDelete = (index) => {
-    const farmer = farmers[index];
-
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete ${farmer.code}?`
+    setFarmers((prev) =>
+      prev.filter((_, farmerIndex) => farmerIndex !== index)
     );
 
-    if (!confirmDelete) {
-      return;
-    }
-
-    setFarmers((prev) => prev.filter((_, i) => i !== index));
-
     if (editIndex === index) {
-      clearForm();
+      handleClear();
+    } else if (editIndex !== null && editIndex > index) {
+      setEditIndex((prev) => prev - 1);
     }
   };
 
+  // --------------------------------------------------
+  // SEARCH
+  // --------------------------------------------------
+
   const filteredFarmers = farmers.filter((farmer) => {
-    const searchText = search.toLowerCase();
+    const searchValue = search.toLowerCase();
 
     return (
-      farmer.code.toLowerCase().includes(searchText) ||
-      farmer.name.toLowerCase().includes(searchText)
+      farmer.code.toLowerCase().includes(searchValue) ||
+      farmer.name.toLowerCase().includes(searchValue) ||
+      farmer.phone.toLowerCase().includes(searchValue) ||
+      farmer.email.toLowerCase().includes(searchValue) ||
+      farmer.phonePay.toLowerCase().includes(searchValue)
     );
   });
 
   return (
     <div className="farmer-page">
-      <main className="farmer-main-container">
+      <div className="farmer-main-container">
 
-        {/* ================= HEADER ================= */}
-        <header className="farmer-header">
-          <h1>Add Farmers</h1>
+        {/* ==========================================
+            HEADER
+        ========================================== */}
 
-          <div className="header-decoration">
-            <span></span>
-
-            <img src={arrowImg} alt="Decoration" />
-
-            <span></span>
-          </div>
-        </header>
-
-        {/* ================= FORM SECTION ================= */}
-        <section className="farmer-form-section">
-
-          {/* Farmer Code */}
-          <div className="farmer-field">
-            <label>
-              <img src={farmerCodeImg} alt="" />
-              <span>Farmer Code</span>
-            </label>
-
-            <input
-              type="text"
-              name="code"
-              value={formData.code}
-              onChange={handleChange}
-              placeholder="Enter Farmer Code"
+        <div className="farmer-header">
+          <div className="farmer-header-left">
+            <img
+              src={farmersImg}
+              alt="Farmers"
+              className="farmer-header-icon"
             />
+
+            <div>
+              <h1>Add Farmer</h1>
+              <p>Register and manage farmer details</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ==========================================
+            FORM SECTION
+        ========================================== */}
+
+        <div className="farmer-form-section">
+
+          {/* LEFT COLUMN */}
+
+          <div className="farmer-form-column">
+
+            {/* FARMER CODE */}
+
+            <div className="farmer-field">
+              <label>
+                <img src={farmerCodeImg} alt="" />
+                Farmer Code
+              </label>
+
+              <input
+                ref={codeRef}
+                type="text"
+                name="code"
+                value={formData.code}
+                onChange={handleChange}
+                onKeyDown={(e) => handleKeyDown(e, "code")}
+                placeholder="Enter Farmer Code"
+                autoComplete="off"
+                inputMode="numeric"
+              />
+
+              {errors.code && (
+                <span className="field-error">
+                  {errors.code}
+                </span>
+              )}
+            </div>
+
+            {/* FARMER NAME */}
+
+            <div className="farmer-field">
+              <label>
+                <img src={farmerNameImg} alt="" />
+                Farmer Name
+              </label>
+
+              <input
+                ref={nameRef}
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                onKeyDown={(e) => handleKeyDown(e, "name")}
+                placeholder="Enter Farmer Name"
+                autoComplete="off"
+              />
+
+              {errors.name && (
+                <span className="field-error">
+                  {errors.name}
+                </span>
+              )}
+            </div>
+
+            {/* PHONE */}
+
+            <div className="farmer-field">
+              <label>
+                <img src={phoneImg} alt="" />
+                Phone No
+              </label>
+
+              <input
+                ref={phoneRef}
+                type="text"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                onKeyDown={(e) => handleKeyDown(e, "phone")}
+                placeholder="Enter Phone Number"
+                autoComplete="off"
+                inputMode="numeric"
+                maxLength={10}
+              />
+
+              {errors.phone && (
+                <span className="field-error">
+                  {errors.phone}
+                </span>
+              )}
+            </div>
+
           </div>
 
-          {/* Farmer Name */}
-          <div className="farmer-field">
-            <label>
-              <img src={farmerNameImg} alt="" />
-              <span>Farmer Name</span>
-            </label>
+          {/* RIGHT COLUMN */}
 
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Enter Farmer Name"
-            />
-          </div>
+          <div className="farmer-form-column">
 
-          {/* Phone */}
-          <div className="farmer-field">
-            <label>
-              <img src={phoneImg} alt="" />
-              <span>Phone No</span>
-            </label>
+            {/* EMAIL */}
 
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="Enter Phone Number"
-            />
-          </div>
+            <div className="farmer-field">
+              <label>
+                <img src={gmailImg} alt="" />
+                Email Address
+              </label>
 
-          {/* Email */}
-          <div className="farmer-field">
-            <label>
-              <img src={gmailImg} alt="" />
-              <span>Email No</span>
-            </label>
+              <input
+                ref={emailRef}
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                onKeyDown={(e) => handleKeyDown(e, "email")}
+                placeholder="Enter Gmail Address"
+                autoComplete="off"
+              />
 
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter Email Address"
-            />
-          </div>
+              {errors.email && (
+                <span className="field-error">
+                  {errors.email}
+                </span>
+              )}
+            </div>
 
-          {/* Phone Pay */}
-          <div className="farmer-field phone-pay-field">
-            <label>
-              <img src={rupeesImg} alt="" />
-              <span>Phone Pay No</span>
-            </label>
+            {/* PHONE PAY */}
 
-            <input
-              type="tel"
-              name="phonePay"
-              value={formData.phonePay}
-              onChange={handleChange}
-              placeholder="Enter Phone Pay Number"
-            />
-          </div>
+            <div className="farmer-field">
+              <label>
+                <img src={rupeesImg} alt="" />
+                Phone Pay No
+              </label>
 
-          {/* Buttons */}
-          <div className="form-buttons">
+              <input
+                ref={phonePayRef}
+                type="text"
+                name="phonePay"
+                value={formData.phonePay}
+                onChange={handleChange}
+                onKeyDown={(e) =>
+                  handleKeyDown(e, "phonePay")
+                }
+                placeholder="Enter Phone Pay Number"
+                autoComplete="off"
+                inputMode="numeric"
+                maxLength={10}
+              />
 
-            <button
-              type="button"
-              className="clear-button"
-              onClick={clearForm}
-            >
-              <span className="button-icon">↻</span>
-              <span>Clear</span>
-            </button>
-
-            <button
-              type="button"
-              className="save-button"
-              onClick={handleSave}
-            >
-              <img src={saveImg} alt="" />
-
-              <span>
-                {editIndex !== null ? "Update" : "Save"}
-              </span>
-            </button>
+              {errors.phonePay && (
+                <span className="field-error">
+                  {errors.phonePay}
+                </span>
+              )}
+            </div>
 
           </div>
-        </section>
+        </div>
 
-        {/* ================= AVAILABLE FARMERS ================= */}
-        <section className="available-farmers-section">
+        {/* ==========================================
+            BUTTONS
+        ========================================== */}
 
-          {/* Top row */}
-          <div className="available-top-row">
+        <div className="farmer-form-buttons">
+
+          <button
+            type="button"
+            className="farmer-action-button save-button"
+            onClick={handleSave}
+          >
+            <img src={saveImg} alt="" />
+            {editIndex !== null ? "Update" : "Save"}
+          </button>
+
+          <button
+            type="button"
+            className="farmer-action-button clear-button"
+            onClick={handleClear}
+          >
+            Clear
+          </button>
+
+        </div>
+
+        {/* ==========================================
+            AVAILABLE FARMERS
+        ========================================== */}
+
+        <div className="available-farmers-section">
+
+          <div className="available-farmers-header">
 
             <div className="available-title">
-              <img src={availableFarmerImg} alt="" />
+              <img
+                src={availableFarmerImg}
+                alt=""
+              />
 
-              <h2>Available Farmers</h2>
+              <div>
+                <h2>Available Farmers</h2>
+                <p>View and manage registered farmers</p>
+              </div>
             </div>
 
             <div className="total-farmer-box">
-              <img src={farmersImg} alt="" />
-
               <span>Total Farmer</span>
-
               <strong>{farmers.length}</strong>
             </div>
 
-            <div className="search-box">
-              <img src={searchImg} alt="" />
+          </div>
+
+          {/* SEARCH */}
+
+          <div className="farmer-search-container">
+
+            <div className="farmer-search-box">
+
+              <img
+                src={searchImg}
+                alt="Search"
+              />
 
               <input
                 type="text"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by code or name..."
+                onChange={(e) =>
+                  setSearch(e.target.value)
+                }
+                placeholder="Search Farmer"
+                autoComplete="off"
               />
+
             </div>
 
           </div>
 
-          {/* Table */}
-          <div className="table-wrapper">
+          {/* ==========================================
+              TABLE
+          ========================================== */}
 
-            <table className="farmers-table">
+          <div className="farmer-table-wrapper">
+
+            <table className="farmer-table">
 
               <thead>
                 <tr>
-                  <th>Code</th>
-                  <th>Name</th>
+                  <th>Farmer Code</th>
+                  <th>Farmer Name</th>
                   <th>Phone No</th>
-                  <th>Email No</th>
+                  <th>Email Address</th>
                   <th>Phone Pay No</th>
                   <th>Action</th>
                 </tr>
@@ -352,93 +711,85 @@ function Add_Farmer() {
               <tbody>
 
                 {filteredFarmers.length > 0 ? (
-
                   filteredFarmers.map((farmer) => {
 
-                    const actualIndex = farmers.findIndex(
-                      (item) => item.code === farmer.code
-                    );
+                    const actualIndex =
+                      farmers.findIndex(
+                        (item) =>
+                          item === farmer
+                      );
 
                     return (
-                      <tr key={farmer.code}>
+                      <tr key={actualIndex}>
 
-                        <td className="farmer-code-cell">
+                        <td>
                           {farmer.code}
                         </td>
 
                         <td>
-                          {farmer.name || (
-                            <span className="dash">−</span>
-                          )}
+                          {farmer.name || "-"}
                         </td>
 
                         <td>
-                          {farmer.phone || (
-                            <span className="dash">−</span>
-                          )}
+                          {farmer.phone || "-"}
                         </td>
 
                         <td>
-                          {farmer.email || (
-                            <span className="dash">−</span>
-                          )}
+                          {farmer.email || "-"}
                         </td>
 
                         <td>
-                          {farmer.phonePay || (
-                            <span className="dash">−</span>
-                          )}
+                          {farmer.phonePay || "-"}
                         </td>
 
-                        {/* ACTION BUTTONS */}
-                        <td className="action-cell">
+                        <td>
 
-                          <button
-                            type="button"
-                            className="update-button"
-                            onClick={() =>
-                              handleUpdate(actualIndex)
-                            }
-                          >
-                            <span className="edit-icon">
-                              ✎
-                            </span>
+                          <div className="table-action-buttons">
 
-                            <span>Update</span>
-                          </button>
+                            <button
+                              type="button"
+                              className="update-button"
+                              onClick={() =>
+                                handleUpdate(
+                                  actualIndex
+                                )
+                              }
+                            >
+                              Update
+                            </button>
 
-                          <button
-                            type="button"
-                            className="delete-button"
-                            onClick={() =>
-                              handleDelete(actualIndex)
-                            }
-                          >
-                            <img
-                              src={deleteImg}
-                              alt=""
-                            />
+                            <button
+                              type="button"
+                              className="delete-button"
+                              onClick={() =>
+                                handleDelete(
+                                  actualIndex
+                                )
+                              }
+                            >
+                              <img
+                                src={deleteImg}
+                                alt=""
+                              />
+                              Delete
+                            </button>
 
-                            <span>Delete</span>
-                          </button>
+                          </div>
 
                         </td>
 
                       </tr>
                     );
                   })
-
                 ) : (
-
                   <tr>
                     <td
                       colSpan="6"
-                      className="no-farmer"
+                      className="no-farmer-row"
                     >
-                      No farmers found
+                      No farmers found.
                     </td>
                   </tr>
-
                 )}
 
               </tbody>
@@ -447,11 +798,22 @@ function Add_Farmer() {
 
           </div>
 
-        </section>
+        </div>
 
-      </main>
+        {/* ==========================================
+            BOTTOM DECORATION
+        ========================================== */}
+
+        <div className="farmer-bottom-decoration">
+          <img
+            src={arrowImg}
+            alt=""
+          />
+        </div>
+
+      </div>
     </div>
   );
-}
+};
 
-export default Add_Farmer;
+export default AddFarmer;
