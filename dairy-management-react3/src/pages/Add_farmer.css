@@ -7,18 +7,36 @@
   width: 100%;
   position: relative;
 
-  /* Space at top and bottom */
   padding: 24px 0;
 
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: transparent;
 
   font-family: Arial, sans-serif;
 
   overflow-x: hidden;
+  isolation: isolate;
 }
 
+/* =========================================================
+   BLURRED BACKGROUND
+   ========================================================= */
+
+.farmer-page::before {
+  content: "";
+  position: fixed;
+  inset: -12px;
+
+  background-image: var(--farmer-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  filter: blur(5px);
+
+  transform: scale(1.03);
+
+  z-index: -2;
+}
 
 /* =========================================================
    OVERLAY
@@ -31,9 +49,9 @@
   background: rgba(255, 255, 255, 0.18);
 
   pointer-events: none;
-  z-index: 0;
-}
 
+  z-index: -1;
+}
 
 /* =========================================================
    MAIN CONTAINER
@@ -64,7 +82,6 @@
   box-sizing: border-box;
 }
 
-
 /* =========================================================
    HEADER
    ========================================================= */
@@ -83,7 +100,6 @@
 
   color: #08752f;
 
-  /* Smaller title */
   font-size: 36px;
 
   line-height: 1.05;
@@ -92,7 +108,6 @@
 
   font-weight: 700;
 }
-
 
 /* =========================================================
    HEADER DECORATION
@@ -132,7 +147,6 @@
   object-fit: contain !important;
 }
 
-
 /* =========================================================
    FORM SECTION
    ========================================================= */
@@ -146,7 +160,6 @@
 
   column-gap: 28px;
 
-  /* Smaller vertical gap */
   row-gap: 3px;
 
   padding: 5px 24px 6px;
@@ -157,11 +170,11 @@
 
   background: rgba(250, 255, 252, 0.48);
 
-  box-shadow: 0 2px 8px rgba(0, 100, 50, 0.04);
+  box-shadow:
+    0 2px 8px rgba(0, 100, 50, 0.04);
 
   box-sizing: border-box;
 }
-
 
 /* =========================================================
    FARMER FIELD
@@ -177,7 +190,6 @@
   border-bottom: 1px solid rgba(100, 165, 130, 0.15);
 }
 
-
 /* =========================================================
    LABEL
    ========================================================= */
@@ -185,7 +197,6 @@
 .farmer-page .farmer-field label {
   width: 100%;
 
-  /* Smaller label height */
   height: 26px;
 
   margin: 0;
@@ -205,7 +216,6 @@
 
   font-weight: 600;
 }
-
 
 /* =========================================================
    FIELD ICON
@@ -228,7 +238,6 @@
   border: none !important;
 }
 
-
 /* =========================================================
    INPUT
    ========================================================= */
@@ -238,7 +247,6 @@
 
   width: 100% !important;
 
-  /* Smaller field height */
   height: 40px !important;
 
   margin: 0;
@@ -279,7 +287,6 @@
     0 0 0 3px rgba(80, 170, 110, 0.08) !important;
 }
 
-
 /* =========================================================
    PHONE PAY
    ========================================================= */
@@ -287,7 +294,6 @@
 .farmer-page .phone-pay-field {
   grid-column: 1 / 2;
 }
-
 
 /* =========================================================
    BUTTON AREA
@@ -308,13 +314,11 @@
   margin-top: 1px;
 }
 
-
 /* =========================================================
    ALL FORM BUTTONS
    ========================================================= */
 
 .farmer-page .form-buttons button {
-  /* Smaller buttons */
   height: 42px !important;
 
   margin: 0;
@@ -341,7 +345,6 @@
   transition: 0.2s ease;
 }
 
-
 /* =========================================================
    CLEAR BUTTON
    ========================================================= */
@@ -359,7 +362,6 @@
 .farmer-page .clear-button:hover {
   background: #f1fff5 !important;
 }
-
 
 /* =========================================================
    CLEAR ICON
@@ -381,7 +383,6 @@
   color: #087431;
 }
 
-
 /* =========================================================
    SAVE BUTTON
    ========================================================= */
@@ -399,7 +400,6 @@
 
   color: #ffffff !important;
 }
-
 
 /* =========================================================
    SAVE ICON
@@ -426,7 +426,6 @@
   flex-shrink: 0;
 }
 
-
 /* =========================================================
    AVAILABLE FARMERS SECTION
    ========================================================= */
@@ -434,7 +433,6 @@
 .farmer-page .available-farmers-section {
   width: 100%;
 
-  /* Small gap from form */
   margin-top: 7px;
 
   padding: 6px 12px 8px;
@@ -450,7 +448,6 @@
 
   box-sizing: border-box;
 }
-
 
 /* =========================================================
    AVAILABLE TOP ROW
@@ -469,7 +466,6 @@
 
   gap: 12px;
 }
-
 
 /* =========================================================
    AVAILABLE TITLE
@@ -512,7 +508,6 @@
 
   font-weight: 700;
 }
-
 
 /* =========================================================
    TOTAL FARMER
@@ -563,7 +558,6 @@
 
   color: #087431;
 }
-
 
 /* =========================================================
    SEARCH BOX
@@ -634,7 +628,6 @@
   color: #91a7ce;
 }
 
-
 /* =========================================================
    TABLE WRAPPER
    ========================================================= */
@@ -650,7 +643,6 @@
 
   border-radius: 9px;
 }
-
 
 /* =========================================================
    TABLE
@@ -670,13 +662,11 @@
   background: rgba(255, 255, 255, 0.70);
 }
 
-
 /* =========================================================
    TABLE HEADER
    ========================================================= */
 
 .farmer-page .farmers-table th {
-  /* Shorter header */
   height: 34px;
 
   padding: 4px 6px;
@@ -696,13 +686,11 @@
   border-bottom: 1px solid #d7e5dd;
 }
 
-
 /* =========================================================
    TABLE DATA
    ========================================================= */
 
 .farmer-page .farmers-table td {
-  /* Shorter table rows */
   height: 32px;
 
   padding: 2px 6px;
@@ -739,7 +727,6 @@
   border-right: none;
 }
 
-
 /* =========================================================
    TABLE COLUMN WIDTHS
    ========================================================= */
@@ -764,16 +751,17 @@
   width: 20%;
 }
 
+/* Reduced slightly to give Action buttons more room */
 .farmer-page .farmers-table th:nth-child(5),
 .farmer-page .farmers-table td:nth-child(5) {
-  width: 18%;
+  width: 14%;
 }
 
+/* Increased so both buttons fit */
 .farmer-page .farmers-table th:nth-child(6),
 .farmer-page .farmers-table td:nth-child(6) {
-  width: 16%;
+  width: 20%;
 }
-
 
 /* =========================================================
    FARMER CODE
@@ -789,24 +777,21 @@
   color: #91a5c5;
 }
 
-
 /* =========================================================
    ACTION CELL
    ========================================================= */
 
 .farmer-page .action-cell {
-  width: 100%;
+  width: auto !important;
 
-  display: flex;
+  padding: 2px 4px !important;
 
-  align-items: center;
-  justify-content: center;
+  text-align: center !important;
 
-  gap: 4px;
+  white-space: nowrap !important;
 
-  white-space: nowrap;
+  overflow: visible !important;
 }
-
 
 /* =========================================================
    ACTION BUTTONS
@@ -815,18 +800,20 @@
 .farmer-page .action-cell button {
   height: 29px !important;
 
-  margin: 0;
+  margin: 0 2px !important;
 
   padding: 0 6px !important;
 
   border-radius: 7px !important;
 
-  display: inline-flex;
+  display: inline-flex !important;
 
   align-items: center;
   justify-content: center;
 
   gap: 4px;
+
+  vertical-align: middle;
 
   font-family: Arial, sans-serif;
 
@@ -837,8 +824,11 @@
   cursor: pointer;
 
   box-sizing: border-box;
-}
 
+  white-space: nowrap;
+
+  flex-shrink: 0;
+}
 
 /* =========================================================
    UPDATE BUTTON
@@ -854,7 +844,6 @@
   color: #087431 !important;
 }
 
-
 /* =========================================================
    DELETE BUTTON
    ========================================================= */
@@ -868,7 +857,6 @@
 
   color: #087431 !important;
 }
-
 
 /* =========================================================
    DELETE ICON
@@ -891,7 +879,6 @@
   flex-shrink: 0;
 }
 
-
 /* =========================================================
    EDIT ICON
    ========================================================= */
@@ -908,8 +895,9 @@
   font-size: 16px !important;
 
   line-height: 1;
-}
 
+  flex-shrink: 0;
+}
 
 /* =========================================================
    NO FARMER
@@ -923,13 +911,11 @@
   font-size: 13px !important;
 }
 
-
 /* =========================================================
    RESPONSIVE
    ========================================================= */
 
 @media (max-width: 1100px) {
-
   .farmer-page .farmer-main-container {
     width: 92%;
   }
@@ -939,13 +925,11 @@
   }
 }
 
-
 /* =========================================================
    TABLET
    ========================================================= */
 
 @media (max-width: 850px) {
-
   .farmer-page {
     padding: 20px 0;
   }
@@ -981,13 +965,11 @@
   }
 }
 
-
 /* =========================================================
    MOBILE
    ========================================================= */
 
 @media (max-width: 550px) {
-
   .farmer-page {
     padding: 12px 0;
   }

@@ -16,35 +16,35 @@ import availableFarmerImg from "../assets/Add_Farmer_img/availablefarmer.jpg.png
 
 const initialFarmers = [
   {
-    code: "F001",
+    code: "1",
     name: "",
     phone: "",
     email: "",
     phonePay: "",
   },
   {
-    code: "F002",
+    code: "2",
     name: "",
     phone: "",
     email: "",
     phonePay: "",
   },
   {
-    code: "F003",
+    code: "3",
     name: "",
     phone: "",
     email: "",
     phonePay: "",
   },
   {
-    code: "F004",
+    code: "4",
     name: "",
     phone: "",
     email: "",
     phonePay: "",
   },
   {
-    code: "F005",
+    code: "5",
     name: "",
     phone: "",
     email: "",
@@ -94,6 +94,7 @@ function Add_Farmer() {
 
     if (editIndex !== null) {
       const updatedFarmers = [...farmers];
+
       updatedFarmers[editIndex] = {
         ...formData,
       };
@@ -176,7 +177,9 @@ function Add_Farmer() {
   return (
     <div
       className="farmer-page"
-      style={{ backgroundImage: `url(${backgroundImg})` }}
+      style={{
+        "--farmer-bg-image": `url(${backgroundImg})`,
+      }}
     >
       <div className="farmer-overlay"></div>
 
@@ -296,7 +299,9 @@ function Add_Farmer() {
               onClick={handleSave}
             >
               <img src={saveImg} alt="" />
-              <span>{editIndex !== null ? "Update" : "Save"}</span>
+              <span>
+                {editIndex !== null ? "Update" : "Save"}
+              </span>
             </button>
 
           </div>
@@ -364,15 +369,21 @@ function Add_Farmer() {
                         </td>
 
                         <td>
-                          {farmer.name || <span className="dash">−</span>}
+                          {farmer.name || (
+                            <span className="dash">−</span>
+                          )}
                         </td>
 
                         <td>
-                          {farmer.phone || <span className="dash">−</span>}
+                          {farmer.phone || (
+                            <span className="dash">−</span>
+                          )}
                         </td>
 
                         <td>
-                          {farmer.email || <span className="dash">−</span>}
+                          {farmer.email || (
+                            <span className="dash">−</span>
+                          )}
                         </td>
 
                         <td>
@@ -381,6 +392,7 @@ function Add_Farmer() {
                           )}
                         </td>
 
+                        {/* ACTION */}
                         <td className="action-cell">
 
                           <button
@@ -389,7 +401,7 @@ function Add_Farmer() {
                             onClick={() => handleUpdate(actualIndex)}
                           >
                             <span className="edit-icon">✎</span>
-                            Update
+                            <span>Update</span>
                           </button>
 
                           <button
@@ -397,8 +409,11 @@ function Add_Farmer() {
                             className="delete-button"
                             onClick={() => handleDelete(actualIndex)}
                           >
-                            <img src={deleteImg} alt="" />
-                            Delete
+                            <img
+                              src={deleteImg}
+                              alt=""
+                            />
+                            <span>Delete</span>
                           </button>
 
                         </td>
@@ -408,7 +423,10 @@ function Add_Farmer() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan="6" className="no-farmer">
+                    <td
+                      colSpan="6"
+                      className="no-farmer"
+                    >
                       No farmers found
                     </td>
                   </tr>
