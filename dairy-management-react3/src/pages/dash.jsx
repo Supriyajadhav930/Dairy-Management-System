@@ -105,7 +105,7 @@ function Dash() {
 
                         <button
                             className="dashboard-card"
-                            onClick={() => openPage("Farmer Management")}
+                            onClick={() => navigate("/add-farmer")}
                         >
                             <div className="icon-container">
                                 <img

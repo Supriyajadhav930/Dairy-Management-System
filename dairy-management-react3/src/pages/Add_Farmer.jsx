@@ -88,6 +88,7 @@ const DeleteIcon = () => (
 ========================= */
 
 function AddFarmer() {
+
     const [farmers, setFarmers] = useState([
         {
             id: 1,
@@ -147,19 +148,25 @@ function AddFarmer() {
     ========================= */
 
     const handleChange = (e) => {
+
         const { name, value } = e.target;
 
         if (name === "code") {
+
             setFormData({
                 ...formData,
                 [name]: value.replace(/\D/g, "")
             });
+
         } else if (name === "phone" || name === "phonePay") {
+
             setFormData({
                 ...formData,
                 [name]: value.replace(/\D/g, "").slice(0, 10)
             });
+
         } else {
+
             setFormData({
                 ...formData,
                 [name]: value
@@ -172,6 +179,7 @@ function AddFarmer() {
     ========================= */
 
     const handleClear = () => {
+
         setFormData({
             code: "",
             name: "",
@@ -188,7 +196,14 @@ function AddFarmer() {
     ========================= */
 
     const handleSave = () => {
-        const { code, name, phone, email, phonePay } = formData;
+
+        const {
+            code,
+            name,
+            phone,
+            email,
+            phonePay
+        } = formData;
 
         if (!code || !name || !phone || !email || !phonePay) {
             alert("Please fill all fields.");
@@ -223,7 +238,10 @@ function AddFarmer() {
             return;
         }
 
+        /* UPDATE */
+
         if (editingId) {
+
             setFarmers(
                 farmers.map((farmer) =>
                     farmer.id === editingId
@@ -240,7 +258,13 @@ function AddFarmer() {
             );
 
             alert("Farmer updated successfully.");
-        } else {
+
+        }
+
+        /* SAVE NEW FARMER */
+
+        else {
+
             const newFarmer = {
                 id: Date.now(),
                 code,
@@ -263,6 +287,7 @@ function AddFarmer() {
     ========================= */
 
     const handleEdit = (farmer) => {
+
         setFormData({
             code: farmer.code,
             name: farmer.name === "-" ? "" : farmer.name,
@@ -284,6 +309,7 @@ function AddFarmer() {
     ========================= */
 
     const handleDelete = (id) => {
+
         const confirmDelete = window.confirm(
             "Are you sure you want to delete this farmer?"
         );
@@ -300,6 +326,7 @@ function AddFarmer() {
     ========================= */
 
     const filteredFarmers = farmers.filter((farmer) => {
+
         const searchText = search.toLowerCase();
 
         return (
@@ -313,33 +340,47 @@ function AddFarmer() {
     ========================= */
 
     return (
+
         <div className="add-farmer-page">
 
             <div className="farmer-main-container">
 
-                {/* HEADER */}
+                {/* =========================
+                    HEADER
+                ========================= */}
+
                 <header className="farmer-header">
 
-                    <div className="header-title-wrapper">
+                    <div className="header-title-section">
 
-                        {/* Leaf symbols removed */}
+                        <h1>Add Farmers</h1>
 
-                        <div className="header-title-section">
-                            <h1>Add Farmers</h1>
-                            <p>Add and manage farmer details</p>
+                        <div className="title-decoration">
+
+                            <span></span>
+
+                            <div className="leaf-decoration">
+                                <span>❧</span>
+                            </div>
+
+                            <span></span>
+
                         </div>
-
-                        {/* Leaf symbols removed */}
 
                     </div>
 
                 </header>
 
-                {/* FORM */}
+                {/* =========================
+                    FORM
+                ========================= */}
+
                 <div className="farmer-form">
 
                     {/* FARMER CODE */}
+
                     <div className="form-group">
+
                         <label>
                             <UserCodeIcon />
                             Farmer Code
@@ -350,12 +391,15 @@ function AddFarmer() {
                             name="code"
                             value={formData.code}
                             onChange={handleChange}
-                            placeholder="Enter farmer code"
+                            placeholder="Enter Farmer Code"
                         />
+
                     </div>
 
                     {/* FARMER NAME */}
+
                     <div className="form-group">
+
                         <label>
                             <UserIcon />
                             Farmer Name
@@ -366,12 +410,15 @@ function AddFarmer() {
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            placeholder="Enter farmer name"
+                            placeholder="Enter Farmer Name"
                         />
+
                     </div>
 
                     {/* PHONE */}
+
                     <div className="form-group">
+
                         <label>
                             <PhoneIcon />
                             Phone No
@@ -382,13 +429,16 @@ function AddFarmer() {
                             name="phone"
                             value={formData.phone}
                             onChange={handleChange}
-                            placeholder="Enter 10 digit phone number"
+                            placeholder="Enter Phone Number"
                             maxLength="10"
                         />
+
                     </div>
 
                     {/* EMAIL */}
+
                     <div className="form-group">
+
                         <label>
                             <MailIcon />
                             Email No
@@ -399,12 +449,15 @@ function AddFarmer() {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            placeholder="Enter email address"
+                            placeholder="Enter Email Address"
                         />
+
                     </div>
 
                     {/* PHONE PAY */}
-                    <div className="form-group">
+
+                    <div className="form-group phone-pay-group">
+
                         <label>
                             <RupeeIcon />
                             Phone Pay No
@@ -415,12 +468,14 @@ function AddFarmer() {
                             name="phonePay"
                             value={formData.phonePay}
                             onChange={handleChange}
-                            placeholder="Enter 10 digit Phone Pay number"
+                            placeholder="Enter Phone Pay Number"
                             maxLength="10"
                         />
+
                     </div>
 
                     {/* BUTTONS */}
+
                     <div className="form-buttons">
 
                         <button
@@ -445,10 +500,15 @@ function AddFarmer() {
 
                 </div>
 
-                {/* FARMERS SECTION */}
+                {/* =========================
+                    FARMERS SECTION
+                ========================= */}
+
                 <section className="farmers-section">
 
                     <div className="farmers-top">
+
+                        {/* LEFT */}
 
                         <div className="farmers-heading">
 
@@ -456,21 +516,37 @@ function AddFarmer() {
 
                             <h2>
                                 Available Farmers
-                                <span className="farmer-count">
-                                    {farmers.length}
-                                </span>
                             </h2>
 
                         </div>
 
+                        {/* TOTAL FARMERS */}
+
+                        <div className="total-farmer-box">
+
+                            <span className="total-farmer-icon">
+                                👥
+                            </span>
+
+                            <span className="total-farmer-text">
+                                Total Farmer
+                            </span>
+
+                            <span className="total-farmer-number">
+                                {farmers.length}
+                            </span>
+
+                        </div>
+
                         {/* SEARCH */}
+
                         <div className="search-box">
 
                             <SearchIcon />
 
                             <input
                                 type="text"
-                                placeholder="Search by code or name"
+                                placeholder="Search by code or name..."
                                 value={search}
                                 onChange={(e) =>
                                     setSearch(e.target.value)
@@ -482,25 +558,37 @@ function AddFarmer() {
                     </div>
 
                     {/* TABLE */}
+
                     <div className="table-wrapper">
 
                         <table className="farmer-table">
 
                             <thead>
+
                                 <tr>
+
                                     <th>Code</th>
+
                                     <th>Name</th>
+
                                     <th>Phone No</th>
+
                                     <th>Email No</th>
+
                                     <th>Phone Pay No</th>
+
                                     <th>Action</th>
+
                                 </tr>
+
                             </thead>
 
                             <tbody>
 
                                 {filteredFarmers.length > 0 ? (
+
                                     filteredFarmers.map((farmer) => (
+
                                         <tr key={farmer.id}>
 
                                             <td className="farmer-code">
@@ -533,9 +621,14 @@ function AddFarmer() {
                                                         onClick={() =>
                                                             handleEdit(farmer)
                                                         }
-                                                        title="Edit"
                                                     >
+
                                                         <EditIcon />
+
+                                                        <span>
+                                                            Update
+                                                        </span>
+
                                                     </button>
 
                                                     <button
@@ -544,9 +637,14 @@ function AddFarmer() {
                                                         onClick={() =>
                                                             handleDelete(farmer.id)
                                                         }
-                                                        title="Delete"
                                                     >
+
                                                         <DeleteIcon />
+
+                                                        <span>
+                                                            Delete
+                                                        </span>
+
                                                     </button>
 
                                                 </div>
@@ -554,16 +652,22 @@ function AddFarmer() {
                                             </td>
 
                                         </tr>
+
                                     ))
+
                                 ) : (
+
                                     <tr>
+
                                         <td
                                             colSpan="6"
                                             className="no-data"
                                         >
                                             No farmers found.
                                         </td>
+
                                     </tr>
+
                                 )}
 
                             </tbody>

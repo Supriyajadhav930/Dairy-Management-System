@@ -8,6 +8,7 @@ import Signup from "./pages/Signup";
 import Dash from "./pages/dash"; // Import the dashboard component
 import Morning from "./pages/Morning";
 import Evening from "./pages/Evening";
+import AddFarmer from "./pages/Add_Farmer";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/dashboard" element={<Dash />} /> 
         <Route path="/morning" element={<Morning />} />
         <Route path="/evening" element={<Evening />} />
+        <Route path="/add-farmer" element={<AddFarmer />} />
       </Routes>
     </HashRouter>
   );
