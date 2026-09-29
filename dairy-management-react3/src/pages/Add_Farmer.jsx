@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import "./Add_farmer.css";
 
-import backgroundImg from "../assets/Add_Farmer_img/background.png";
 import farmerCodeImg from "../assets/Add_Farmer_img/farmercode.jpg.png";
 import farmerNameImg from "../assets/Add_Farmer_img/farmername.jpg.png";
 import phoneImg from "../assets/Add_Farmer_img/phone.jpg.png";
@@ -175,14 +174,7 @@ function Add_Farmer() {
   });
 
   return (
-    <div
-      className="farmer-page"
-      style={{
-        "--farmer-bg-image": `url(${backgroundImg})`,
-      }}
-    >
-      <div className="farmer-overlay"></div>
-
+    <div className="farmer-page">
       <main className="farmer-main-container">
 
         {/* ================= HEADER ================= */}
@@ -299,6 +291,7 @@ function Add_Farmer() {
               onClick={handleSave}
             >
               <img src={saveImg} alt="" />
+
               <span>
                 {editIndex !== null ? "Update" : "Save"}
               </span>
@@ -315,6 +308,7 @@ function Add_Farmer() {
 
             <div className="available-title">
               <img src={availableFarmerImg} alt="" />
+
               <h2>Available Farmers</h2>
             </div>
 
@@ -341,6 +335,7 @@ function Add_Farmer() {
 
           {/* Table */}
           <div className="table-wrapper">
+
             <table className="farmers-table">
 
               <thead>
@@ -355,8 +350,11 @@ function Add_Farmer() {
               </thead>
 
               <tbody>
+
                 {filteredFarmers.length > 0 ? (
+
                   filteredFarmers.map((farmer) => {
+
                     const actualIndex = farmers.findIndex(
                       (item) => item.code === farmer.code
                     );
@@ -392,27 +390,35 @@ function Add_Farmer() {
                           )}
                         </td>
 
-                        {/* ACTION */}
+                        {/* ACTION BUTTONS */}
                         <td className="action-cell">
 
                           <button
                             type="button"
                             className="update-button"
-                            onClick={() => handleUpdate(actualIndex)}
+                            onClick={() =>
+                              handleUpdate(actualIndex)
+                            }
                           >
-                            <span className="edit-icon">✎</span>
+                            <span className="edit-icon">
+                              ✎
+                            </span>
+
                             <span>Update</span>
                           </button>
 
                           <button
                             type="button"
                             className="delete-button"
-                            onClick={() => handleDelete(actualIndex)}
+                            onClick={() =>
+                              handleDelete(actualIndex)
+                            }
                           >
                             <img
                               src={deleteImg}
                               alt=""
                             />
+
                             <span>Delete</span>
                           </button>
 
@@ -421,7 +427,9 @@ function Add_Farmer() {
                       </tr>
                     );
                   })
+
                 ) : (
+
                   <tr>
                     <td
                       colSpan="6"
@@ -430,10 +438,13 @@ function Add_Farmer() {
                       No farmers found
                     </td>
                   </tr>
+
                 )}
+
               </tbody>
 
             </table>
+
           </div>
 
         </section>
