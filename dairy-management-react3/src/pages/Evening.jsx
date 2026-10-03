@@ -24,12 +24,12 @@ import farmerListIcon from "../assets/Evening_collection_img/farmer_list.png";
 import noRecordsIcon from "../assets/Evening_collection_img/no_records_document.png";
 import recordsCalendarIcon from "../assets/Evening_collection_img/records_calendar.png";
 
-/* ================= FARMER DATA ================= */
+/* ================= API URLS ================= */
 
 const FARMERS_API_URL = "http://localhost:5000/api/farmers";
+const COLLECTIONS_API_URL = "http://localhost:5000/api/collections";
 
-/* ================= MAIN COMPONENT ================= */
-
+/* ================= TABLE STYLES ================= */
 
 const tableHeadStyle = {
     padding: "10px 8px",
@@ -48,6 +48,8 @@ const tableCellStyle = {
     textAlign: "center",
     whiteSpace: "nowrap"
 };
+
+/* ================= MAIN COMPONENT ================= */
 
 function Evening() {
     const [farmerCode, setFarmerCode] = useState("");
@@ -69,12 +71,18 @@ function Evening() {
 
     const [recordsDate, setRecordsDate] = useState("");
 
+    /* ================= EDITING RECORD ================= */
+
+    const [editingRecordId, setEditingRecordId] = useState(null);
+
+    /* ================= INPUT REFS ================= */
+
     const litresRef = useRef(null);
     const fatRef = useRef(null);
     const snfRef = useRef(null);
     const rateRef = useRef(null);
 
-    /* ================= SET DATE + LOAD RECORDS ================= */
+    /* ================= SET DATE + LOAD DATA ================= */
 
     useEffect(() => {
         const today = new Date();
@@ -88,13 +96,14 @@ function Evening() {
         setDate(todayDate);
         setRecordsDate(todayDate);
 
-        /* ================= LOAD FARMERS FROM MONGODB ================= */
+        /* ================= LOAD FARMERS ================= */
 
         fetch(FARMERS_API_URL)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("Failed to fetch farmers");
                 }
+
                 return response.json();
             })
             .then((data) => {
@@ -104,16 +113,24 @@ function Evening() {
                 console.error("Error loading farmers:", error);
             });
 
-        /* ================= LOAD EVENING RECORDS FROM BACKEND ================= */
+        /* ================= LOAD EVENING RECORDS ================= */
 
-        fetch("http://localhost:5000/api/collections?type=evening")
-            .then((response) => response.json())
+        fetch(`${COLLECTIONS_API_URL}?type=evening`)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch evening records");
+                }
+
+                return response.json();
+            })
             .then((data) => {
-                const formattedRecords = data.map((record) => ({
-                    ...record,
-                    id: record._id,
-                    code: record.farmerCode
-                }));
+                const formattedRecords = Array.isArray(data)
+                    ? data.map((record) => ({
+                          ...record,
+                          id: record._id || record.id,
+                          code: record.farmerCode || record.code
+                      }))
+                    : [];
 
                 setRecords(formattedRecords);
             })
@@ -137,6 +154,75 @@ function Evening() {
         return `${parts[2]}/${parts[1]}/${parts[0]}`;
     };
 
+    /* ================= LOAD EXISTING RECORD ================= */
+
+    const loadExistingRecord = (code) => {
+        const normalizedCode = String(code || "")
+            .trim()
+            .toUpperCase();
+
+        const existingRecord = records.find((record) => {
+            const recordCode = String(
+                record.farmerCode || record.code || ""
+            )
+                .trim()
+                .toUpperCase();
+
+            return (
+                recordCode === normalizedCode &&
+                record.date === date &&
+                record.type === "evening"
+            );
+        });
+
+        /* ================= NO EXISTING RECORD ================= */
+
+        if (!existingRecord) {
+            setEditingRecordId(null);
+
+            setLitres("");
+            setFat("");
+            setSnf("");
+            setDegree("");
+            setRate("");
+
+            return false;
+        }
+
+        /* ================= EXISTING RECORD FOUND ================= */
+
+        const recordId =
+            existingRecord.id || existingRecord._id;
+
+        setEditingRecordId(recordId);
+
+        setLitres(
+            existingRecord.litres != null
+                ? String(existingRecord.litres)
+                : ""
+        );
+
+        setFat(
+            existingRecord.fat != null
+                ? String(existingRecord.fat)
+                : ""
+        );
+
+        setSnf(
+            existingRecord.snf != null
+                ? String(existingRecord.snf)
+                : ""
+        );
+
+        setRate(
+            existingRecord.rate != null
+                ? String(existingRecord.rate)
+                : ""
+        );
+
+        return true;
+    };
+
     /* ================= SEARCH FARMER ================= */
 
     const handleFarmerSearch = () => {
@@ -150,17 +236,40 @@ function Evening() {
 
         const farmer = farmers.find(
             (item) =>
-                String(item.code || "").trim().toUpperCase() === code
+                String(item.code || "")
+                    .trim()
+                    .toUpperCase() === code
         );
 
         if (!farmer) {
             setFarmerName("");
+            setEditingRecordId(null);
+
+            setLitres("");
+            setFat("");
+            setSnf("");
+            setDegree("");
+            setRate("");
+
             alert("Farmer not found.");
             return;
         }
 
-        setFarmerCode(String(farmer.code).trim().toUpperCase());
+        setFarmerCode(
+            String(farmer.code || "")
+                .trim()
+                .toUpperCase()
+        );
+
         setFarmerName(farmer.name || "");
+
+        /* Check whether today's evening record already exists */
+        loadExistingRecord(code);
+
+        /* Move cursor to litres */
+        setTimeout(() => {
+            litresRef.current?.focus();
+        }, 0);
     };
 
     /* ================= FARMER CODE INPUT ================= */
@@ -172,12 +281,22 @@ function Evening() {
 
         if (!code) {
             setFarmerName("");
+            setEditingRecordId(null);
+
+            setLitres("");
+            setFat("");
+            setSnf("");
+            setDegree("");
+            setRate("");
+
             return;
         }
 
         const farmer = farmers.find(
             (item) =>
-                String(item.code || "").trim().toUpperCase() === code
+                String(item.code || "")
+                    .trim()
+                    .toUpperCase() === code
         );
 
         if (farmer) {
@@ -198,6 +317,7 @@ function Evening() {
             }
 
             const data = await response.json();
+
             setFarmers(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error("Error refreshing farmers:", error);
@@ -211,7 +331,7 @@ function Evening() {
             ? (Number(litres) * Number(rate)).toFixed(2)
             : "0.00";
 
-    /* ================= CALCULATE DEGREE FROM FAT + SNF ================= */
+    /* ================= CALCULATE DEGREE ================= */
 
     useEffect(() => {
         if (fat !== "" && snf !== "") {
@@ -219,7 +339,7 @@ function Evening() {
                 4 *
                 (
                     Number(snf) -
-                    (0.21 * Number(fat)) -
+                    0.21 * Number(fat) -
                     0.36
                 );
 
@@ -234,14 +354,18 @@ function Evening() {
     const handleClear = () => {
         setFarmerCode("");
         setFarmerName("");
+
         setLitres("");
         setFat("");
         setSnf("");
         setDegree("");
         setRate("");
+
+        /* Exit edit mode */
+        setEditingRecordId(null);
     };
 
-    /* ================= SAVE RECORD ================= */
+    /* ================= SAVE / UPDATE RECORD ================= */
 
     const handleSave = async () => {
         if (!farmerCode.trim()) {
@@ -254,55 +378,212 @@ function Evening() {
             return;
         }
 
-        if (!litres) {
-            alert("Please enter Litres.");
+        if (!litres || Number(litres) <= 0) {
+            alert("Please enter valid Litres.");
             return;
         }
 
-        if (!fat) {
-            alert("Please enter Fat.");
+        if (!fat || Number(fat) <= 0) {
+            alert("Please enter valid Fat.");
             return;
         }
 
-        if (!snf) {
-            alert("Please enter SNF.");
+        if (!snf || Number(snf) <= 0) {
+            alert("Please enter valid SNF.");
             return;
         }
 
         if (!degree) {
-            alert("Please enter Degree.");
+            alert("Degree could not be calculated.");
             return;
         }
 
-        if (!rate) {
-            alert("Please enter Rate.");
+        if (!rate || Number(rate) <= 0) {
+            alert("Please enter valid Rate.");
             return;
         }
 
-        const newRecord = {
+        const collectionRecord = {
             type: "evening",
             farmerCode: farmerCode.trim().toUpperCase(),
-            farmerName: farmerName,
+            farmerName,
+            date,
             litres: Number(litres),
             fat: Number(fat),
             snf: Number(snf),
             degree: Number(degree),
             rate: Number(rate),
-            amount: Number(amount),
-            date: date
+            amount: Number(amount)
         };
 
         try {
+            /* =================================================
+               UPDATE EXISTING RECORD
+               ================================================= */
+
+            if (editingRecordId) {
+                const response = await fetch(
+                    `${COLLECTIONS_API_URL}/${editingRecordId}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(
+                            collectionRecord
+                        )
+                    }
+                );
+
+                const contentType =
+                    response.headers.get("content-type") || "";
+
+                if (!contentType.includes("application/json")) {
+                    const text = await response.text();
+
+                    console.error(
+                        "Backend returned non-JSON response:",
+                        text
+                    );
+
+                    throw new Error(
+                        `Backend returned ${response.status} instead of JSON.`
+                    );
+                }
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.message ||
+                            "Failed to update collection record."
+                    );
+                }
+
+                const updatedData =
+                    result.data || result;
+
+                const updatedRecord = {
+                    ...updatedData,
+                    id:
+                        updatedData._id ||
+                        editingRecordId,
+                    code:
+                        updatedData.farmerCode ||
+                        collectionRecord.farmerCode
+                };
+
+                setRecords((previousRecords) =>
+                    previousRecords.map((record) => {
+                        const recordId =
+                            record.id || record._id;
+
+                        return String(recordId) ===
+                            String(editingRecordId)
+                            ? updatedRecord
+                            : record;
+                    })
+                );
+
+                /* No success popup */
+
+                handleClear();
+
+                return;
+            }
+
+            /* =================================================
+               CREATE NEW RECORD
+               ================================================= */
+
             const response = await fetch(
-                "http://localhost:5000/api/collections",
+                COLLECTIONS_API_URL,
                 {
                     method: "POST",
-
                     headers: {
                         "Content-Type": "application/json"
                     },
+                    body: JSON.stringify(
+                        collectionRecord
+                    )
+                }
+            );
 
-                    body: JSON.stringify(newRecord)
+            const contentType =
+                response.headers.get("content-type") || "";
+
+            if (!contentType.includes("application/json")) {
+                const text = await response.text();
+
+                console.error(
+                    "Backend returned non-JSON response:",
+                    text
+                );
+
+                throw new Error(
+                    `Backend returned ${response.status} instead of JSON.`
+                );
+            }
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ||
+                        "Failed to save collection record."
+                );
+            }
+
+            const savedData =
+                result.data || result;
+
+            const savedRecord = {
+                ...savedData,
+                id:
+                    savedData._id ||
+                    savedData.id,
+                code:
+                    savedData.farmerCode ||
+                    collectionRecord.farmerCode
+            };
+
+            setRecords((previousRecords) => [
+                ...previousRecords,
+                savedRecord
+            ]);
+
+            /* No success popup */
+
+            handleClear();
+        } catch (error) {
+            console.error(
+                "Error saving/updating evening record:",
+                error
+            );
+
+            alert(
+                error.message ||
+                    "Failed to save evening collection."
+            );
+        }
+    };
+
+    /* ================= DELETE RECORD ================= */
+
+    const handleDeleteRecord = async (id) => {
+        if (
+            !window.confirm(
+                "Are you sure you want to delete this record?"
+            )
+        ) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `${COLLECTIONS_API_URL}/${id}`,
+                {
+                    method: "DELETE"
                 }
             );
 
@@ -311,89 +592,39 @@ function Evening() {
             if (!response.ok) {
                 throw new Error(
                     result.message ||
-                    "Failed to save collection record"
+                        "Failed to delete collection record"
                 );
             }
 
-            const savedRecord = {
-                ...result.data,
-                id: result.data._id,
-                code: result.data.farmerCode
-            };
+            setRecords((previousRecords) =>
+                previousRecords.filter(
+                    (record) =>
+                        String(record.id) !== String(id)
+                )
+            );
 
-            setRecords((previousRecords) => [
-                ...previousRecords,
-                savedRecord
-            ]);
-
-            alert("Evening collection saved successfully!");
-
-            handleClear();
-
+            alert(
+                "Evening collection record deleted successfully!"
+            );
         } catch (error) {
             console.error(
-                "Error saving evening record:",
+                "Error deleting evening record:",
                 error
             );
 
-            alert("Failed to save evening collection.");
+            alert(
+                "Failed to delete evening collection record."
+            );
         }
     };
 
-    /* ================= DELETE RECORD ================= */
-
-  const handleDeleteRecord = async (id) => {
-    if (
-        !window.confirm(
-            "Are you sure you want to delete this record?"
-        )
-    ) {
-        return;
-    }
-
-    try {
-        const response = await fetch(
-            `http://localhost:5000/api/collections/${id}`,
-            {
-                method: "DELETE"
-            }
-        );
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(
-                result.message ||
-                    "Failed to delete collection record"
-            );
-        }
-
-        setRecords((previousRecords) =>
-            previousRecords.filter(
-                (record) => record.id !== id
-            )
-        );
-
-        alert(
-            "Evening collection record deleted successfully!"
-        );
-
-    } catch (error) {
-        console.error(
-            "Error deleting evening record:",
-            error
-        );
-
-        alert(
-            "Failed to delete evening collection record."
-        );
-    }
-};
     /* ================= OPEN FARMER MODAL ================= */
 
     const openFarmerModal = async () => {
         setFarmerSearch("");
+
         await refreshFarmers();
+
         setShowModal(true);
     };
 
@@ -406,26 +637,48 @@ function Evening() {
     /* ================= SELECT FARMER ================= */
 
     const selectFarmer = (farmer) => {
-        setFarmerCode(farmer.code);
-        setFarmerName(farmer.name);
+        const selectedCode = String(
+            farmer.code || ""
+        )
+            .trim()
+            .toUpperCase();
+
+        setFarmerCode(selectedCode);
+        setFarmerName(farmer.name || "");
+
+        /* Load existing evening record if available */
+        loadExistingRecord(selectedCode);
+
         setShowModal(false);
+
+        setTimeout(() => {
+            litresRef.current?.focus();
+        }, 0);
     };
 
     /* ================= FILTER FARMERS ================= */
 
     const filteredFarmers = farmers.filter((farmer) => {
-        const search = farmerSearch.trim().toLowerCase();
+        const search = farmerSearch
+            .trim()
+            .toLowerCase();
 
         return (
-            farmer.code.toLowerCase().includes(search) ||
-            farmer.name.toLowerCase().includes(search)
+            String(farmer.code || "")
+                .toLowerCase()
+                .includes(search) ||
+            String(farmer.name || "")
+                .toLowerCase()
+                .includes(search)
         );
     });
 
     /* ================= FILTER RECORDS ================= */
 
     const todayRecords = records.filter(
-        (record) => record.date === recordsDate
+        (record) =>
+            record.date === recordsDate &&
+            record.type === "evening"
     );
 
     /* ================= JSX ================= */
@@ -475,30 +728,13 @@ function Evening() {
                                         )
                                     }
                                     onKeyDown={(e) => {
-                                    if (e.key === "Enter") {
-                                        e.preventDefault();
+                                        if (e.key === "Enter") {
+                                            e.preventDefault();
 
-                                        const code = e.currentTarget.value.trim().toUpperCase();
-                                        const farmer = farmers.find(
-                                            (item) =>
-                                                String(item.code || "").trim().toUpperCase() === code
-                                        );
-
-                                        if (farmer) {
-                                            setFarmerCode(String(farmer.code || "").trim().toUpperCase());
-                                            setFarmerName(farmer.name || "");
-
-                                            // Move cursor directly to Litres after Farmer Code Enter
-                                            setTimeout(() => {
-                                                litresRef.current?.focus();
-                                            }, 0);
-                                        } else {
-                                            setFarmerName("");
-                                            alert("Farmer not found.");
+                                            handleFarmerSearch();
                                         }
-                                    }
-                                }}
-                                placeholder="Enter Farmer Code"
+                                    }}
+                                    placeholder="Enter Farmer Code"
                                 />
 
                                 <button
@@ -734,7 +970,9 @@ function Evening() {
                                 </span>
 
                                 <strong>
-                                    {formatDate(recordsDate)}
+                                    {formatDate(
+                                        recordsDate
+                                    )}
                                 </strong>
 
                             </div>
@@ -781,7 +1019,11 @@ function Evening() {
                                         (record, index) => (
 
                                             <tr
-                                                key={record.id}
+                                                key={
+                                                    record.id ||
+                                                    record._id ||
+                                                    index
+                                                }
                                             >
 
                                                 <td>
@@ -789,27 +1031,40 @@ function Evening() {
                                                 </td>
 
                                                 <td>
-                                                    {record.code}
+                                                    {
+                                                        record.code ||
+                                                        record.farmerCode
+                                                    }
                                                 </td>
 
                                                 <td>
-                                                    {record.farmerName}
+                                                    {
+                                                        record.farmerName
+                                                    }
                                                 </td>
 
                                                 <td>
-                                                    {record.litres}
+                                                    {
+                                                        record.litres
+                                                    }
                                                 </td>
 
                                                 <td>
-                                                    {record.fat}
+                                                    {
+                                                        record.fat
+                                                    }
                                                 </td>
 
                                                 <td>
-                                                    {record.snf}
+                                                    {
+                                                        record.snf
+                                                    }
                                                 </td>
 
                                                 <td>
-                                                    {record.degree}
+                                                    {
+                                                        record.degree
+                                                    }
                                                 </td>
 
                                                 <td>
@@ -834,7 +1089,8 @@ function Evening() {
                                                         title="Delete record"
                                                         onClick={() =>
                                                             handleDeleteRecord(
-                                                                record.id
+                                                                record.id ||
+                                                                record._id
                                                             )
                                                         }
                                                     >
@@ -892,7 +1148,9 @@ function Evening() {
                                                     <span></span>
 
                                                     <img
-                                                        src={noRecordsIcon}
+                                                        src={
+                                                            noRecordsIcon
+                                                        }
                                                         alt="No records"
                                                     />
 
@@ -929,14 +1187,12 @@ function Evening() {
                 <div
                     className="modal active"
                     onClick={(e) => {
-
                         if (
                             e.target ===
                             e.currentTarget
                         ) {
                             closeFarmerModal();
                         }
-
                     }}
                 >
 
@@ -951,7 +1207,9 @@ function Evening() {
                             <button
                                 type="button"
                                 className="close-modal"
-                                onClick={closeFarmerModal}
+                                onClick={
+                                    closeFarmerModal
+                                }
                             >
                                 ×
                             </button>
@@ -975,49 +1233,181 @@ function Evening() {
 
                         <div
                             className="farmer-list"
-                            style={{ overflowX: "auto", width: "100%" }}
+                            style={{
+                                overflowX: "auto",
+                                width: "100%"
+                            }}
                         >
+
                             {filteredFarmers.length > 0 ? (
+
                                 <table
                                     style={{
                                         width: "100%",
                                         minWidth: "850px",
-                                        borderCollapse: "collapse",
+                                        borderCollapse:
+                                            "collapse",
                                         background: "#fff"
                                     }}
                                 >
+
                                     <thead>
+
                                         <tr>
-                                            <th style={tableHeadStyle}>Sr. No.</th>
-                                            <th style={tableHeadStyle}>Farmer Code</th>
-                                            <th style={tableHeadStyle}>Farmer Name</th>
-                                            <th style={tableHeadStyle}>Phone</th>
-                                            <th style={tableHeadStyle}>Email</th>
-                                            <th style={tableHeadStyle}>PhonePe</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {filteredFarmers.map((farmer, index) => (
-                                            <tr
-                                                key={farmer._id || farmer.code || index}
-                                                onClick={() => selectFarmer(farmer)}
-                                                style={{ cursor: "pointer" }}
+
+                                            <th
+                                                style={
+                                                    tableHeadStyle
+                                                }
                                             >
-                                                <td style={tableCellStyle}>{index + 1}</td>
-                                                <td style={tableCellStyle}>{farmer.code || "-"}</td>
-                                                <td style={tableCellStyle}>{farmer.name || "-"}</td>
-                                                <td style={tableCellStyle}>{farmer.phone || "-"}</td>
-                                                <td style={tableCellStyle}>{farmer.email || "-"}</td>
-                                                <td style={tableCellStyle}>{farmer.phonePay || farmer.phonepay || farmer.phonePe || "-"}</td>
-                                            </tr>
-                                        ))}
+                                                Sr. No.
+                                            </th>
+
+                                            <th
+                                                style={
+                                                    tableHeadStyle
+                                                }
+                                            >
+                                                Farmer Code
+                                            </th>
+
+                                            <th
+                                                style={
+                                                    tableHeadStyle
+                                                }
+                                            >
+                                                Farmer Name
+                                            </th>
+
+                                            <th
+                                                style={
+                                                    tableHeadStyle
+                                                }
+                                            >
+                                                Phone
+                                            </th>
+
+                                            <th
+                                                style={
+                                                    tableHeadStyle
+                                                }
+                                            >
+                                                Email
+                                            </th>
+
+                                            <th
+                                                style={
+                                                    tableHeadStyle
+                                                }
+                                            >
+                                                PhonePe
+                                            </th>
+
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                        {filteredFarmers.map(
+                                            (
+                                                farmer,
+                                                index
+                                            ) => (
+
+                                                <tr
+                                                    key={
+                                                        farmer._id ||
+                                                        farmer.code ||
+                                                        index
+                                                    }
+                                                    onClick={() =>
+                                                        selectFarmer(
+                                                            farmer
+                                                        )
+                                                    }
+                                                    style={{
+                                                        cursor:
+                                                            "pointer"
+                                                    }}
+                                                >
+
+                                                    <td
+                                                        style={
+                                                            tableCellStyle
+                                                        }
+                                                    >
+                                                        {index + 1}
+                                                    </td>
+
+                                                    <td
+                                                        style={
+                                                            tableCellStyle
+                                                        }
+                                                    >
+                                                        {farmer.code ||
+                                                            "-"}
+                                                    </td>
+
+                                                    <td
+                                                        style={
+                                                            tableCellStyle
+                                                        }
+                                                    >
+                                                        {farmer.name ||
+                                                            "-"}
+                                                    </td>
+
+                                                    <td
+                                                        style={
+                                                            tableCellStyle
+                                                        }
+                                                    >
+                                                        {farmer.phone ||
+                                                            "-"}
+                                                    </td>
+
+                                                    <td
+                                                        style={
+                                                            tableCellStyle
+                                                        }
+                                                    >
+                                                        {farmer.email ||
+                                                            "-"}
+                                                    </td>
+
+                                                    <td
+                                                        style={
+                                                            tableCellStyle
+                                                        }
+                                                    >
+                                                        {farmer.phonePay ||
+                                                            farmer.phonepay ||
+                                                            farmer.phonePe ||
+                                                            "-"}
+                                                    </td>
+
+                                                </tr>
+
+                                            )
+                                        )}
+
                                     </tbody>
+
                                 </table>
+
                             ) : (
+
                                 <div className="no-records">
-                                    <p>No farmer found</p>
+
+                                    <p>
+                                        No farmer found
+                                    </p>
+
                                 </div>
+
                             )}
+
                         </div>
 
                     </div>
@@ -1062,7 +1452,6 @@ function MilkField({
                 type="number"
                 value={value}
                 onChange={(e) => {
-
                     if (
                         !readOnly &&
                         setValue
@@ -1071,7 +1460,6 @@ function MilkField({
                             e.target.value
                         );
                     }
-
                 }}
                 onKeyDown={(e) => {
 

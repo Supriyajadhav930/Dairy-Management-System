@@ -26,9 +26,9 @@ import recordsCalendarIcon from "../assets/Morning_collections_img/records_calen
 /* ================= FARMER DATA ================= */
 
 const FARMERS_API_URL = "http://localhost:5000/api/farmers";
+const COLLECTIONS_API_URL = "http://localhost:5000/api/collections";
 
-/* ================= MAIN COMPONENT ================= */
-
+/* ================= TABLE STYLES ================= */
 
 const tableHeadStyle = {
     padding: "10px 8px",
@@ -48,6 +48,8 @@ const tableCellStyle = {
     whiteSpace: "nowrap"
 };
 
+/* ================= MAIN COMPONENT ================= */
+
 function Morning() {
     const [farmerCode, setFarmerCode] = useState("");
     const [farmerName, setFarmerName] = useState("");
@@ -61,9 +63,15 @@ function Morning() {
 
     const [records, setRecords] = useState([]);
     const [farmers, setFarmers] = useState([]);
+
     const [showModal, setShowModal] = useState(false);
     const [farmerSearch, setFarmerSearch] = useState("");
     const [recordsDate, setRecordsDate] = useState("");
+
+    /* ================= EDITING RECORD ================= */
+
+    const [editingRecordId, setEditingRecordId] =
+        useState(null);
 
     const litresRef = useRef(null);
     const fatRef = useRef(null);
@@ -71,47 +79,92 @@ function Morning() {
     const degreeRef = useRef(null);
     const rateRef = useRef(null);
 
-    /* ================= SET DATE + LOAD RECORDS ================= */
+    /* =========================================================
+       SET DATE + LOAD FARMERS + LOAD COLLECTION RECORDS
+       ========================================================= */
 
     useEffect(() => {
         const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, "0");
-        const day = String(today.getDate()).padStart(2, "0");
 
-        const todayDate = `${year}-${month}-${day}`;
+        const year = today.getFullYear();
+        const month = String(
+            today.getMonth() + 1
+        ).padStart(2, "0");
+
+        const day = String(
+            today.getDate()
+        ).padStart(2, "0");
+
+        const todayDate =
+            `${year}-${month}-${day}`;
 
         setDate(todayDate);
         setRecordsDate(todayDate);
 
-        /* ================= LOAD FARMERS FROM MONGODB ================= */
+        /* ================= LOAD FARMERS ================= */
 
         fetch(FARMERS_API_URL)
             .then((response) => {
                 if (!response.ok) {
-                    throw new Error("Failed to fetch farmers");
+                    throw new Error(
+                        "Failed to fetch farmers"
+                    );
                 }
+
                 return response.json();
             })
             .then((data) => {
-                setFarmers(Array.isArray(data) ? data : []);
+                setFarmers(
+                    Array.isArray(data)
+                        ? data
+                        : []
+                );
             })
             .catch((error) => {
-                console.error("Error loading farmers:", error);
+                console.error(
+                    "Error loading farmers:",
+                    error
+                );
             });
 
-        /* ================= LOAD MORNING RECORDS FROM BACKEND ================= */
+        /* ================= LOAD COLLECTIONS ================= */
 
-        fetch("http://localhost:5000/api/collections?type=morning")
-            .then((response) => response.json())
+        fetch(
+            `${COLLECTIONS_API_URL}?type=morning`
+        )
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(
+                        "Failed to fetch morning records"
+                    );
+                }
+
+                return response.json();
+            })
             .then((data) => {
-                const formattedRecords = data.map((record) => ({
-                    ...record,
-                    id: record._id,
-                    code: record.farmerCode
-                }));
+                const recordsArray =
+                    Array.isArray(data)
+                        ? data
+                        : data.data || [];
 
-                setRecords(formattedRecords);
+                const formattedRecords =
+                    recordsArray.map(
+                        (record) => ({
+                            ...record,
+
+                            id:
+                                record._id ||
+                                record.id,
+
+                            code:
+                                record.farmerCode ||
+                                record.code
+                        })
+                    );
+
+                setRecords(
+                    formattedRecords
+                );
             })
             .catch((error) => {
                 console.error(
@@ -124,79 +177,257 @@ function Morning() {
     /* ================= FORMAT DATE ================= */
 
     const formatDate = (dateString) => {
-        if (!dateString) return "";
+        if (!dateString) {
+            return "";
+        }
 
-        const parts = dateString.split("-");
+        const parts =
+            dateString.split("-");
 
-        if (parts.length !== 3) return dateString;
+        if (parts.length !== 3) {
+            return dateString;
+        }
 
         return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    };
+
+    /* =========================================================
+       LOAD EXISTING COLLECTION RECORD
+       ========================================================= */
+
+    const loadExistingRecord = (
+        code
+    ) => {
+        const normalizedCode =
+            String(code || "")
+                .trim()
+                .toUpperCase();
+
+        const existingRecord =
+            records.find(
+                (record) => {
+                    const recordCode =
+                        String(
+                            record.farmerCode ||
+                            record.code ||
+                            ""
+                        )
+                            .trim()
+                            .toUpperCase();
+
+                    return (
+                        recordCode ===
+                            normalizedCode &&
+                        record.date === date
+                    );
+                }
+            );
+
+        if (!existingRecord) {
+            setEditingRecordId(null);
+
+            setLitres("");
+            setFat("");
+            setSnf("");
+            setDegree("");
+            setRate("");
+
+            return false;
+        }
+
+        const recordId =
+            existingRecord.id ||
+            existingRecord._id;
+
+        setEditingRecordId(
+            recordId
+        );
+
+        setLitres(
+            existingRecord.litres !==
+                undefined &&
+                existingRecord.litres !== null
+                ? String(
+                      existingRecord.litres
+                  )
+                : ""
+        );
+
+        setFat(
+            existingRecord.fat !==
+                undefined &&
+                existingRecord.fat !== null
+                ? String(
+                      existingRecord.fat
+                  )
+                : ""
+        );
+
+        setSnf(
+            existingRecord.snf !==
+                undefined &&
+                existingRecord.snf !== null
+                ? String(
+                      existingRecord.snf
+                  )
+                : ""
+        );
+
+        setRate(
+            existingRecord.rate !==
+                undefined &&
+                existingRecord.rate !== null
+                ? String(
+                      existingRecord.rate
+                  )
+                : ""
+        );
+
+        return true;
     };
 
     /* ================= SEARCH FARMER ================= */
 
     const handleFarmerSearch = () => {
-        const code = farmerCode.trim().toUpperCase();
+        const code =
+            farmerCode
+                .trim()
+                .toUpperCase();
 
         if (!code) {
             setFarmerName("");
-            alert("Please enter Farmer Code.");
+            setEditingRecordId(null);
+
+            alert(
+                "Please enter Farmer Code."
+            );
+
             return;
         }
 
-        const farmer = farmers.find(
-            (item) =>
-                String(item.code || "").trim().toUpperCase() === code
-        );
+        /* ================= FIND FARMER ================= */
+
+        const farmer =
+            farmers.find(
+                (item) =>
+                    String(
+                        item.code || ""
+                    )
+                        .trim()
+                        .toUpperCase() ===
+                    code
+            );
 
         if (!farmer) {
             setFarmerName("");
-            alert("Farmer not found.");
+            setEditingRecordId(null);
+
+            alert(
+                "Farmer not found."
+            );
+
             return;
         }
 
-        setFarmerCode(String(farmer.code).trim().toUpperCase());
-        setFarmerName(farmer.name || "");
+        setFarmerCode(
+            String(
+                farmer.code
+            )
+                .trim()
+                .toUpperCase()
+        );
+
+        setFarmerName(
+            farmer.name || ""
+        );
+
+        /* =====================================================
+           CHECK EXISTING COLLECTION
+           ===================================================== */
+
+        loadExistingRecord(
+            code
+        );
     };
 
     /* ================= FARMER CODE INPUT ================= */
 
-    const handleFarmerCodeChange = (value) => {
-        const code = value.trim().toUpperCase();
+    const handleFarmerCodeChange = (
+        value
+    ) => {
+        const code =
+            value
+                .trim()
+                .toUpperCase();
 
         setFarmerCode(code);
 
         if (!code) {
             setFarmerName("");
+            setEditingRecordId(null);
+
+            setLitres("");
+            setFat("");
+            setSnf("");
+            setDegree("");
+            setRate("");
+
             return;
         }
 
-        const farmer = farmers.find(
-            (item) =>
-                String(item.code || "").trim().toUpperCase() === code
-        );
+        const farmer =
+            farmers.find(
+                (item) =>
+                    String(
+                        item.code || ""
+                    )
+                        .trim()
+                        .toUpperCase() ===
+                    code
+            );
 
         if (farmer) {
-            setFarmerName(farmer.name || "");
+            setFarmerName(
+                farmer.name || ""
+            );
         } else {
             setFarmerName("");
         }
+
+        /*
+         * Do not load record while typing.
+         * Record is loaded when Search or Enter is pressed.
+         */
     };
 
     /* ================= REFRESH FARMERS ================= */
 
     const refreshFarmers = async () => {
         try {
-            const response = await fetch(FARMERS_API_URL);
+            const response =
+                await fetch(
+                    FARMERS_API_URL
+                );
 
             if (!response.ok) {
-                throw new Error("Failed to fetch farmers");
+                throw new Error(
+                    "Failed to fetch farmers"
+                );
             }
 
-            const data = await response.json();
-            setFarmers(Array.isArray(data) ? data : []);
+            const data =
+                await response.json();
+
+            setFarmers(
+                Array.isArray(data)
+                    ? data
+                    : []
+            );
         } catch (error) {
-            console.error("Error refreshing farmers:", error);
+            console.error(
+                "Error refreshing farmers:",
+                error
+            );
         }
     };
 
@@ -204,20 +435,33 @@ function Morning() {
 
     const amount =
         litres && rate
-            ? (Number(litres) * Number(rate)).toFixed(2)
+            ? (
+                  Number(litres) *
+                  Number(rate)
+              ).toFixed(2)
             : "0.00";
 
-    /* ================= CALCULATE DEGREE FROM FAT + SNF ================= */
+    /* ================= CALCULATE DEGREE ================= */
 
     useEffect(() => {
-        if (fat !== "" && snf !== "") {
+        if (
+            fat !== "" &&
+            snf !== ""
+        ) {
             const calculatedDegree =
                 4 *
-                (Number(snf) -
-                    0.21 * Number(fat) -
-                    0.36);
+                (
+                    Number(snf) -
+                    0.21 *
+                        Number(fat) -
+                    0.36
+                );
 
-            setDegree(calculatedDegree.toFixed(1));
+            setDegree(
+                calculatedDegree.toFixed(
+                    1
+                )
+            );
         } else {
             setDegree("");
         }
@@ -228,90 +472,210 @@ function Morning() {
     const handleClear = () => {
         setFarmerCode("");
         setFarmerName("");
+
         setLitres("");
         setFat("");
         setSnf("");
         setDegree("");
         setRate("");
+
+        /* EXIT UPDATE MODE */
+
+        setEditingRecordId(null);
     };
 
-    /* ================= SAVE RECORD ================= */
+    /* =========================================================
+       SAVE / UPDATE RECORD
+       ========================================================= */
 
     const handleSave = async () => {
         if (!farmerCode.trim()) {
-            alert("Please enter Farmer Code.");
+            alert(
+                "Please enter Farmer Code."
+            );
             return;
         }
 
         if (!farmerName.trim()) {
-            alert("Please search the Farmer Code first.");
+            alert(
+                "Please search the Farmer Code first."
+            );
             return;
         }
 
         if (!litres) {
-            alert("Please enter Litres.");
+            alert(
+                "Please enter Litres."
+            );
             return;
         }
 
         if (!fat) {
-            alert("Please enter Fat.");
+            alert(
+                "Please enter Fat."
+            );
             return;
         }
 
         if (!snf) {
-            alert("Please enter SNF.");
+            alert(
+                "Please enter SNF."
+            );
             return;
         }
 
         if (!degree) {
-            alert("Please enter Degree.");
+            alert(
+                "Please enter Degree."
+            );
             return;
         }
 
         if (!rate) {
-            alert("Please enter Rate.");
+            alert(
+                "Please enter Rate."
+            );
             return;
         }
 
-        /* ================= DATA SENT TO BACKEND ================= */
+        /* ================= RECORD DATA ================= */
 
-        const newRecord = {
+        const collectionRecord = {
             type: "morning",
 
-            farmerCode: farmerCode.trim().toUpperCase(),
+            farmerCode:
+                farmerCode
+                    .trim()
+                    .toUpperCase(),
 
-            farmerName: farmerName,
+            farmerName:
+                farmerName,
 
-            date: date,
+            date:
+                date,
 
-            litres: Number(litres),
+            litres:
+                Number(litres),
 
-            fat: Number(fat),
+            fat:
+                Number(fat),
 
-            snf: Number(snf),
+            snf:
+                Number(snf),
 
-            degree: Number(degree),
+            degree:
+                Number(degree),
 
-            rate: Number(rate),
+            rate:
+                Number(rate),
 
-            amount: Number(amount)
+            amount:
+                Number(amount)
         };
 
         try {
-            const response = await fetch(
-                "http://localhost:5000/api/collections",
-                {
-                    method: "POST",
+            /* =================================================
+               UPDATE EXISTING RECORD
+               ================================================= */
 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+            if (editingRecordId) {
+                const response =
+                    await fetch(
+                        `${COLLECTIONS_API_URL}/${editingRecordId}`,
+                        {
+                            method: "PUT",
 
-                    body: JSON.stringify(newRecord)
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    collectionRecord
+                                )
+                        }
+                    );
+
+                const result =
+                    await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.message ||
+                            "Failed to update collection record"
+                    );
                 }
-            );
 
-            const result = await response.json();
+                const updatedData =
+                    result.data ||
+                    result;
+
+                const updatedRecord = {
+                    ...updatedData,
+
+                    id:
+                        updatedData._id ||
+                        editingRecordId,
+
+                    code:
+                        updatedData.farmerCode ||
+                        collectionRecord.farmerCode
+                };
+
+                /* ================= UPDATE TABLE ================= */
+
+                setRecords(
+                    (
+                        previousRecords
+                    ) =>
+                        previousRecords.map(
+                            (record) => {
+                                const recordId =
+                                    record.id ||
+                                    record._id;
+
+                                return recordId ===
+                                    editingRecordId
+                                    ? updatedRecord
+                                    : record;
+                            }
+                        )
+                );
+
+                /*
+                 * NO SUCCESS ALERT
+                 */
+
+                handleClear();
+
+                return;
+            }
+
+            /* =================================================
+               CREATE NEW RECORD
+               ================================================= */
+
+            const response =
+                await fetch(
+                    COLLECTIONS_API_URL,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify(
+                                collectionRecord
+                            )
+                    }
+                );
+
+            const result =
+                await response.json();
 
             if (!response.ok) {
                 throw new Error(
@@ -320,133 +684,209 @@ function Morning() {
                 );
             }
 
-            /* ================= ADD SAVED RECORD TO TABLE ================= */
+            const savedData =
+                result.data ||
+                result;
 
             const savedRecord = {
-                ...result.data,
+                ...savedData,
 
-                id: result.data._id,
+                id:
+                    savedData._id ||
+                    savedData.id,
 
-                code: result.data.farmerCode
+                code:
+                    savedData.farmerCode ||
+                    collectionRecord.farmerCode
             };
 
-            setRecords((previousRecords) => [
-                ...previousRecords,
-                savedRecord
-            ]);
+            /* ================= ADD TO TABLE ================= */
 
-            alert(
-                "Morning collection saved successfully!"
+            setRecords(
+                (
+                    previousRecords
+                ) => [
+                    ...previousRecords,
+                    savedRecord
+                ]
             );
+
+            /*
+             * NO SUCCESS ALERT
+             */
 
             handleClear();
 
         } catch (error) {
             console.error(
-                "Error saving morning record:",
+                "Error saving/updating morning record:",
                 error
             );
 
+            /*
+             * This alert is only for an actual
+             * backend/network error.
+             */
+
             alert(
-                "Failed to save morning collection."
+                error.message ||
+                    "Failed to save morning collection."
             );
         }
     };
 
     /* ================= DELETE RECORD ================= */
 
-  const handleDeleteRecord = async (id) => {
-    if (
-        !window.confirm(
-            "Are you sure you want to delete this record?"
-        )
-    ) {
-        return;
-    }
+    const handleDeleteRecord =
+        async (id) => {
+            if (
+                !window.confirm(
+                    "Are you sure you want to delete this record?"
+                )
+            ) {
+                return;
+            }
 
-    try {
-        const response = await fetch(
-            `http://localhost:5000/api/collections/${id}`,
-            {
-                method: "DELETE"
+            try {
+                const response =
+                    await fetch(
+                        `${COLLECTIONS_API_URL}/${id}`,
+                        {
+                            method:
+                                "DELETE"
+                        }
+                    );
+
+                const result =
+                    await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.message ||
+                            "Failed to delete collection record"
+                    );
+                }
+
+                setRecords(
+                    (
+                        previousRecords
+                    ) =>
+                        previousRecords.filter(
+                            (record) => {
+                                const recordId =
+                                    record.id ||
+                                    record._id;
+
+                                return (
+                                    recordId !==
+                                    id
+                                );
+                            }
+                        )
+                );
+
+                alert(
+                    "Morning collection record deleted successfully!"
+                );
+
+            } catch (error) {
+                console.error(
+                    "Error deleting morning record:",
+                    error
+                );
+
+                alert(
+                    "Failed to delete morning collection record."
+                );
+            }
+        };
+
+    /* ================= FARMER MODAL ================= */
+
+    const openFarmerModal =
+        async () => {
+            setFarmerSearch("");
+
+            await refreshFarmers();
+
+            setShowModal(true);
+        };
+
+    const closeFarmerModal =
+        () => {
+            setShowModal(false);
+        };
+
+    const selectFarmer = (
+        farmer
+    ) => {
+        setFarmerCode(
+            farmer.code
+        );
+
+        setFarmerName(
+            farmer.name
+        );
+
+        /*
+         * When farmer is selected from
+         * list, check whether today's
+         * record already exists.
+         */
+
+        loadExistingRecord(
+            farmer.code
+        );
+
+        setShowModal(false);
+    };
+
+    const filteredFarmers =
+        farmers.filter(
+            (farmer) => {
+                const search =
+                    farmerSearch
+                        .trim()
+                        .toLowerCase();
+
+                return (
+                    String(
+                        farmer.code ||
+                            ""
+                    )
+                        .toLowerCase()
+                        .includes(
+                            search
+                        ) ||
+                    String(
+                        farmer.name ||
+                            ""
+                    )
+                        .toLowerCase()
+                        .includes(
+                            search
+                        )
+                );
             }
         );
 
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(
-                result.message ||
-                    "Failed to delete collection record"
-            );
-        }
-
-        setRecords((previousRecords) =>
-            previousRecords.filter(
-                (record) => record.id !== id
-            )
-        );
-
-        alert(
-            "Morning collection record deleted successfully!"
-        );
-
-    } catch (error) {
-        console.error(
-            "Error deleting morning record:",
-            error
-        );
-
-        alert(
-            "Failed to delete morning collection record."
-        );
-    }
-};
-    /* ================= FARMER MODAL ================= */
-
-    const openFarmerModal = async () => {
-        setFarmerSearch("");
-        await refreshFarmers();
-        setShowModal(true);
-    };
-
-    const closeFarmerModal = () => {
-        setShowModal(false);
-    };
-
-    const selectFarmer = (farmer) => {
-        setFarmerCode(farmer.code);
-        setFarmerName(farmer.name);
-        setShowModal(false);
-    };
-
-    const filteredFarmers = farmers.filter((farmer) => {
-        const search = farmerSearch
-            .trim()
-            .toLowerCase();
-
-        return (
-            farmer.code
-                .toLowerCase()
-                .includes(search) ||
-            farmer.name
-                .toLowerCase()
-                .includes(search)
-        );
-    });
-
     /* ================= TODAY'S RECORDS ================= */
 
-    const todayRecords = records.filter(
-        (record) => record.date === recordsDate
-    );
+    const todayRecords =
+        records.filter(
+            (record) =>
+                record.date ===
+                recordsDate
+        );
 
     return (
         <div className="morning-container">
 
             {/* ================= TITLE ================= */}
 
-            <h1>Morning Collection</h1>
+            <h1>
+                Morning Collection
+            </h1>
 
             {/* ================= COLLECTION CARD ================= */}
 
@@ -462,7 +902,9 @@ function Morning() {
 
                         <label>
                             <img
-                                src={farmerCodeIcon}
+                                src={
+                                    farmerCodeIcon
+                                }
                                 alt="Farmer Code"
                             />
 
@@ -473,34 +915,35 @@ function Morning() {
 
                             <input
                                 type="text"
-                                value={farmerCode}
-                                onChange={(e) =>
+                                value={
+                                    farmerCode
+                                }
+                                onChange={(
+                                    e
+                                ) =>
                                     handleFarmerCodeChange(
-                                        e.target.value
+                                        e
+                                            .target
+                                            .value
                                     )
                                 }
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter") {
+                                onKeyDown={(
+                                    e
+                                ) => {
+                                    if (
+                                        e.key ===
+                                        "Enter"
+                                    ) {
                                         e.preventDefault();
 
-                                        const code = e.currentTarget.value.trim().toUpperCase();
-                                        const farmer = farmers.find(
-                                            (item) =>
-                                                String(item.code || "").trim().toUpperCase() === code
-                                        );
+                                        handleFarmerSearch();
 
-                                        if (farmer) {
-                                            setFarmerCode(String(farmer.code || "").trim().toUpperCase());
-                                            setFarmerName(farmer.name || "");
-
-                                            // Move cursor directly to Litres after Farmer Code Enter
-                                            setTimeout(() => {
+                                        setTimeout(
+                                            () => {
                                                 litresRef.current?.focus();
-                                            }, 0);
-                                        } else {
-                                            setFarmerName("");
-                                            alert("Farmer not found.");
-                                        }
+                                            },
+                                            0
+                                        );
                                     }
                                 }}
                                 placeholder="Enter Farmer Code"
@@ -514,7 +957,9 @@ function Morning() {
                                 }
                             >
                                 <img
-                                    src={searchIcon}
+                                    src={
+                                        searchIcon
+                                    }
                                     alt="Search"
                                 />
                             </button>
@@ -528,7 +973,9 @@ function Morning() {
 
                         <label>
                             <img
-                                src={farmerNameIcon}
+                                src={
+                                    farmerNameIcon
+                                }
                                 alt="Farmer Name"
                             />
 
@@ -537,7 +984,9 @@ function Morning() {
 
                         <input
                             type="text"
-                            value={farmerName}
+                            value={
+                                farmerName
+                            }
                             readOnly
                             className="readonly-input"
                             placeholder="(Name will appear here)"
@@ -551,7 +1000,9 @@ function Morning() {
 
                         <label>
                             <img
-                                src={calendarIcon}
+                                src={
+                                    calendarIcon
+                                }
                                 alt="Date"
                             />
 
@@ -562,22 +1013,57 @@ function Morning() {
 
                             <input
                                 type="date"
-                                value={date}
-                                onChange={(e) => {
+                                value={
+                                    date
+                                }
+                                onChange={(
+                                    e
+                                ) => {
                                     if (
                                         /^\d{4}-\d{2}-\d{2}$/.test(
-                                            e.target.value
+                                            e
+                                                .target
+                                                .value
                                         )
                                     ) {
                                         setDate(
-                                            e.target.value
+                                            e
+                                                .target
+                                                .value
+                                        );
+
+                                        /*
+                                         * Changing date
+                                         * exits update mode.
+                                         */
+
+                                        setEditingRecordId(
+                                            null
+                                        );
+
+                                        setLitres(
+                                            ""
+                                        );
+                                        setFat(
+                                            ""
+                                        );
+                                        setSnf(
+                                            ""
+                                        );
+                                        setDegree(
+                                            ""
+                                        );
+                                        setRate(
+                                            ""
                                         );
                                     }
                                 }}
                             />
 
                             <img
-                                src={dateChevronIcon}
+                                src={
+                                    dateChevronIcon
+                                }
                                 alt=""
                             />
 
@@ -592,68 +1078,123 @@ function Morning() {
                 <div className="milk-details">
 
                     <MilkField
-                        icon={litresIcon}
+                        icon={
+                            litresIcon
+                        }
                         label="Litres (L)"
-                        value={litres}
-                        setValue={setLitres}
-                        inputRef={litresRef}
-                        nextRef={fatRef}
+                        value={
+                            litres
+                        }
+                        setValue={
+                            setLitres
+                        }
+                        inputRef={
+                            litresRef
+                        }
+                        nextRef={
+                            fatRef
+                        }
                         placeholder="Enter Litres"
                     />
 
                     <MilkField
-                        icon={fatIcon}
+                        icon={
+                            fatIcon
+                        }
                         label="Fat"
-                        value={fat}
-                        setValue={setFat}
-                        inputRef={fatRef}
-                        nextRef={snfRef}
+                        value={
+                            fat
+                        }
+                        setValue={
+                            setFat
+                        }
+                        inputRef={
+                            fatRef
+                        }
+                        nextRef={
+                            snfRef
+                        }
                         placeholder="Enter Fat"
                     />
 
                     <MilkField
-                        icon={snfIcon}
+                        icon={
+                            snfIcon
+                        }
                         label="SNF"
-                        value={snf}
-                        setValue={setSnf}
-                        inputRef={snfRef}
-                        nextRef={rateRef}
+                        value={
+                            snf
+                        }
+                        setValue={
+                            setSnf
+                        }
+                        inputRef={
+                            snfRef
+                        }
+                        nextRef={
+                            rateRef
+                        }
                         placeholder="Enter SNF"
                     />
 
                     <MilkField
-                        icon={degreeIcon}
+                        icon={
+                            degreeIcon
+                        }
                         label="Degree"
-                        value={degree}
-                        inputRef={degreeRef}
-                        nextRef={rateRef}
+                        value={
+                            degree
+                        }
+                        inputRef={
+                            degreeRef
+                        }
+                        nextRef={
+                            rateRef
+                        }
                         placeholder="Auto Calculated"
                         readOnly
                     />
 
+                    {/* RATE */}
+
                     <div className="milk-field">
 
                         <label>
+
                             <span className="rupee-icon-badge">
                                 ₹
                             </span>
 
                             Rate (₹/L)
+
                         </label>
 
                         <input
-                            ref={rateRef}
-                            type="number"
-                            value={rate}
-                            onChange={(e) =>
-                                setRate(e.target.value)
+                            ref={
+                                rateRef
                             }
-                            onKeyDown={(e) => {
+                            type="number"
+                            value={
+                                rate
+                            }
+                            onChange={(
+                                e
+                            ) =>
+                                setRate(
+                                    e
+                                        .target
+                                        .value
+                                )
+                            }
+                            onKeyDown={(
+                                e
+                            ) => {
                                 if (
                                     e.key ===
                                     "Enter"
                                 ) {
                                     e.preventDefault();
+
                                     handleSave();
                                 }
                             }}
@@ -669,18 +1210,23 @@ function Morning() {
                     <div className="milk-field">
 
                         <label>
+
                             <img
-                                src={amountIcon}
+                                src={
+                                    amountIcon
+                                }
                                 alt="Amount"
                             />
 
                             Amount (₹)
+
                         </label>
 
                         <input
                             type="text"
                             value={
-                                amount === "0.00"
+                                amount ===
+                                "0.00"
                                     ? ""
                                     : amount
                             }
@@ -700,10 +1246,14 @@ function Morning() {
                     <button
                         type="button"
                         className="save-btn"
-                        onClick={handleSave}
+                        onClick={
+                            handleSave
+                        }
                     >
                         <img
-                            src={saveIcon}
+                            src={
+                                saveIcon
+                            }
                             alt="Save"
                         />
 
@@ -713,10 +1263,14 @@ function Morning() {
                     <button
                         type="button"
                         className="clear-btn"
-                        onClick={handleClear}
+                        onClick={
+                            handleClear
+                        }
                     >
                         <img
-                            src={clearIcon}
+                            src={
+                                clearIcon
+                            }
                             alt="Clear"
                         />
 
@@ -726,10 +1280,14 @@ function Morning() {
                     <button
                         type="button"
                         className="farmer-list-btn"
-                        onClick={openFarmerModal}
+                        onClick={
+                            openFarmerModal
+                        }
                     >
                         <img
-                            src={farmerListIcon}
+                            src={
+                                farmerListIcon
+                            }
                             alt="Farmer List"
                         />
 
@@ -749,7 +1307,9 @@ function Morning() {
                     <div className="records-title">
 
                         <img
-                            src={noRecordsIcon}
+                            src={
+                                noRecordsIcon
+                            }
                             alt="Records"
                         />
 
@@ -764,7 +1324,9 @@ function Morning() {
                         <div className="records-date">
 
                             <img
-                                src={recordsCalendarIcon}
+                                src={
+                                    recordsCalendarIcon
+                                }
                                 alt="Date"
                             />
 
@@ -781,15 +1343,23 @@ function Morning() {
                             <input
                                 type="date"
                                 className="hidden-date-picker"
-                                value={recordsDate}
-                                onChange={(e) => {
+                                value={
+                                    recordsDate
+                                }
+                                onChange={(
+                                    e
+                                ) => {
                                     if (
                                         /^\d{4}-\d{2}-\d{2}$/.test(
-                                            e.target.value
+                                            e
+                                                .target
+                                                .value
                                         )
                                     ) {
                                         setRecordsDate(
-                                            e.target.value
+                                            e
+                                                .target
+                                                .value
                                         );
                                     }
                                 }}
@@ -802,7 +1372,9 @@ function Morning() {
                             Total Records:{" "}
 
                             <span>
-                                {todayRecords.length}
+                                {
+                                    todayRecords.length
+                                }
                             </span>
 
                         </div>
@@ -811,7 +1383,7 @@ function Morning() {
 
                 </div>
 
-                {/* ================= TABLE / NO RECORDS ================= */}
+                {/* ================= TABLE ================= */}
 
                 <div className="table-container">
 
@@ -911,18 +1483,23 @@ function Morning() {
 
                                         <tr
                                             key={
-                                                record.id
+                                                record.id ||
+                                                record._id ||
+                                                index
                                             }
                                         >
 
                                             <td>
-                                                {index +
-                                                    1}
+                                                {
+                                                    index +
+                                                    1
+                                                }
                                             </td>
 
                                             <td>
                                                 {
-                                                    record.code
+                                                    record.code ||
+                                                    record.farmerCode
                                                 }
                                             </td>
 
@@ -982,7 +1559,8 @@ function Morning() {
                                                     title="Delete record"
                                                     onClick={() =>
                                                         handleDeleteRecord(
-                                                            record.id
+                                                            record.id ||
+                                                            record._id
                                                         )
                                                     }
                                                 >
@@ -1043,7 +1621,9 @@ function Morning() {
 
                 <div
                     className="modal active"
-                    onClick={(e) => {
+                    onClick={(
+                        e
+                    ) => {
                         if (
                             e.target ===
                             e.currentTarget
@@ -1081,9 +1661,13 @@ function Morning() {
                                 value={
                                     farmerSearch
                                 }
-                                onChange={(e) =>
+                                onChange={(
+                                    e
+                                ) =>
                                     setFarmerSearch(
-                                        e.target.value
+                                        e
+                                            .target
+                                            .value
                                     )
                                 }
                             />
@@ -1092,49 +1676,152 @@ function Morning() {
 
                         <div
                             className="farmer-list"
-                            style={{ overflowX: "auto", width: "100%" }}
+                            style={{
+                                overflowX:
+                                    "auto",
+                                width:
+                                    "100%"
+                            }}
                         >
-                            {filteredFarmers.length > 0 ? (
+
+                            {filteredFarmers.length >
+                            0 ? (
+
                                 <table
                                     style={{
-                                        width: "100%",
-                                        minWidth: "850px",
-                                        borderCollapse: "collapse",
-                                        background: "#fff"
+                                        width:
+                                            "100%",
+                                        minWidth:
+                                            "850px",
+                                        borderCollapse:
+                                            "collapse",
+                                        background:
+                                            "#fff"
                                     }}
                                 >
+
                                     <thead>
+
                                         <tr>
-                                            <th style={tableHeadStyle}>Sr. No.</th>
-                                            <th style={tableHeadStyle}>Farmer Code</th>
-                                            <th style={tableHeadStyle}>Farmer Name</th>
-                                            <th style={tableHeadStyle}>Phone</th>
-                                            <th style={tableHeadStyle}>Email</th>
-                                            <th style={tableHeadStyle}>PhonePe</th>
+
+                                            <th style={tableHeadStyle}>
+                                                Sr. No.
+                                            </th>
+
+                                            <th style={tableHeadStyle}>
+                                                Farmer Code
+                                            </th>
+
+                                            <th style={tableHeadStyle}>
+                                                Farmer Name
+                                            </th>
+
+                                            <th style={tableHeadStyle}>
+                                                Phone
+                                            </th>
+
+                                            <th style={tableHeadStyle}>
+                                                Email
+                                            </th>
+
+                                            <th style={tableHeadStyle}>
+                                                PhonePe
+                                            </th>
+
                                         </tr>
+
                                     </thead>
+
                                     <tbody>
-                                        {filteredFarmers.map((farmer, index) => (
-                                            <tr
-                                                key={farmer._id || farmer.code || index}
-                                                onClick={() => selectFarmer(farmer)}
-                                                style={{ cursor: "pointer" }}
-                                            >
-                                                <td style={tableCellStyle}>{index + 1}</td>
-                                                <td style={tableCellStyle}>{farmer.code || "-"}</td>
-                                                <td style={tableCellStyle}>{farmer.name || "-"}</td>
-                                                <td style={tableCellStyle}>{farmer.phone || "-"}</td>
-                                                <td style={tableCellStyle}>{farmer.email || "-"}</td>
-                                                <td style={tableCellStyle}>{farmer.phonePay || farmer.phonepay || farmer.phonePe || "-"}</td>
-                                            </tr>
-                                        ))}
+
+                                        {filteredFarmers.map(
+                                            (
+                                                farmer,
+                                                index
+                                            ) => (
+
+                                                <tr
+                                                    key={
+                                                        farmer._id ||
+                                                        farmer.code ||
+                                                        index
+                                                    }
+                                                    onClick={() =>
+                                                        selectFarmer(
+                                                            farmer
+                                                        )
+                                                    }
+                                                    style={{
+                                                        cursor:
+                                                            "pointer"
+                                                    }}
+                                                >
+
+                                                    <td style={tableCellStyle}>
+                                                        {
+                                                            index +
+                                                            1
+                                                        }
+                                                    </td>
+
+                                                    <td style={tableCellStyle}>
+                                                        {
+                                                            farmer.code ||
+                                                            "-"
+                                                        }
+                                                    </td>
+
+                                                    <td style={tableCellStyle}>
+                                                        {
+                                                            farmer.name ||
+                                                            "-"
+                                                        }
+                                                    </td>
+
+                                                    <td style={tableCellStyle}>
+                                                        {
+                                                            farmer.phone ||
+                                                            "-"
+                                                        }
+                                                    </td>
+
+                                                    <td style={tableCellStyle}>
+                                                        {
+                                                            farmer.email ||
+                                                            "-"
+                                                        }
+                                                    </td>
+
+                                                    <td style={tableCellStyle}>
+                                                        {
+                                                            farmer.phonePay ||
+                                                            farmer.phonepay ||
+                                                            farmer.phonePe ||
+                                                            "-"
+                                                        }
+                                                    </td>
+
+                                                </tr>
+
+                                            )
+                                        )}
+
                                     </tbody>
+
                                 </table>
+
                             ) : (
+
                                 <div className="no-records">
-                                    <p>No farmer found</p>
+
+                                    <p>
+                                        No farmer found
+                                    </p>
+
                                 </div>
+
                             )}
+
                         </div>
 
                     </div>
@@ -1147,7 +1834,9 @@ function Morning() {
     );
 }
 
-/* ================= MILK FIELD COMPONENT ================= */
+/* =========================================================
+   MILK FIELD COMPONENT
+   ========================================================= */
 
 function MilkField({
     icon,
@@ -1189,7 +1878,8 @@ function MilkField({
                 }}
                 onKeyDown={(e) => {
                     if (
-                        e.key === "Enter" &&
+                        e.key ===
+                            "Enter" &&
                         nextRef
                     ) {
                         e.preventDefault();
@@ -1197,7 +1887,9 @@ function MilkField({
                         nextRef.current?.focus();
                     }
                 }}
-                placeholder={placeholder}
+                placeholder={
+                    placeholder
+                }
                 readOnly={readOnly}
                 min="0"
                 step="0.01"

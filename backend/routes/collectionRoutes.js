@@ -54,6 +54,63 @@ router.get("/", async (req, res) => {
 
 
 // ===============================
+// UPDATE COLLECTION RECORD
+// ===============================
+router.put("/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Check whether the ID is a valid MongoDB ObjectId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                message: "Invalid collection record ID"
+            });
+        }
+
+        const updatedCollection =
+            await Collection.findByIdAndUpdate(
+                id,
+                {
+                    type: req.body.type,
+                    farmerCode: req.body.farmerCode,
+                    farmerName: req.body.farmerName,
+                    date: req.body.date,
+                    litres: Number(req.body.litres),
+                    fat: Number(req.body.fat),
+                    snf: Number(req.body.snf),
+                    degree: Number(req.body.degree),
+                    rate: Number(req.body.rate),
+                    amount: Number(req.body.amount)
+                },
+                {
+                    new: true,
+                    runValidators: true
+                }
+            );
+
+        if (!updatedCollection) {
+            return res.status(404).json({
+                message: "Collection record not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Collection record updated successfully",
+            data: updatedCollection
+        });
+
+    } catch (error) {
+        console.error("Error updating collection:", error);
+
+        res.status(500).json({
+            message: "Failed to update collection record",
+            error: error.message
+        });
+    }
+});
+
+
+// ===============================
 // DELETE COLLECTION RECORD
 // ===============================
 router.delete("/:id", async (req, res) => {
