@@ -363,14 +363,15 @@ const Add_Farmer = () => {
      SEARCH
      ========================================================= */
 
-  const filteredFarmers = farmers.filter((farmer) => {
+ const filteredFarmers = [...farmers]
+  .filter((farmer) => {
     const value = search.toLowerCase();
-
     return (
       farmer.code.toLowerCase().includes(value) ||
       farmer.name.toLowerCase().includes(value)
     );
-  });
+  })
+  .sort((a, b) => Number(a.code) - Number(b.code));
 
   return (
     <div className="add-farmer-page">
