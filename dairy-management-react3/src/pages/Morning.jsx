@@ -70,8 +70,12 @@ function Morning() {
 
     /* ================= EDITING RECORD ================= */
 
-    const [editingRecordId, setEditingRecordId] =
-        useState(null);
+    const [editingRecordId, setEditingRecordId] = useState(null);
+
+    /* ================= INPUT REFS ================= */
+
+    const farmerCodeRef = useRef(null);
+    const dateRef = useRef(null);
 
     const litresRef = useRef(null);
     const fatRef = useRef(null);
@@ -87,16 +91,10 @@ function Morning() {
         const today = new Date();
 
         const year = today.getFullYear();
-        const month = String(
-            today.getMonth() + 1
-        ).padStart(2, "0");
+        const month = String(today.getMonth() + 1).padStart(2, "0");
+        const day = String(today.getDate()).padStart(2, "0");
 
-        const day = String(
-            today.getDate()
-        ).padStart(2, "0");
-
-        const todayDate =
-            `${year}-${month}-${day}`;
+        const todayDate = `${year}-${month}-${day}`;
 
         setDate(todayDate);
         setRecordsDate(todayDate);
@@ -106,9 +104,7 @@ function Morning() {
         fetch(FARMERS_API_URL)
             .then((response) => {
                 if (!response.ok) {
-                    throw new Error(
-                        "Failed to fetch farmers"
-                    );
+                    throw new Error("Failed to fetch farmers");
                 }
 
                 return response.json();
@@ -129,9 +125,7 @@ function Morning() {
 
         /* ================= LOAD COLLECTIONS ================= */
 
-        fetch(
-            `${COLLECTIONS_API_URL}?type=morning`
-        )
+        fetch(`${COLLECTIONS_API_URL}?type=morning`)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error(
@@ -148,23 +142,19 @@ function Morning() {
                         : data.data || [];
 
                 const formattedRecords =
-                    recordsArray.map(
-                        (record) => ({
-                            ...record,
+                    recordsArray.map((record) => ({
+                        ...record,
 
-                            id:
-                                record._id ||
-                                record.id,
+                        id:
+                            record._id ||
+                            record.id,
 
-                            code:
-                                record.farmerCode ||
-                                record.code
-                        })
-                    );
+                        code:
+                            record.farmerCode ||
+                            record.code
+                    }));
 
-                setRecords(
-                    formattedRecords
-                );
+                setRecords(formattedRecords);
             })
             .catch((error) => {
                 console.error(
@@ -174,6 +164,30 @@ function Morning() {
             });
     }, []);
 
+    /* ================= DATE CHANGE ================= */
+
+    const handleDateChange = (e) => {
+        const selectedDate = e.target.value;
+
+        if (!selectedDate) {
+            return;
+        }
+
+        setDate(selectedDate);
+        setRecordsDate(selectedDate);
+
+        /* Clear currently entered farmer/record fields */
+
+        setFarmerCode("");
+        setFarmerName("");
+        setLitres("");
+        setFat("");
+        setSnf("");
+        setDegree("");
+        setRate("");
+        setEditingRecordId(null);
+    };
+
     /* ================= FORMAT DATE ================= */
 
     const formatDate = (dateString) => {
@@ -181,8 +195,7 @@ function Morning() {
             return "";
         }
 
-        const parts =
-            dateString.split("-");
+        const parts = dateString.split("-");
 
         if (parts.length !== 3) {
             return dateString;
@@ -195,33 +208,30 @@ function Morning() {
        LOAD EXISTING COLLECTION RECORD
        ========================================================= */
 
-    const loadExistingRecord = (
-        code
-    ) => {
+    const loadExistingRecord = (code) => {
         const normalizedCode =
             String(code || "")
                 .trim()
                 .toUpperCase();
 
-        const existingRecord =
-            records.find(
-                (record) => {
-                    const recordCode =
-                        String(
-                            record.farmerCode ||
-                            record.code ||
-                            ""
-                        )
-                            .trim()
-                            .toUpperCase();
+        const existingRecord = records.find(
+            (record) => {
+                const recordCode =
+                    String(
+                        record.farmerCode ||
+                        record.code ||
+                        ""
+                    )
+                        .trim()
+                        .toUpperCase();
 
-                    return (
-                        recordCode ===
-                            normalizedCode &&
-                        record.date === date
-                    );
-                }
-            );
+                return (
+                    record.type === "morning" &&
+                    recordCode === normalizedCode &&
+                    record.date === date
+                );
+            }
+        );
 
         if (!existingRecord) {
             setEditingRecordId(null);
@@ -239,47 +249,40 @@ function Morning() {
             existingRecord.id ||
             existingRecord._id;
 
-        setEditingRecordId(
-            recordId
-        );
+        setEditingRecordId(recordId);
 
         setLitres(
-            existingRecord.litres !==
-                undefined &&
-                existingRecord.litres !== null
-                ? String(
-                      existingRecord.litres
-                  )
+            existingRecord.litres !== undefined &&
+            existingRecord.litres !== null
+                ? String(existingRecord.litres)
                 : ""
         );
 
         setFat(
-            existingRecord.fat !==
-                undefined &&
-                existingRecord.fat !== null
-                ? String(
-                      existingRecord.fat
-                  )
+            existingRecord.fat !== undefined &&
+            existingRecord.fat !== null
+                ? String(existingRecord.fat)
                 : ""
         );
 
         setSnf(
-            existingRecord.snf !==
-                undefined &&
-                existingRecord.snf !== null
-                ? String(
-                      existingRecord.snf
-                  )
+            existingRecord.snf !== undefined &&
+            existingRecord.snf !== null
+                ? String(existingRecord.snf)
+                : ""
+        );
+
+        setDegree(
+            existingRecord.degree !== undefined &&
+            existingRecord.degree !== null
+                ? String(existingRecord.degree)
                 : ""
         );
 
         setRate(
-            existingRecord.rate !==
-                undefined &&
-                existingRecord.rate !== null
-                ? String(
-                      existingRecord.rate
-                  )
+            existingRecord.rate !== undefined &&
+            existingRecord.rate !== null
+                ? String(existingRecord.rate)
                 : ""
         );
 
@@ -298,9 +301,7 @@ function Morning() {
             setFarmerName("");
             setEditingRecordId(null);
 
-            alert(
-                "Please enter Farmer Code."
-            );
+            alert("Please enter Farmer Code.");
 
             return;
         }
@@ -322,17 +323,19 @@ function Morning() {
             setFarmerName("");
             setEditingRecordId(null);
 
-            alert(
-                "Farmer not found."
-            );
+            setLitres("");
+            setFat("");
+            setSnf("");
+            setDegree("");
+            setRate("");
+
+            alert("Farmer not found.");
 
             return;
         }
 
         setFarmerCode(
-            String(
-                farmer.code
-            )
+            String(farmer.code)
                 .trim()
                 .toUpperCase()
         );
@@ -342,19 +345,15 @@ function Morning() {
         );
 
         /* =====================================================
-           CHECK EXISTING COLLECTION
+           CHECK EXISTING COLLECTION FOR SELECTED DATE
            ===================================================== */
 
-        loadExistingRecord(
-            code
-        );
+        loadExistingRecord(code);
     };
 
     /* ================= FARMER CODE INPUT ================= */
 
-    const handleFarmerCodeChange = (
-        value
-    ) => {
+    const handleFarmerCodeChange = (value) => {
         const code =
             value
                 .trim()
@@ -458,9 +457,7 @@ function Morning() {
                 );
 
             setDegree(
-                calculatedDegree.toFixed(
-                    1
-                )
+                calculatedDegree.toFixed(1)
             );
         } else {
             setDegree("");
@@ -479,9 +476,13 @@ function Morning() {
         setDegree("");
         setRate("");
 
-        /* EXIT UPDATE MODE */
-
         setEditingRecordId(null);
+
+        /* Return cursor to Farmer Code */
+
+        setTimeout(() => {
+            farmerCodeRef.current?.focus();
+        }, 0);
     };
 
     /* =========================================================
@@ -490,9 +491,7 @@ function Morning() {
 
     const handleSave = async () => {
         if (!farmerCode.trim()) {
-            alert(
-                "Please enter Farmer Code."
-            );
+            alert("Please enter Farmer Code.");
             return;
         }
 
@@ -504,37 +503,27 @@ function Morning() {
         }
 
         if (!litres) {
-            alert(
-                "Please enter Litres."
-            );
+            alert("Please enter Litres.");
             return;
         }
 
         if (!fat) {
-            alert(
-                "Please enter Fat."
-            );
+            alert("Please enter Fat.");
             return;
         }
 
         if (!snf) {
-            alert(
-                "Please enter SNF."
-            );
+            alert("Please enter SNF.");
             return;
         }
 
         if (!degree) {
-            alert(
-                "Please enter Degree."
-            );
+            alert("Please enter Degree.");
             return;
         }
 
         if (!rate) {
-            alert(
-                "Please enter Rate."
-            );
+            alert("Please enter Rate.");
             return;
         }
 
@@ -548,11 +537,11 @@ function Morning() {
                     .trim()
                     .toUpperCase(),
 
-            farmerName:
-                farmerName,
+            farmerName,
 
-            date:
-                date,
+            /* CURRENTLY SELECTED DATE */
+
+            date,
 
             litres:
                 Number(litres),
@@ -623,12 +612,8 @@ function Morning() {
                         collectionRecord.farmerCode
                 };
 
-                /* ================= UPDATE TABLE ================= */
-
                 setRecords(
-                    (
-                        previousRecords
-                    ) =>
+                    (previousRecords) =>
                         previousRecords.map(
                             (record) => {
                                 const recordId =
@@ -642,10 +627,6 @@ function Morning() {
                             }
                         )
                 );
-
-                /*
-                 * NO SUCCESS ALERT
-                 */
 
                 handleClear();
 
@@ -700,20 +681,12 @@ function Morning() {
                     collectionRecord.farmerCode
             };
 
-            /* ================= ADD TO TABLE ================= */
-
             setRecords(
-                (
-                    previousRecords
-                ) => [
+                (previousRecords) => [
                     ...previousRecords,
                     savedRecord
                 ]
             );
-
-            /*
-             * NO SUCCESS ALERT
-             */
 
             handleClear();
 
@@ -722,11 +695,6 @@ function Morning() {
                 "Error saving/updating morning record:",
                 error
             );
-
-            /*
-             * This alert is only for an actual
-             * backend/network error.
-             */
 
             alert(
                 error.message ||
@@ -737,109 +705,106 @@ function Morning() {
 
     /* ================= DELETE RECORD ================= */
 
-    const handleDeleteRecord =
-        async (id) => {
-            if (
-                !window.confirm(
-                    "Are you sure you want to delete this record?"
-                )
-            ) {
-                return;
+    const handleDeleteRecord = async (id) => {
+        if (
+            !window.confirm(
+                "Are you sure you want to delete this record?"
+            )
+        ) {
+            return;
+        }
+
+        try {
+            const response =
+                await fetch(
+                    `${COLLECTIONS_API_URL}/${id}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+            const result =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ||
+                        "Failed to delete collection record"
+                );
             }
 
-            try {
-                const response =
-                    await fetch(
-                        `${COLLECTIONS_API_URL}/${id}`,
-                        {
-                            method:
-                                "DELETE"
+            setRecords(
+                (previousRecords) =>
+                    previousRecords.filter(
+                        (record) => {
+                            const recordId =
+                                record.id ||
+                                record._id;
+
+                            return (
+                                recordId !== id
+                            );
                         }
-                    );
+                    )
+            );
 
-                const result =
-                    await response.json();
+            alert(
+                "Morning collection record deleted successfully!"
+            );
 
-                if (!response.ok) {
-                    throw new Error(
-                        result.message ||
-                            "Failed to delete collection record"
-                    );
-                }
+        } catch (error) {
+            console.error(
+                "Error deleting morning record:",
+                error
+            );
 
-                setRecords(
-                    (
-                        previousRecords
-                    ) =>
-                        previousRecords.filter(
-                            (record) => {
-                                const recordId =
-                                    record.id ||
-                                    record._id;
-
-                                return (
-                                    recordId !==
-                                    id
-                                );
-                            }
-                        )
-                );
-
-                alert(
-                    "Morning collection record deleted successfully!"
-                );
-
-            } catch (error) {
-                console.error(
-                    "Error deleting morning record:",
-                    error
-                );
-
-                alert(
-                    "Failed to delete morning collection record."
-                );
-            }
-        };
+            alert(
+                "Failed to delete morning collection record."
+            );
+        }
+    };
 
     /* ================= FARMER MODAL ================= */
 
-    const openFarmerModal =
-        async () => {
-            setFarmerSearch("");
+    const openFarmerModal = async () => {
+        setFarmerSearch("");
 
-            await refreshFarmers();
+        await refreshFarmers();
 
-            setShowModal(true);
-        };
+        setShowModal(true);
+    };
 
-    const closeFarmerModal =
-        () => {
-            setShowModal(false);
-        };
+    const closeFarmerModal = () => {
+        setShowModal(false);
+    };
 
-    const selectFarmer = (
-        farmer
-    ) => {
-        setFarmerCode(
-            farmer.code
-        );
+    const selectFarmer = (farmer) => {
+        const selectedCode =
+            String(
+                farmer.code || ""
+            )
+                .trim()
+                .toUpperCase();
+
+        setFarmerCode(selectedCode);
 
         setFarmerName(
-            farmer.name
+            farmer.name || ""
         );
 
         /*
-         * When farmer is selected from
-         * list, check whether today's
-         * record already exists.
+         * Check existing record for
+         * the CURRENT selected date.
          */
 
         loadExistingRecord(
-            farmer.code
+            selectedCode
         );
 
         setShowModal(false);
     };
+
+    /* ================= FARMER SEARCH ================= */
 
     const filteredFarmers =
         farmers.filter(
@@ -851,32 +816,49 @@ function Morning() {
 
                 return (
                     String(
-                        farmer.code ||
-                            ""
+                        farmer.code || ""
                     )
                         .toLowerCase()
-                        .includes(
-                            search
-                        ) ||
+                        .includes(search) ||
                     String(
-                        farmer.name ||
-                            ""
+                        farmer.name || ""
                     )
                         .toLowerCase()
-                        .includes(
-                            search
-                        )
+                        .includes(search)
                 );
             }
         );
 
-    /* ================= TODAY'S RECORDS ================= */
+    /* =========================================================
+       ORDER FARMER LIST
+       ========================================================= */
 
-    const todayRecords =
+    const orderedFarmers =
+        [...filteredFarmers].sort(
+            (a, b) => {
+                return String(
+                    a.code || ""
+                ).localeCompare(
+                    String(
+                        b.code || ""
+                    ),
+                    undefined,
+                    {
+                        numeric: true
+                    }
+                );
+            }
+        );
+
+    /* =========================================================
+       RECORDS FOR CURRENTLY SELECTED DATE
+       ========================================================= */
+
+    const filteredRecords =
         records.filter(
             (record) =>
-                record.date ===
-                recordsDate
+                record.type === "morning" &&
+                record.date === recordsDate
         );
 
     return (
@@ -914,6 +896,7 @@ function Morning() {
                         <div className="input-wrapper">
 
                             <input
+                                ref={farmerCodeRef}
                                 type="text"
                                 value={
                                     farmerCode
@@ -922,9 +905,7 @@ function Morning() {
                                     e
                                 ) =>
                                     handleFarmerCodeChange(
-                                        e
-                                            .target
-                                            .value
+                                        e.target.value
                                     )
                                 }
                                 onKeyDown={(
@@ -1012,49 +993,39 @@ function Morning() {
                         <div className="date-wrapper">
 
                             <input
+                                ref={dateRef}
                                 type="date"
                                 value={
                                     date
                                 }
-                                onChange={(
+                                onChange={
+                                    handleDateChange
+                                }
+                                onKeyDown={(
                                     e
                                 ) => {
                                     if (
-                                        /^\d{4}-\d{2}-\d{2}$/.test(
-                                            e
-                                                .target
-                                                .value
-                                        )
+                                        e.key ===
+                                        "Enter"
                                     ) {
-                                        setDate(
-                                            e
-                                                .target
-                                                .value
-                                        );
+                                        e.preventDefault();
 
                                         /*
-                                         * Changing date
-                                         * exits update mode.
+                                         * Keep the selected
+                                         * date unchanged and
+                                         * move to Farmer Code.
+                                         *
+                                         * Native browser date
+                                         * controls manage their
+                                         * internal day/month/year
+                                         * segments themselves.
                                          */
 
-                                        setEditingRecordId(
-                                            null
-                                        );
-
-                                        setLitres(
-                                            ""
-                                        );
-                                        setFat(
-                                            ""
-                                        );
-                                        setSnf(
-                                            ""
-                                        );
-                                        setDegree(
-                                            ""
-                                        );
-                                        setRate(
-                                            ""
+                                        setTimeout(
+                                            () => {
+                                                farmerCodeRef.current?.focus();
+                                            },
+                                            0
                                         );
                                     }
                                 }}
@@ -1181,9 +1152,7 @@ function Morning() {
                                 e
                             ) =>
                                 setRate(
-                                    e
-                                        .target
-                                        .value
+                                    e.target.value
                                 )
                             }
                             onKeyDown={(
@@ -1349,18 +1318,36 @@ function Morning() {
                                 onChange={(
                                     e
                                 ) => {
+                                    const selectedDate =
+                                        e.target.value;
+
                                     if (
                                         /^\d{4}-\d{2}-\d{2}$/.test(
-                                            e
-                                                .target
-                                                .value
+                                            selectedDate
                                         )
                                     ) {
                                         setRecordsDate(
-                                            e
-                                                .target
-                                                .value
+                                            selectedDate
                                         );
+
+                                        /*
+                                         * Keep the main
+                                         * selected date
+                                         * synchronized.
+                                         */
+
+                                        setDate(
+                                            selectedDate
+                                        );
+
+                                        setFarmerCode("");
+                                        setFarmerName("");
+                                        setLitres("");
+                                        setFat("");
+                                        setSnf("");
+                                        setDegree("");
+                                        setRate("");
+                                        setEditingRecordId(null);
                                     }
                                 }}
                             />
@@ -1373,7 +1360,7 @@ function Morning() {
 
                             <span>
                                 {
-                                    todayRecords.length
+                                    filteredRecords.length
                                 }
                             </span>
 
@@ -1439,7 +1426,7 @@ function Morning() {
 
                         <tbody>
 
-                            {todayRecords.length ===
+                            {filteredRecords.length ===
                             0 ? (
 
                                 <tr className="empty-record-row">
@@ -1475,7 +1462,7 @@ function Morning() {
 
                             ) : (
 
-                                todayRecords.map(
+                                filteredRecords.map(
                                     (
                                         record,
                                         index
@@ -1537,18 +1524,14 @@ function Morning() {
                                                 ₹
                                                 {Number(
                                                     record.rate
-                                                ).toFixed(
-                                                    2
-                                                )}
+                                                ).toFixed(2)}
                                             </td>
 
                                             <td>
                                                 ₹
                                                 {Number(
                                                     record.amount
-                                                ).toFixed(
-                                                    2
-                                                )}
+                                                ).toFixed(2)}
                                             </td>
 
                                             <td>
@@ -1621,9 +1604,7 @@ function Morning() {
 
                 <div
                     className="modal active"
-                    onClick={(
-                        e
-                    ) => {
+                    onClick={(e) => {
                         if (
                             e.target ===
                             e.currentTarget
@@ -1665,9 +1646,7 @@ function Morning() {
                                     e
                                 ) =>
                                     setFarmerSearch(
-                                        e
-                                            .target
-                                            .value
+                                        e.target.value
                                     )
                                 }
                             />
@@ -1684,7 +1663,7 @@ function Morning() {
                             }}
                         >
 
-                            {filteredFarmers.length >
+                            {orderedFarmers.length >
                             0 ? (
 
                                 <table
@@ -1734,7 +1713,7 @@ function Morning() {
 
                                     <tbody>
 
-                                        {filteredFarmers.map(
+                                        {orderedFarmers.map(
                                             (
                                                 farmer,
                                                 index

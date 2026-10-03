@@ -82,16 +82,26 @@ function Evening() {
     const snfRef = useRef(null);
     const rateRef = useRef(null);
 
-    /* ================= SET DATE + LOAD DATA ================= */
+    /* =========================================================
+       GET TODAY'S DATE
+       ========================================================= */
 
-    useEffect(() => {
+    const getTodayDate = () => {
         const today = new Date();
 
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, "0");
         const day = String(today.getDate()).padStart(2, "0");
 
-        const todayDate = `${year}-${month}-${day}`;
+        return `${year}-${month}-${day}`;
+    };
+
+    /* =========================================================
+       SET INITIAL DATE + LOAD DATA
+       ========================================================= */
+
+    useEffect(() => {
+        const todayDate = getTodayDate();
 
         setDate(todayDate);
         setRecordsDate(todayDate);
@@ -127,8 +137,12 @@ function Evening() {
                 const formattedRecords = Array.isArray(data)
                     ? data.map((record) => ({
                           ...record,
+
                           id: record._id || record.id,
-                          code: record.farmerCode || record.code
+
+                          code:
+                              record.farmerCode ||
+                              record.code
                       }))
                     : [];
 
@@ -142,7 +156,36 @@ function Evening() {
             });
     }, []);
 
-    /* ================= FORMAT DATE ================= */
+    /* =========================================================
+       HANDLE DATE CHANGE
+       ========================================================= */
+
+    const handleDateChange = (newDate) => {
+        setDate(newDate);
+
+        /* Records section follows selected date */
+        setRecordsDate(newDate);
+
+        /*
+         * Clear current entry whenever date changes.
+         * This prevents an old-date record from accidentally
+         * being edited or updated on the new date.
+         */
+        setFarmerCode("");
+        setFarmerName("");
+
+        setLitres("");
+        setFat("");
+        setSnf("");
+        setDegree("");
+        setRate("");
+
+        setEditingRecordId(null);
+    };
+
+    /* =========================================================
+       FORMAT DATE
+       ========================================================= */
 
     const formatDate = (dateString) => {
         if (!dateString) return "";
@@ -154,7 +197,9 @@ function Evening() {
         return `${parts[2]}/${parts[1]}/${parts[0]}`;
     };
 
-    /* ================= LOAD EXISTING RECORD ================= */
+    /* =========================================================
+       LOAD EXISTING RECORD
+       ========================================================= */
 
     const loadExistingRecord = (code) => {
         const normalizedCode = String(code || "")
@@ -163,7 +208,9 @@ function Evening() {
 
         const existingRecord = records.find((record) => {
             const recordCode = String(
-                record.farmerCode || record.code || ""
+                record.farmerCode ||
+                    record.code ||
+                    ""
             )
                 .trim()
                 .toUpperCase();
@@ -192,7 +239,8 @@ function Evening() {
         /* ================= EXISTING RECORD FOUND ================= */
 
         const recordId =
-            existingRecord.id || existingRecord._id;
+            existingRecord.id ||
+            existingRecord._id;
 
         setEditingRecordId(recordId);
 
@@ -220,10 +268,17 @@ function Evening() {
                 : ""
         );
 
+        /*
+         * Degree is calculated automatically from
+         * Fat + SNF by the useEffect below.
+         */
+
         return true;
     };
 
-    /* ================= SEARCH FARMER ================= */
+    /* =========================================================
+       SEARCH FARMER
+       ========================================================= */
 
     const handleFarmerSearch = () => {
         const code = farmerCode.trim().toUpperCase();
@@ -263,7 +318,10 @@ function Evening() {
 
         setFarmerName(farmer.name || "");
 
-        /* Check whether today's evening record already exists */
+        /*
+         * Check existing EVENING record
+         * for the currently selected DATE.
+         */
         loadExistingRecord(code);
 
         /* Move cursor to litres */
@@ -272,7 +330,9 @@ function Evening() {
         }, 0);
     };
 
-    /* ================= FARMER CODE INPUT ================= */
+    /* =========================================================
+       FARMER CODE INPUT
+       ========================================================= */
 
     const handleFarmerCodeChange = (value) => {
         const code = value.trim().toUpperCase();
@@ -306,32 +366,50 @@ function Evening() {
         }
     };
 
-    /* ================= REFRESH FARMERS ================= */
+    /* =========================================================
+       REFRESH FARMERS
+       ========================================================= */
 
     const refreshFarmers = async () => {
         try {
-            const response = await fetch(FARMERS_API_URL);
+            const response = await fetch(
+                FARMERS_API_URL
+            );
 
             if (!response.ok) {
-                throw new Error("Failed to fetch farmers");
+                throw new Error(
+                    "Failed to fetch farmers"
+                );
             }
 
             const data = await response.json();
 
-            setFarmers(Array.isArray(data) ? data : []);
+            setFarmers(
+                Array.isArray(data) ? data : []
+            );
         } catch (error) {
-            console.error("Error refreshing farmers:", error);
+            console.error(
+                "Error refreshing farmers:",
+                error
+            );
         }
     };
 
-    /* ================= CALCULATE AMOUNT ================= */
+    /* =========================================================
+       CALCULATE AMOUNT
+       ========================================================= */
 
     const amount =
         litres && rate
-            ? (Number(litres) * Number(rate)).toFixed(2)
+            ? (
+                  Number(litres) *
+                  Number(rate)
+              ).toFixed(2)
             : "0.00";
 
-    /* ================= CALCULATE DEGREE ================= */
+    /* =========================================================
+       CALCULATE DEGREE
+       ========================================================= */
 
     useEffect(() => {
         if (fat !== "" && snf !== "") {
@@ -343,13 +421,17 @@ function Evening() {
                     0.36
                 );
 
-            setDegree(calculatedDegree.toFixed(1));
+            setDegree(
+                calculatedDegree.toFixed(1)
+            );
         } else {
             setDegree("");
         }
     }, [fat, snf]);
 
-    /* ================= CLEAR FORM ================= */
+    /* =========================================================
+       CLEAR FORM
+       ========================================================= */
 
     const handleClear = () => {
         setFarmerCode("");
@@ -365,7 +447,9 @@ function Evening() {
         setEditingRecordId(null);
     };
 
-    /* ================= SAVE / UPDATE RECORD ================= */
+    /* =========================================================
+       SAVE / UPDATE RECORD
+       ========================================================= */
 
     const handleSave = async () => {
         if (!farmerCode.trim()) {
@@ -374,7 +458,14 @@ function Evening() {
         }
 
         if (!farmerName.trim()) {
-            alert("Please search the Farmer Code first.");
+            alert(
+                "Please search the Farmer Code first."
+            );
+            return;
+        }
+
+        if (!date) {
+            alert("Please select Date.");
             return;
         }
 
@@ -394,7 +485,9 @@ function Evening() {
         }
 
         if (!degree) {
-            alert("Degree could not be calculated.");
+            alert(
+                "Degree could not be calculated."
+            );
             return;
         }
 
@@ -405,9 +498,20 @@ function Evening() {
 
         const collectionRecord = {
             type: "evening",
-            farmerCode: farmerCode.trim().toUpperCase(),
+
+            farmerCode:
+                farmerCode
+                    .trim()
+                    .toUpperCase(),
+
             farmerName,
+
+            /*
+             * IMPORTANT:
+             * Save the currently selected date.
+             */
             date,
+
             litres: Number(litres),
             fat: Number(fat),
             snf: Number(snf),
@@ -426,9 +530,12 @@ function Evening() {
                     `${COLLECTIONS_API_URL}/${editingRecordId}`,
                     {
                         method: "PUT",
+
                         headers: {
-                            "Content-Type": "application/json"
+                            "Content-Type":
+                                "application/json"
                         },
+
                         body: JSON.stringify(
                             collectionRecord
                         )
@@ -436,10 +543,17 @@ function Evening() {
                 );
 
                 const contentType =
-                    response.headers.get("content-type") || "";
+                    response.headers.get(
+                        "content-type"
+                    ) || "";
 
-                if (!contentType.includes("application/json")) {
-                    const text = await response.text();
+                if (
+                    !contentType.includes(
+                        "application/json"
+                    )
+                ) {
+                    const text =
+                        await response.text();
 
                     console.error(
                         "Backend returned non-JSON response:",
@@ -451,7 +565,8 @@ function Evening() {
                     );
                 }
 
-                const result = await response.json();
+                const result =
+                    await response.json();
 
                 if (!response.ok) {
                     throw new Error(
@@ -465,27 +580,35 @@ function Evening() {
 
                 const updatedRecord = {
                     ...updatedData,
+
                     id:
                         updatedData._id ||
                         editingRecordId,
+
                     code:
                         updatedData.farmerCode ||
                         collectionRecord.farmerCode
                 };
 
-                setRecords((previousRecords) =>
-                    previousRecords.map((record) => {
-                        const recordId =
-                            record.id || record._id;
+                setRecords(
+                    (previousRecords) =>
+                        previousRecords.map(
+                            (record) => {
+                                const recordId =
+                                    record.id ||
+                                    record._id;
 
-                        return String(recordId) ===
-                            String(editingRecordId)
-                            ? updatedRecord
-                            : record;
-                    })
+                                return String(
+                                    recordId
+                                ) ===
+                                    String(
+                                        editingRecordId
+                                    )
+                                    ? updatedRecord
+                                    : record;
+                            }
+                        )
                 );
-
-                /* No success popup */
 
                 handleClear();
 
@@ -500,9 +623,12 @@ function Evening() {
                 COLLECTIONS_API_URL,
                 {
                     method: "POST",
+
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type":
+                            "application/json"
                     },
+
                     body: JSON.stringify(
                         collectionRecord
                     )
@@ -510,10 +636,17 @@ function Evening() {
             );
 
             const contentType =
-                response.headers.get("content-type") || "";
+                response.headers.get(
+                    "content-type"
+                ) || "";
 
-            if (!contentType.includes("application/json")) {
-                const text = await response.text();
+            if (
+                !contentType.includes(
+                    "application/json"
+                )
+            ) {
+                const text =
+                    await response.text();
 
                 console.error(
                     "Backend returned non-JSON response:",
@@ -525,7 +658,8 @@ function Evening() {
                 );
             }
 
-            const result = await response.json();
+            const result =
+                await response.json();
 
             if (!response.ok) {
                 throw new Error(
@@ -539,20 +673,22 @@ function Evening() {
 
             const savedRecord = {
                 ...savedData,
+
                 id:
                     savedData._id ||
                     savedData.id,
+
                 code:
                     savedData.farmerCode ||
                     collectionRecord.farmerCode
             };
 
-            setRecords((previousRecords) => [
-                ...previousRecords,
-                savedRecord
-            ]);
-
-            /* No success popup */
+            setRecords(
+                (previousRecords) => [
+                    ...previousRecords,
+                    savedRecord
+                ]
+            );
 
             handleClear();
         } catch (error) {
@@ -568,7 +704,9 @@ function Evening() {
         }
     };
 
-    /* ================= DELETE RECORD ================= */
+    /* =========================================================
+       DELETE RECORD
+       ========================================================= */
 
     const handleDeleteRecord = async (id) => {
         if (
@@ -587,7 +725,20 @@ function Evening() {
                 }
             );
 
-            const result = await response.json();
+            const contentType =
+                response.headers.get(
+                    "content-type"
+                ) || "";
+
+            let result = {};
+
+            if (
+                contentType.includes(
+                    "application/json"
+                )
+            ) {
+                result = await response.json();
+            }
 
             if (!response.ok) {
                 throw new Error(
@@ -596,11 +747,21 @@ function Evening() {
                 );
             }
 
-            setRecords((previousRecords) =>
-                previousRecords.filter(
-                    (record) =>
-                        String(record.id) !== String(id)
-                )
+            setRecords(
+                (previousRecords) =>
+                    previousRecords.filter(
+                        (record) => {
+                            const recordId =
+                                record.id ||
+                                record._id;
+
+                            return (
+                                String(
+                                    recordId
+                                ) !== String(id)
+                            );
+                        }
+                    )
             );
 
             alert(
@@ -618,7 +779,9 @@ function Evening() {
         }
     };
 
-    /* ================= OPEN FARMER MODAL ================= */
+    /* =========================================================
+       OPEN FARMER MODAL
+       ========================================================= */
 
     const openFarmerModal = async () => {
         setFarmerSearch("");
@@ -628,13 +791,17 @@ function Evening() {
         setShowModal(true);
     };
 
-    /* ================= CLOSE FARMER MODAL ================= */
+    /* =========================================================
+       CLOSE FARMER MODAL
+       ========================================================= */
 
     const closeFarmerModal = () => {
         setShowModal(false);
     };
 
-    /* ================= SELECT FARMER ================= */
+    /* =========================================================
+       SELECT FARMER
+       ========================================================= */
 
     const selectFarmer = (farmer) => {
         const selectedCode = String(
@@ -646,7 +813,10 @@ function Evening() {
         setFarmerCode(selectedCode);
         setFarmerName(farmer.name || "");
 
-        /* Load existing evening record if available */
+        /*
+         * Load existing EVENING record
+         * for the currently selected DATE.
+         */
         loadExistingRecord(selectedCode);
 
         setShowModal(false);
@@ -656,24 +826,47 @@ function Evening() {
         }, 0);
     };
 
-    /* ================= FILTER FARMERS ================= */
+    /* =========================================================
+       FILTER + SORT FARMERS
+       ========================================================= */
 
-    const filteredFarmers = farmers.filter((farmer) => {
-        const search = farmerSearch
-            .trim()
-            .toLowerCase();
+    const filteredFarmers = farmers
+        .filter((farmer) => {
+            const search = farmerSearch
+                .trim()
+                .toLowerCase();
 
-        return (
-            String(farmer.code || "")
-                .toLowerCase()
-                .includes(search) ||
-            String(farmer.name || "")
-                .toLowerCase()
-                .includes(search)
-        );
-    });
+            return (
+                String(farmer.code || "")
+                    .toLowerCase()
+                    .includes(search) ||
+                String(farmer.name || "")
+                    .toLowerCase()
+                    .includes(search)
+            );
+        })
+        .sort((a, b) => {
+            const codeA = String(
+                a.code || ""
+            ).toLowerCase();
 
-    /* ================= FILTER RECORDS ================= */
+            const codeB = String(
+                b.code || ""
+            ).toLowerCase();
+
+            return codeA.localeCompare(
+                codeB,
+                undefined,
+                {
+                    numeric: true,
+                    sensitivity: "base"
+                }
+            );
+        });
+
+    /* =========================================================
+       FILTER RECORDS BY SELECTED DATE
+       ========================================================= */
 
     const todayRecords = records.filter(
         (record) =>
@@ -681,7 +874,9 @@ function Evening() {
             record.type === "evening"
     );
 
-    /* ================= JSX ================= */
+    /* =========================================================
+       JSX
+       ========================================================= */
 
     return (
         <div className="container">
@@ -710,7 +905,9 @@ function Evening() {
 
                             <label>
                                 <img
-                                    src={farmerCodeIcon}
+                                    src={
+                                        farmerCodeIcon
+                                    }
                                     alt="Farmer Code"
                                 />
 
@@ -721,14 +918,19 @@ function Evening() {
 
                                 <input
                                     type="text"
-                                    value={farmerCode}
+                                    value={
+                                        farmerCode
+                                    }
                                     onChange={(e) =>
                                         handleFarmerCodeChange(
                                             e.target.value
                                         )
                                     }
                                     onKeyDown={(e) => {
-                                        if (e.key === "Enter") {
+                                        if (
+                                            e.key ===
+                                            "Enter"
+                                        ) {
                                             e.preventDefault();
 
                                             handleFarmerSearch();
@@ -740,10 +942,14 @@ function Evening() {
                                 <button
                                     type="button"
                                     className="farmer-search-btn"
-                                    onClick={handleFarmerSearch}
+                                    onClick={
+                                        handleFarmerSearch
+                                    }
                                 >
                                     <img
-                                        src={searchIcon}
+                                        src={
+                                            searchIcon
+                                        }
                                         alt="Search"
                                     />
                                 </button>
@@ -758,7 +964,9 @@ function Evening() {
 
                             <label>
                                 <img
-                                    src={farmerNameIcon}
+                                    src={
+                                        farmerNameIcon
+                                    }
                                     alt="Farmer Name"
                                 />
 
@@ -767,7 +975,9 @@ function Evening() {
 
                             <input
                                 type="text"
-                                value={farmerName}
+                                value={
+                                    farmerName
+                                }
                                 readOnly
                                 placeholder="(Name will appear here)"
                             />
@@ -780,7 +990,9 @@ function Evening() {
 
                             <label>
                                 <img
-                                    src={calendarIcon}
+                                    src={
+                                        calendarIcon
+                                    }
                                     alt="Date"
                                 />
 
@@ -793,14 +1005,16 @@ function Evening() {
                                     type="date"
                                     value={date}
                                     onChange={(e) =>
-                                        setDate(
+                                        handleDateChange(
                                             e.target.value
                                         )
                                     }
                                 />
 
                                 <img
-                                    src={dateChevronIcon}
+                                    src={
+                                        dateChevronIcon
+                                    }
                                     alt=""
                                 />
 
@@ -819,7 +1033,9 @@ function Evening() {
                             label="Litres (L)"
                             value={litres}
                             setValue={setLitres}
-                            inputRef={litresRef}
+                            inputRef={
+                                litresRef
+                            }
                             nextRef={fatRef}
                             placeholder="Enter Litres"
                         />
@@ -868,7 +1084,9 @@ function Evening() {
 
                             <label>
                                 <img
-                                    src={amountIcon}
+                                    src={
+                                        amountIcon
+                                    }
                                     alt="Amount"
                                 />
 
@@ -878,7 +1096,8 @@ function Evening() {
                             <input
                                 type="text"
                                 value={
-                                    amount === "0.00"
+                                    amount ===
+                                    "0.00"
                                         ? ""
                                         : amount
                                 }
@@ -897,7 +1116,9 @@ function Evening() {
                         <button
                             type="button"
                             className="save-btn"
-                            onClick={handleSave}
+                            onClick={
+                                handleSave
+                            }
                         >
                             <img
                                 src={saveIcon}
@@ -910,7 +1131,9 @@ function Evening() {
                         <button
                             type="button"
                             className="clear-btn"
-                            onClick={handleClear}
+                            onClick={
+                                handleClear
+                            }
                         >
                             <img
                                 src={clearIcon}
@@ -923,10 +1146,14 @@ function Evening() {
                         <button
                             type="button"
                             className="farmer-list-btn"
-                            onClick={openFarmerModal}
+                            onClick={
+                                openFarmerModal
+                            }
                         >
                             <img
-                                src={farmerListIcon}
+                                src={
+                                    farmerListIcon
+                                }
                                 alt="Farmer List"
                             />
 
@@ -946,7 +1173,9 @@ function Evening() {
                         <div className="records-title">
 
                             <img
-                                src={noRecordsIcon}
+                                src={
+                                    noRecordsIcon
+                                }
                                 alt="Records"
                             />
 
@@ -961,7 +1190,9 @@ function Evening() {
                             <div className="records-date">
 
                                 <img
-                                    src={recordsCalendarIcon}
+                                    src={
+                                        recordsCalendarIcon
+                                    }
                                     alt="Date"
                                 />
 
@@ -979,7 +1210,9 @@ function Evening() {
 
                             <div className="total-records">
                                 Total Records:{" "}
-                                {todayRecords.length}
+                                {
+                                    todayRecords.length
+                                }
                             </div>
 
                         </div>
@@ -996,16 +1229,45 @@ function Evening() {
 
                                 <tr>
 
-                                    <th>Sr. No.</th>
-                                    <th>Code</th>
-                                    <th>Farmer Name</th>
-                                    <th>Litres (L)</th>
-                                    <th>Fat</th>
-                                    <th>SNF</th>
-                                    <th>Degree</th>
-                                    <th>Rate (₹/L)</th>
-                                    <th>Amount (₹)</th>
-                                    <th>Action</th>
+                                    <th>
+                                        Sr. No.
+                                    </th>
+
+                                    <th>
+                                        Code
+                                    </th>
+
+                                    <th>
+                                        Farmer Name
+                                    </th>
+
+                                    <th>
+                                        Litres (L)
+                                    </th>
+
+                                    <th>
+                                        Fat
+                                    </th>
+
+                                    <th>
+                                        SNF
+                                    </th>
+
+                                    <th>
+                                        Degree
+                                    </th>
+
+                                    <th>
+                                        Rate (₹/L)
+                                    </th>
+
+                                    <th>
+                                        Amount (₹)
+                                    </th>
+
+                                    <th>
+                                        Action
+                                    </th>
 
                                 </tr>
 
@@ -1013,10 +1275,14 @@ function Evening() {
 
                             <tbody>
 
-                                {todayRecords.length > 0 ? (
+                                {todayRecords.length >
+                                0 ? (
 
                                     todayRecords.map(
-                                        (record, index) => (
+                                        (
+                                            record,
+                                            index
+                                        ) => (
 
                                             <tr
                                                 key={
@@ -1027,7 +1293,10 @@ function Evening() {
                                             >
 
                                                 <td>
-                                                    {index + 1}
+                                                    {
+                                                        index +
+                                                        1
+                                                    }
                                                 </td>
 
                                                 <td>
@@ -1071,14 +1340,18 @@ function Evening() {
                                                     ₹
                                                     {Number(
                                                         record.rate
-                                                    ).toFixed(2)}
+                                                    ).toFixed(
+                                                        2
+                                                    )}
                                                 </td>
 
                                                 <td>
                                                     ₹
                                                     {Number(
                                                         record.amount
-                                                    ).toFixed(2)}
+                                                    ).toFixed(
+                                                        2
+                                                    )}
                                                 </td>
 
                                                 <td>
@@ -1090,7 +1363,7 @@ function Evening() {
                                                         onClick={() =>
                                                             handleDeleteRecord(
                                                                 record.id ||
-                                                                record._id
+                                                                    record._id
                                                             )
                                                         }
                                                     >
@@ -1221,7 +1494,9 @@ function Evening() {
                             <input
                                 type="text"
                                 placeholder="Search farmer..."
-                                value={farmerSearch}
+                                value={
+                                    farmerSearch
+                                }
                                 onChange={(e) =>
                                     setFarmerSearch(
                                         e.target.value
@@ -1234,20 +1509,24 @@ function Evening() {
                         <div
                             className="farmer-list"
                             style={{
-                                overflowX: "auto",
+                                overflowX:
+                                    "auto",
                                 width: "100%"
                             }}
                         >
 
-                            {filteredFarmers.length > 0 ? (
+                            {filteredFarmers.length >
+                            0 ? (
 
                                 <table
                                     style={{
                                         width: "100%",
-                                        minWidth: "850px",
+                                        minWidth:
+                                            "850px",
                                         borderCollapse:
                                             "collapse",
-                                        background: "#fff"
+                                        background:
+                                            "#fff"
                                     }}
                                 >
 
@@ -1337,7 +1616,10 @@ function Evening() {
                                                             tableCellStyle
                                                         }
                                                     >
-                                                        {index + 1}
+                                                        {
+                                                            index +
+                                                            1
+                                                        }
                                                     </td>
 
                                                     <td
@@ -1420,7 +1702,9 @@ function Evening() {
     );
 }
 
-/* ================= MILK FIELD COMPONENT ================= */
+/* =========================================================
+   MILK FIELD COMPONENT
+   ========================================================= */
 
 function MilkField({
     icon,
@@ -1463,7 +1747,10 @@ function MilkField({
                 }}
                 onKeyDown={(e) => {
 
-                    if (e.key === "Enter") {
+                    if (
+                        e.key ===
+                        "Enter"
+                    ) {
 
                         e.preventDefault();
 
@@ -1471,7 +1758,9 @@ function MilkField({
 
                             onEnter();
 
-                        } else if (nextRef) {
+                        } else if (
+                            nextRef
+                        ) {
 
                             nextRef.current?.focus();
 
@@ -1480,8 +1769,12 @@ function MilkField({
                     }
 
                 }}
-                placeholder={placeholder}
-                readOnly={readOnly}
+                placeholder={
+                    placeholder
+                }
+                readOnly={
+                    readOnly
+                }
                 min="0"
                 step="0.01"
             />
