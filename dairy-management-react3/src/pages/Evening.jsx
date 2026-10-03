@@ -26,15 +26,28 @@ import recordsCalendarIcon from "../assets/Evening_collection_img/records_calend
 
 /* ================= FARMER DATA ================= */
 
-const farmers = [
-    { code: "F001", name: "Ramesh Patil" },
-    { code: "F002", name: "Suresh Jadhav" },
-    { code: "F003", name: "Ganesh Shinde" },
-    { code: "F004", name: "Mahesh Pawar" },
-    { code: "F005", name: "Vijay Chavan" }
-];
+const FARMERS_API_URL = "http://localhost:5000/api/farmers";
 
 /* ================= MAIN COMPONENT ================= */
+
+
+const tableHeadStyle = {
+    padding: "10px 8px",
+    border: "1px solid #d5e8dc",
+    background: "#eaf6ee",
+    color: "#075c35",
+    fontWeight: 700,
+    textAlign: "center",
+    whiteSpace: "nowrap"
+};
+
+const tableCellStyle = {
+    padding: "10px 8px",
+    border: "1px solid #d5e8dc",
+    color: "#333",
+    textAlign: "center",
+    whiteSpace: "nowrap"
+};
 
 function Evening() {
     const [farmerCode, setFarmerCode] = useState("");
@@ -49,6 +62,7 @@ function Evening() {
     const [rate, setRate] = useState("");
 
     const [records, setRecords] = useState([]);
+    const [farmers, setFarmers] = useState([]);
 
     const [showModal, setShowModal] = useState(false);
     const [farmerSearch, setFarmerSearch] = useState("");
@@ -73,6 +87,22 @@ function Evening() {
 
         setDate(todayDate);
         setRecordsDate(todayDate);
+
+        /* ================= LOAD FARMERS FROM MONGODB ================= */
+
+        fetch(FARMERS_API_URL)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch farmers");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                setFarmers(Array.isArray(data) ? data : []);
+            })
+            .catch((error) => {
+                console.error("Error loading farmers:", error);
+            });
 
         /* ================= LOAD EVENING RECORDS FROM BACKEND ================= */
 
@@ -113,21 +143,65 @@ function Evening() {
         const code = farmerCode.trim().toUpperCase();
 
         if (!code) {
+            setFarmerName("");
             alert("Please enter Farmer Code.");
             return;
         }
 
         const farmer = farmers.find(
-            (item) => item.code === code
+            (item) =>
+                String(item.code || "").trim().toUpperCase() === code
         );
 
         if (!farmer) {
+            setFarmerName("");
             alert("Farmer not found.");
+            return;
+        }
+
+        setFarmerCode(String(farmer.code).trim().toUpperCase());
+        setFarmerName(farmer.name || "");
+    };
+
+    /* ================= FARMER CODE INPUT ================= */
+
+    const handleFarmerCodeChange = (value) => {
+        const code = value.trim().toUpperCase();
+
+        setFarmerCode(code);
+
+        if (!code) {
             setFarmerName("");
             return;
         }
 
-        setFarmerName(farmer.name);
+        const farmer = farmers.find(
+            (item) =>
+                String(item.code || "").trim().toUpperCase() === code
+        );
+
+        if (farmer) {
+            setFarmerName(farmer.name || "");
+        } else {
+            setFarmerName("");
+        }
+    };
+
+    /* ================= REFRESH FARMERS ================= */
+
+    const refreshFarmers = async () => {
+        try {
+            const response = await fetch(FARMERS_API_URL);
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch farmers");
+            }
+
+            const data = await response.json();
+            setFarmers(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error("Error refreshing farmers:", error);
+        }
     };
 
     /* ================= CALCULATE AMOUNT ================= */
@@ -317,8 +391,9 @@ function Evening() {
 };
     /* ================= OPEN FARMER MODAL ================= */
 
-    const openFarmerModal = () => {
+    const openFarmerModal = async () => {
         setFarmerSearch("");
+        await refreshFarmers();
         setShowModal(true);
     };
 
@@ -395,11 +470,35 @@ function Evening() {
                                     type="text"
                                     value={farmerCode}
                                     onChange={(e) =>
-                                        setFarmerCode(
+                                        handleFarmerCodeChange(
                                             e.target.value
                                         )
                                     }
-                                    placeholder="Enter Farmer Code"
+                                    onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        e.preventDefault();
+
+                                        const code = e.currentTarget.value.trim().toUpperCase();
+                                        const farmer = farmers.find(
+                                            (item) =>
+                                                String(item.code || "").trim().toUpperCase() === code
+                                        );
+
+                                        if (farmer) {
+                                            setFarmerCode(String(farmer.code || "").trim().toUpperCase());
+                                            setFarmerName(farmer.name || "");
+
+                                            // Move cursor directly to Litres after Farmer Code Enter
+                                            setTimeout(() => {
+                                                litresRef.current?.focus();
+                                            }, 0);
+                                        } else {
+                                            setFarmerName("");
+                                            alert("Farmer not found.");
+                                        }
+                                    }
+                                }}
+                                placeholder="Enter Farmer Code"
                                 />
 
                                 <button
@@ -874,48 +973,51 @@ function Evening() {
 
                         </div>
 
-                        <div className="farmer-list">
-
+                        <div
+                            className="farmer-list"
+                            style={{ overflowX: "auto", width: "100%" }}
+                        >
                             {filteredFarmers.length > 0 ? (
-
-                                filteredFarmers.map(
-                                    (farmer) => (
-
-                                        <div
-                                            className="farmer-item"
-                                            key={farmer.code}
-                                            onClick={() =>
-                                                selectFarmer(
-                                                    farmer
-                                                )
-                                            }
-                                        >
-
-                                            <strong>
-                                                {farmer.code}
-                                            </strong>
-
-                                            <span>
-                                                {farmer.name}
-                                            </span>
-
-                                        </div>
-
-                                    )
-                                )
-
+                                <table
+                                    style={{
+                                        width: "100%",
+                                        minWidth: "850px",
+                                        borderCollapse: "collapse",
+                                        background: "#fff"
+                                    }}
+                                >
+                                    <thead>
+                                        <tr>
+                                            <th style={tableHeadStyle}>Sr. No.</th>
+                                            <th style={tableHeadStyle}>Farmer Code</th>
+                                            <th style={tableHeadStyle}>Farmer Name</th>
+                                            <th style={tableHeadStyle}>Phone</th>
+                                            <th style={tableHeadStyle}>Email</th>
+                                            <th style={tableHeadStyle}>PhonePe</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredFarmers.map((farmer, index) => (
+                                            <tr
+                                                key={farmer._id || farmer.code || index}
+                                                onClick={() => selectFarmer(farmer)}
+                                                style={{ cursor: "pointer" }}
+                                            >
+                                                <td style={tableCellStyle}>{index + 1}</td>
+                                                <td style={tableCellStyle}>{farmer.code || "-"}</td>
+                                                <td style={tableCellStyle}>{farmer.name || "-"}</td>
+                                                <td style={tableCellStyle}>{farmer.phone || "-"}</td>
+                                                <td style={tableCellStyle}>{farmer.email || "-"}</td>
+                                                <td style={tableCellStyle}>{farmer.phonePay || farmer.phonepay || farmer.phonePe || "-"}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             ) : (
-
                                 <div className="no-records">
-
-                                    <p>
-                                        No farmer found
-                                    </p>
-
+                                    <p>No farmer found</p>
                                 </div>
-
                             )}
-
                         </div>
 
                     </div>
