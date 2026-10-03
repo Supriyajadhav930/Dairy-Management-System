@@ -10,19 +10,19 @@ html,
 body,
 #root {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   padding: 0;
 }
 
 
 /* =========================================================
-   PAGE
+   ADD FARMER PAGE
    ========================================================= */
 
 .add-farmer-page {
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
 
   background: #ffffff;
 
@@ -42,11 +42,11 @@ body,
    MAIN CONTAINER
    ========================================================= */
 
-.add-farmer-main {
+.add-farmer-page .add-farmer-main {
   width: 1080px;
   max-width: calc(100% - 40px);
 
-  height: calc(100vh - 40px);
+  min-height: calc(100vh - 40px);
 
   background: #ffffff;
 
@@ -57,7 +57,7 @@ body,
   box-shadow:
     0 2px 14px rgba(0, 90, 45, 0.10);
 
-  padding: 6px 16px 8px;
+  padding: 6px 16px 18px;
 
   overflow: hidden;
 }
@@ -67,9 +67,9 @@ body,
    HEADER
    ========================================================= */
 
-.add-farmer-header {
+.add-farmer-page .add-farmer-header {
   width: 100%;
-  height: 70px;
+  height: 82px;
 
   display: flex;
   flex-direction: column;
@@ -79,7 +79,7 @@ body,
 }
 
 
-.add-farmer-header h1 {
+.add-farmer-page .add-farmer-header h1 {
   margin: 0;
 
   font-size: 40px;
@@ -98,7 +98,7 @@ body,
    HEADER DECORATION
    ========================================================= */
 
-.header-decoration {
+.add-farmer-page .header-decoration {
   width: 190px;
 
   display: flex;
@@ -112,7 +112,7 @@ body,
 }
 
 
-.header-decoration span {
+.add-farmer-page .header-decoration span {
   width: 68px;
 
   height: 2px;
@@ -123,7 +123,7 @@ body,
 }
 
 
-.leaf-icon {
+.add-farmer-page .leaf-icon {
   width: 28px;
   height: 18px;
 
@@ -148,10 +148,14 @@ body,
    FORM CARD
    ========================================================= */
 
-.farmer-form-card {
+.add-farmer-page .farmer-form-card {
   width: 100%;
 
-  height: 290px;
+  /*
+     Increased height so Phone Pay and buttons
+     have their own proper space.
+  */
+  height: 333px;
 
   border: 1px solid rgba(160, 204, 180, 0.55);
 
@@ -159,19 +163,27 @@ body,
 
   background: #ffffff;
 
-  padding: 7px 16px;
+  padding: 10px 16px;
 
   display: grid;
 
   grid-template-columns: 1fr 1fr;
 
+  /*
+     Each field row has enough height for:
+     label + input + separator.
+  */
   grid-template-rows:
-    70px
-    70px
-    65px
-    48px;
+    76px
+    76px
+    76px
+    58px;
 
   column-gap: 22px;
+
+  row-gap: 0;
+
+  position: relative;
 }
 
 
@@ -179,12 +191,14 @@ body,
    INPUT GROUP
    ========================================================= */
 
-.input-group {
+.add-farmer-page .input-group {
   width: 100%;
 
   position: relative;
 
   padding-top: 0;
+
+  min-width: 0;
 }
 
 
@@ -192,8 +206,8 @@ body,
    LABEL
    ========================================================= */
 
-.input-label {
-  height: 26px;
+.add-farmer-page .input-label {
+  height: 27px;
 
   display: flex;
 
@@ -211,7 +225,7 @@ body,
 }
 
 
-.input-label img {
+.add-farmer-page .input-label img {
   width: 29px;
   height: 29px;
 
@@ -227,7 +241,7 @@ body,
    INPUT
    ========================================================= */
 
-.input-group input {
+.add-farmer-page .input-group input {
   width: 100%;
 
   height: 43px;
@@ -249,10 +263,12 @@ body,
   font-weight: 500;
 
   color: #3c4f60;
+
+  display: block;
 }
 
 
-.input-group input::placeholder {
+.add-farmer-page .input-group input::placeholder {
   color: #91a9d0;
 
   opacity: 1;
@@ -263,7 +279,7 @@ body,
 }
 
 
-.input-group input:focus {
+.add-farmer-page .input-group input:focus {
   border-color: #9acbb0;
 }
 
@@ -272,12 +288,12 @@ body,
    INPUT SEPARATOR
    ========================================================= */
 
-.input-group::after {
+.add-farmer-page .input-group::after {
   content: "";
 
   position: absolute;
 
-  bottom: -4px;
+  bottom: 0;
 
   left: 0;
 
@@ -293,7 +309,7 @@ body,
    PHONE PAY
    ========================================================= */
 
-.phone-pay-group {
+.add-farmer-page .phone-pay-group {
   grid-column: 1 / 2;
 }
 
@@ -302,16 +318,12 @@ body,
    VALIDATION ERROR
    ========================================================= */
 
-.validation-error {
+.add-farmer-page .validation-error {
   position: absolute;
 
   left: 0;
 
-  /*
-     Put error directly below the input.
-     This prevents it from overlapping the next label.
-  */
-  top: 72px;
+  top: 71px;
 
   color: #d93025;
 
@@ -335,8 +347,11 @@ body,
 }
 
 
-/* Keep the field containing an error above neighboring fields */
-.input-group:has(.validation-error) {
+/*
+   Keep validation message above nearby elements.
+*/
+
+.add-farmer-page .input-group:has(.validation-error) {
   z-index: 20;
 }
 
@@ -345,8 +360,14 @@ body,
    FORM BUTTONS
    ========================================================= */
 
-.form-buttons {
+.add-farmer-page .form-buttons {
   grid-column: 1 / 3;
+
+  /*
+     IMPORTANT:
+     Buttons have their own grid row.
+     They no longer sit inside the Phone Pay row.
+  */
 
   display: flex;
 
@@ -354,14 +375,16 @@ body,
 
   align-items: center;
 
-  gap: 20px;
+  gap: 22px;
 
-  padding-top: 0;
+  padding: 5px 0 0;
+
+  min-height: 58px;
 }
 
 
-.form-buttons button {
-  height: 43px;
+.add-farmer-page .form-buttons button {
+  height: 49px;
 
   border-radius: 9px;
 
@@ -380,10 +403,12 @@ body,
   cursor: pointer;
 
   font-family: Arial, Helvetica, sans-serif;
+
+  flex-shrink: 0;
 }
 
 
-.form-buttons button img {
+.add-farmer-page .form-buttons button img {
   width: 23px;
   height: 23px;
 
@@ -395,8 +420,8 @@ body,
    CLEAR BUTTON
    ========================================================= */
 
-.clear-btn {
-  width: 165px;
+.add-farmer-page .form-buttons .clear-btn {
+  width: 190px;
 
   color: #086c30;
 
@@ -406,12 +431,17 @@ body,
 }
 
 
+.add-farmer-page .form-buttons .clear-btn:hover {
+  background: #f0faf3;
+}
+
+
 /* =========================================================
    SAVE BUTTON
    ========================================================= */
 
-.save-btn {
-  width: 165px;
+.add-farmer-page .form-buttons .save-btn {
+  width: 190px;
 
   color: #ffffff;
 
@@ -424,16 +454,21 @@ body,
 }
 
 
+.add-farmer-page .form-buttons .save-btn:hover {
+  background: #238943;
+}
+
+
 /* =========================================================
-   AVAILABLE FARMERS
+   AVAILABLE FARMERS CARD
    ========================================================= */
 
-.available-farmers-card {
+.add-farmer-page .available-farmers-card {
   width: 100%;
 
-  height: 245px;
+  height: 282px;
 
-  margin-top: 10px;
+  margin-top: 12px;
 
   border: 1px solid rgba(160, 204, 180, 0.55);
 
@@ -451,10 +486,10 @@ body,
    AVAILABLE HEADER
    ========================================================= */
 
-.available-header {
+.add-farmer-page .available-header {
   width: 100%;
 
-  height: 42px;
+  height: 48px;
 
   display: flex;
 
@@ -468,7 +503,7 @@ body,
    AVAILABLE TITLE
    ========================================================= */
 
-.available-title {
+.add-farmer-page .available-title {
   width: 300px;
 
   display: flex;
@@ -487,7 +522,7 @@ body,
 }
 
 
-.available-title img {
+.add-farmer-page .available-title img {
   width: 27px;
   height: 27px;
 
@@ -499,7 +534,7 @@ body,
    TOTAL FARMER
    ========================================================= */
 
-.total-farmer-box {
+.add-farmer-page .total-farmer-box {
   width: 180px;
 
   height: 36px;
@@ -532,7 +567,7 @@ body,
 }
 
 
-.total-farmer-box img {
+.add-farmer-page .total-farmer-box img {
   width: 22px;
   height: 22px;
 
@@ -540,7 +575,7 @@ body,
 }
 
 
-.total-farmer-box strong {
+.add-farmer-page .total-farmer-box strong {
   font-size: 14px;
 
   margin-left: 2px;
@@ -551,7 +586,7 @@ body,
    SEARCH
    ========================================================= */
 
-.search-box {
+.add-farmer-page .search-box {
   width: 225px;
 
   height: 35px;
@@ -574,7 +609,7 @@ body,
 }
 
 
-.search-box img {
+.add-farmer-page .search-box img {
   width: 20px;
   height: 20px;
 
@@ -582,7 +617,7 @@ body,
 }
 
 
-.search-box input {
+.add-farmer-page .search-box input {
   width: 100%;
 
   height: 100%;
@@ -599,7 +634,7 @@ body,
 }
 
 
-.search-box input::placeholder {
+.add-farmer-page .search-box input::placeholder {
   color: #91a9d0;
 
   opacity: 1;
@@ -610,10 +645,10 @@ body,
    TABLE WRAPPER
    ========================================================= */
 
-.farmer-table-wrapper {
+.add-farmer-page .farmer-table-wrapper {
   width: 100%;
 
-  height: 187px;
+  height: 214px;
 
   margin-top: 2px;
 
@@ -631,7 +666,7 @@ body,
    TABLE
    ========================================================= */
 
-.farmer-table {
+.add-farmer-page .farmer-table {
   width: 100%;
 
   height: 100%;
@@ -648,14 +683,14 @@ body,
    TABLE HEADER
    ========================================================= */
 
-.farmer-table thead {
-  height: 32px;
+.add-farmer-page .farmer-table thead {
+  height: 38px;
 
   background: #e6f6ea;
 }
 
 
-.farmer-table th {
+.add-farmer-page .farmer-table th {
   color: #08702f;
 
   font-size: 13px;
@@ -670,7 +705,7 @@ body,
 }
 
 
-.farmer-table th:last-child {
+.add-farmer-page .farmer-table th:last-child {
   border-right: none;
 }
 
@@ -679,38 +714,38 @@ body,
    TABLE COLUMN WIDTHS
    ========================================================= */
 
-.farmer-table th:nth-child(1),
-.farmer-table td:nth-child(1) {
+.add-farmer-page .farmer-table th:nth-child(1),
+.add-farmer-page .farmer-table td:nth-child(1) {
   width: 90px;
 }
 
 
-.farmer-table th:nth-child(2),
-.farmer-table td:nth-child(2) {
+.add-farmer-page .farmer-table th:nth-child(2),
+.add-farmer-page .farmer-table td:nth-child(2) {
   width: 165px;
 }
 
 
-.farmer-table th:nth-child(3),
-.farmer-table td:nth-child(3) {
+.add-farmer-page .farmer-table th:nth-child(3),
+.add-farmer-page .farmer-table td:nth-child(3) {
   width: 155px;
 }
 
 
-.farmer-table th:nth-child(4),
-.farmer-table td:nth-child(4) {
+.add-farmer-page .farmer-table th:nth-child(4),
+.add-farmer-page .farmer-table td:nth-child(4) {
   width: 155px;
 }
 
 
-.farmer-table th:nth-child(5),
-.farmer-table td:nth-child(5) {
+.add-farmer-page .farmer-table th:nth-child(5),
+.add-farmer-page .farmer-table td:nth-child(5) {
   width: 160px;
 }
 
 
-.farmer-table th:nth-child(6),
-.farmer-table td:nth-child(6) {
+.add-farmer-page .farmer-table th:nth-child(6),
+.add-farmer-page .farmer-table td:nth-child(6) {
   width: 135px;
 }
 
@@ -719,14 +754,14 @@ body,
    TABLE BODY
    ========================================================= */
 
-.farmer-table tbody tr {
+.add-farmer-page .farmer-table tbody tr {
   height: 31px;
 
   border-top: 1px solid #e1e9e5;
 }
 
 
-.farmer-table tbody td {
+.add-farmer-page .farmer-table tbody td {
   text-align: center;
 
   color: #8ca0bd;
@@ -741,23 +776,24 @@ body,
 }
 
 
-.farmer-table tbody td:first-child {
+.add-farmer-page .farmer-table tbody td:first-child {
   color: #52709e;
 
   font-weight: 700;
 }
 
 
-.farmer-table tbody td:last-child {
+.add-farmer-page .farmer-table tbody td:last-child {
   border-right: none;
 }
 
 
 /* =========================================================
-   ACTION BUTTONS
+   TABLE ACTION BUTTONS
+   IMPORTANT: SCOPED TO ADD FARMER PAGE
    ========================================================= */
 
-.action-buttons {
+.add-farmer-page .action-buttons {
   width: 100%;
 
   display: flex;
@@ -774,7 +810,7 @@ body,
 }
 
 
-.action-buttons button {
+.add-farmer-page .action-buttons button {
   width: 36px;
 
   height: 27px;
@@ -803,7 +839,7 @@ body,
 }
 
 
-.action-buttons button:hover {
+.add-farmer-page .action-buttons button:hover {
   background: #f0faf3;
 }
 
@@ -812,14 +848,14 @@ body,
    UPDATE ICON
    ========================================================= */
 
-.update-btn {
+.add-farmer-page .update-btn {
   width: 36px;
 
   height: 27px;
 }
 
 
-.edit-symbol {
+.add-farmer-page .edit-symbol {
   font-size: 17px;
 
   line-height: 1;
@@ -832,14 +868,14 @@ body,
    DELETE ICON
    ========================================================= */
 
-.delete-btn {
+.add-farmer-page .delete-btn {
   width: 36px;
 
   height: 27px;
 }
 
 
-.delete-btn img {
+.add-farmer-page .delete-btn img {
   width: 16px;
 
   height: 16px;
@@ -851,39 +887,34 @@ body,
 
 
 /* =========================================================
-   NO BODY SCROLL
-   ========================================================= */
-
-body {
-  overflow: hidden;
-}
-
-
-/* =========================================================
    RESPONSIVE
    ========================================================= */
 
 @media (max-width: 1200px) {
 
-  .add-farmer-main {
+  .add-farmer-page .add-farmer-main {
     width: calc(100% - 24px);
 
     max-width: none;
   }
 
-  .add-farmer-header h1 {
+  .add-farmer-page .add-farmer-header h1 {
     font-size: 38px;
   }
 
-  .farmer-form-card {
+  .add-farmer-page .farmer-form-card {
     column-gap: 18px;
   }
 
-  .search-box {
+  .add-farmer-page .search-box {
     width: 210px;
   }
 }
 
+
+/* =========================================================
+   TABLET / SMALL SCREEN
+   ========================================================= */
 
 @media (max-width: 900px) {
 
@@ -897,19 +928,17 @@ body {
     overflow-y: auto;
   }
 
-  body {
-    overflow-y: auto;
-  }
-
-  .add-farmer-main {
+  .add-farmer-page .add-farmer-main {
     width: calc(100% - 20px);
 
     height: auto;
 
     min-height: calc(100vh - 20px);
+
+    overflow: visible;
   }
 
-  .farmer-form-card {
+  .add-farmer-page .farmer-form-card {
     height: auto;
 
     display: grid;
@@ -918,36 +947,80 @@ body {
 
     grid-template-rows: auto;
 
-    gap: 14px;
+    gap: 10px;
 
     padding: 15px;
   }
 
-  .input-group {
+  .add-farmer-page .input-group {
     grid-column: 1 / 2;
   }
 
-  .phone-pay-group {
+  .add-farmer-page .phone-pay-group {
     grid-column: 1 / 2;
   }
 
-  .form-buttons {
+  .add-farmer-page .form-buttons {
     grid-column: 1 / 2;
 
-    padding: 10px 0;
+    padding: 12px 0 4px;
+
+    gap: 12px;
   }
 
-  .available-farmers-card {
+  .add-farmer-page .form-buttons .clear-btn,
+  .add-farmer-page .form-buttons .save-btn {
+    width: 165px;
+  }
+
+  .add-farmer-page .available-farmers-card {
     height: 350px;
 
     overflow-x: auto;
   }
 
-  .available-header {
+  .add-farmer-page .available-header {
     min-width: 850px;
   }
 
-  .farmer-table-wrapper {
+  .add-farmer-page .farmer-table-wrapper {
     min-width: 950px;
+  }
+}
+
+
+/* =========================================================
+   VERY SMALL SCREEN
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  .add-farmer-page .add-farmer-header {
+    height: 70px;
+  }
+
+  .add-farmer-page .add-farmer-header h1 {
+    font-size: 32px;
+
+    line-height: 40px;
+  }
+
+  .add-farmer-page .form-buttons {
+    flex-direction: column;
+
+    gap: 10px;
+  }
+
+  .add-farmer-page .form-buttons .clear-btn,
+  .add-farmer-page .form-buttons .save-btn {
+    width: 180px;
+  }
+
+  .add-farmer-page .total-farmer-box {
+    position: static;
+
+    transform: none;
+
+    margin: 0 auto;
   }
 }

@@ -1,4 +1,5 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
+
 import "./Add_farmer.css";
 
 import farmerCodeImg from "../assets/Add_Farmer_img/farmercode.jpg";
@@ -13,6 +14,8 @@ import saveImg from "../assets/Add_Farmer_img/save.jpg";
 import deleteImg from "../assets/Add_Farmer_img/delete.jpg";
 import arrowImg from "../assets/Add_Farmer_img/arrow.jpg";
 
+const API_URL = "http://localhost:5000/api/farmers";
+
 const Add_Farmer = () => {
   const [farmerCode, setFarmerCode] = useState("");
   const [farmerName, setFarmerName] = useState("");
@@ -24,6 +27,9 @@ const Add_Farmer = () => {
   // Used to know whether we are updating an existing farmer
   const [editingCode, setEditingCode] = useState(null);
 
+  // Store MongoDB _id of farmer being edited
+  const [editingId, setEditingId] = useState(null);
+
   // Validation messages
   const [errors, setErrors] = useState({});
 
@@ -34,8 +40,32 @@ const Add_Farmer = () => {
   const emailRef = useRef(null);
   const phonePayRef = useRef(null);
 
-  // Farmers will now be added using the code entered by you
+  // Farmers loaded from MongoDB
   const [farmers, setFarmers] = useState([]);
+
+  /* =========================================================
+     LOAD FARMERS FROM MONGODB
+     ========================================================= */
+
+  useEffect(() => {
+    fetchFarmers();
+  }, []);
+
+  const fetchFarmers = async () => {
+    try {
+      const response = await fetch(API_URL);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch farmers");
+      }
+
+      const data = await response.json();
+
+      setFarmers(data);
+    } catch (error) {
+      console.error("Error fetching farmers:", error);
+    }
+  };
 
   /* =========================================================
      CLEAR FORM
@@ -47,7 +77,10 @@ const Add_Farmer = () => {
     setPhone("");
     setEmail("");
     setPhonePay("");
+
     setEditingCode(null);
+    setEditingId(null);
+
     setErrors({});
 
     // Put cursor back into Farmer Code
@@ -84,7 +117,8 @@ const Add_Farmer = () => {
     if (!phone.trim()) {
       newErrors.phone = "Mobile number is required.";
     } else if (!phonePattern.test(phone)) {
-      newErrors.phone = "Mobile number must contain exactly 10 digits.";
+      newErrors.phone =
+        "Mobile number must contain exactly 10 digits.";
     }
 
     // Gmail
@@ -114,14 +148,14 @@ const Add_Farmer = () => {
      SAVE / UPDATE FARMER
      ========================================================= */
 
-  const saveFarmer = () => {
+  const saveFarmer = async () => {
     if (!validateForm()) {
       return;
     }
 
     const trimmedCode = farmerCode.trim();
 
-    // Check duplicate code when adding a new farmer
+    // Check duplicate code
     const duplicateCode = farmers.some(
       (farmer) =>
         farmer.code.toLowerCase() === trimmedCode.toLowerCase() &&
@@ -148,37 +182,109 @@ const Add_Farmer = () => {
       phonePay: phonePay,
     };
 
-    /* ================= UPDATE ================= */
+    try {
+      /* ================= UPDATE ================= */
 
-    if (editingCode !== null) {
-      setFarmers((prev) =>
-        prev.map((farmer) =>
-          farmer.code === editingCode ? farmerData : farmer
-        )
-      );
+      if (editingId !== null) {
+        const response = await fetch(
+          `${API_URL}/${editingId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(farmerData),
+          }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result.message || "Failed to update farmer"
+          );
+        }
+
+        // Reload data from MongoDB
+        await fetchFarmers();
+
+        clearForm();
+
+        return;
+      }
+
+      /* ================= ADD NEW ================= */
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(farmerData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || "Failed to save farmer"
+        );
+      }
+
+      // Reload data from MongoDB
+      await fetchFarmers();
+
+      clearForm();
+
+    } catch (error) {
+      console.error("Error saving farmer:", error);
+
+      setErrors({
+        farmerCode:
+          error.message || "Failed to save farmer.",
+      });
     }
-
-    /* ================= ADD NEW ================= */
-
-    else {
-      setFarmers((prev) => [...prev, farmerData]);
-    }
-
-    clearForm();
   };
 
   /* =========================================================
      DELETE FARMER
      ========================================================= */
 
-  const deleteFarmer = (code) => {
-    setFarmers((prev) =>
-      prev.filter((farmer) => farmer.code !== code)
+  const deleteFarmer = async (code) => {
+    const farmer = farmers.find(
+      (item) => item.code === code
     );
 
-    // If deleted farmer is currently being edited
-    if (editingCode === code) {
-      clearForm();
+    if (!farmer) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${API_URL}/${farmer._id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || "Failed to delete farmer"
+        );
+      }
+
+      // Reload data from MongoDB
+      await fetchFarmers();
+
+      // If deleted farmer is currently being edited
+      if (editingCode === code) {
+        clearForm();
+      }
+
+    } catch (error) {
+      console.error("Error deleting farmer:", error);
     }
   };
 
@@ -195,6 +301,9 @@ const Add_Farmer = () => {
 
     // Remember which farmer is being updated
     setEditingCode(farmer.code);
+
+    // Remember MongoDB ID
+    setEditingId(farmer._id);
 
     setErrors({});
 
@@ -274,11 +383,12 @@ const Add_Farmer = () => {
 
           <div className="header-decoration">
             <span></span>
+
             <div className="leaf-icon">⌁</div>
+
             <span></span>
           </div>
         </div>
-
 
         {/* ================= FORM CARD ================= */}
 
@@ -300,6 +410,7 @@ const Add_Farmer = () => {
               value={farmerCode}
               onChange={(e) => {
                 setFarmerCode(e.target.value);
+
                 setErrors((prev) => ({
                   ...prev,
                   farmerCode: "",
@@ -318,7 +429,6 @@ const Add_Farmer = () => {
 
           </div>
 
-
           {/* ================= FARMER NAME ================= */}
 
           <div className="input-group">
@@ -335,6 +445,7 @@ const Add_Farmer = () => {
               value={farmerName}
               onChange={(e) => {
                 setFarmerName(e.target.value);
+
                 setErrors((prev) => ({
                   ...prev,
                   farmerName: "",
@@ -352,7 +463,6 @@ const Add_Farmer = () => {
             )}
 
           </div>
-
 
           {/* ================= PHONE ================= */}
 
@@ -394,7 +504,6 @@ const Add_Farmer = () => {
 
           </div>
 
-
           {/* ================= EMAIL ================= */}
 
           <div className="input-group">
@@ -429,7 +538,6 @@ const Add_Farmer = () => {
             )}
 
           </div>
-
 
           {/* ================= PHONE PAY ================= */}
 
@@ -471,7 +579,6 @@ const Add_Farmer = () => {
 
           </div>
 
-
           {/* ================= BUTTONS ================= */}
 
           <div className="form-buttons">
@@ -485,7 +592,6 @@ const Add_Farmer = () => {
               <span>Clear</span>
             </button>
 
-
             <button
               type="button"
               className="save-btn"
@@ -496,13 +602,11 @@ const Add_Farmer = () => {
               <span>
                 {editingCode !== null ? "Save" : "Save"}
               </span>
-
             </button>
 
           </div>
 
         </div>
-
 
         {/* ================= AVAILABLE FARMERS ================= */}
 
@@ -521,7 +625,6 @@ const Add_Farmer = () => {
               <span>Available Farmers</span>
             </div>
 
-
             <div className="total-farmer-box">
 
               <img
@@ -536,7 +639,6 @@ const Add_Farmer = () => {
               </strong>
 
             </div>
-
 
             <div className="search-box">
 
@@ -558,7 +660,6 @@ const Add_Farmer = () => {
 
           </div>
 
-
           {/* ================= TABLE ================= */}
 
           <div className="farmer-table-wrapper">
@@ -566,7 +667,6 @@ const Add_Farmer = () => {
             <table className="farmer-table">
 
               <thead>
-
                 <tr>
                   <th>Code</th>
                   <th>Name</th>
@@ -575,15 +675,13 @@ const Add_Farmer = () => {
                   <th>Phone Pay No</th>
                   <th>Action</th>
                 </tr>
-
               </thead>
-
 
               <tbody>
 
                 {filteredFarmers.map((farmer) => (
 
-                  <tr key={farmer.code}>
+                  <tr key={farmer._id || farmer.code}>
 
                     <td>
                       {farmer.code}
@@ -631,7 +729,6 @@ const Add_Farmer = () => {
                             ✎
                           </span>
                         </button>
-
 
                         {/* DELETE */}
 
