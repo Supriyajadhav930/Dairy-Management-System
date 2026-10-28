@@ -1,3 +1,4 @@
+
 const express = require("express");
 const mongoose = require("mongoose");
 const Collection = require("../models/Collection");
@@ -27,15 +28,56 @@ router.post("/", async (req, res) => {
     }
 });
 
-
 // ===============================
 // GET COLLECTION RECORDS
+// Supports type, from, and to filters
 // ===============================
 router.get("/", async (req, res) => {
     try {
-        const { type } = req.query;
+        const { type, from, to } = req.query;
 
-        const filter = type ? { type } : {};
+        const filter = {};
+
+        // Filter by collection type
+        if (type && type !== "both") {
+            if (!["morning", "evening"].includes(type)) {
+                return res.status(400).json({
+                    message: "Invalid collection type. Use morning, evening, or both."
+                });
+            }
+
+            filter.type = type;
+        }
+
+        // Validate and filter the date range
+        const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+        if (
+            (from && !datePattern.test(from)) ||
+            (to && !datePattern.test(to))
+        ) {
+            return res.status(400).json({
+                message: "Dates must use YYYY-MM-DD format."
+            });
+        }
+
+        if (from || to) {
+            if (from && to && from > to) {
+                return res.status(400).json({
+                    message: "From date cannot be later than To date."
+                });
+            }
+
+            filter.date = {};
+
+            if (from) {
+                filter.date.$gte = from;
+            }
+
+            if (to) {
+                filter.date.$lte = to;
+            }
+        }
 
         const collections = await Collection
             .find(filter)
@@ -52,7 +94,6 @@ router.get("/", async (req, res) => {
     }
 });
 
-
 // ===============================
 // UPDATE COLLECTION RECORD
 // ===============================
@@ -60,7 +101,6 @@ router.put("/:id", async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Check whether the ID is a valid MongoDB ObjectId
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 message: "Invalid collection record ID"
@@ -98,7 +138,6 @@ router.put("/:id", async (req, res) => {
             message: "Collection record updated successfully",
             data: updatedCollection
         });
-
     } catch (error) {
         console.error("Error updating collection:", error);
 
@@ -109,7 +148,6 @@ router.put("/:id", async (req, res) => {
     }
 });
 
-
 // ===============================
 // DELETE COLLECTION RECORD
 // ===============================
@@ -117,7 +155,6 @@ router.delete("/:id", async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Check whether the ID is a valid MongoDB ObjectId
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 message: "Invalid collection record ID"
@@ -137,7 +174,6 @@ router.delete("/:id", async (req, res) => {
             message: "Collection record deleted successfully",
             data: deletedCollection
         });
-
     } catch (error) {
         console.error("Error deleting collection:", error);
 
@@ -147,6 +183,5 @@ router.delete("/:id", async (req, res) => {
         });
     }
 });
-
 
 module.exports = router;

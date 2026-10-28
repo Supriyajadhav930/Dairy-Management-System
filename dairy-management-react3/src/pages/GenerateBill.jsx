@@ -10,7 +10,7 @@ import chevronsLeftIcon from "../assets/Generate Bill/chevrons-left.jpg";
 import chevronsRightIcon from "../assets/Generate Bill/chevrons-right.jpg";
 import billIcon from "../assets/Generate Bill/bill.jpg";
 
-const API_URL = "http://localhost:5000/api/farmers";
+const COLLECTION_API = "http://localhost:5000/api/collections";
 
 const getToday = () => {
   const today = new Date();
@@ -23,19 +23,20 @@ const getToday = () => {
 
 function getFarmerCode(farmer) {
   return String(
-    farmer.code ??
-      farmer.farmerCode ??
+    farmer.farmerCode ??
       farmer.farmer_code ??
-      farmer._id ??
+      farmer.code ??
+      farmer.farmer?.code ??
       ""
   );
 }
 
 function getFarmerName(farmer) {
   return String(
-    farmer.name ??
-      farmer.farmerName ??
+    farmer.farmerName ??
       farmer.farmer_name ??
+      farmer.name ??
+      farmer.farmer?.name ??
       ""
   );
 }
@@ -52,33 +53,78 @@ export default function GenerateBill() {
   const [rightSelection, setRightSelection] = useState([]);
 
   useEffect(() => {
-    const fetchFarmers = async () => {
+    let cancelled = false;
+
+    const fetchCollectionData = async () => {
+      if (!fromDate || !toDate) {
+        setFarmers([]);
+        setSelectedFarmers([]);
+        setLeftSelection([]);
+        setRightSelection([]);
+        return;
+      }
+
+      if (fromDate > toDate) {
+        setFarmers([]);
+        setSelectedFarmers([]);
+        setLeftSelection([]);
+        setRightSelection([]);
+        return;
+      }
+
       try {
-        const response = await fetch(API_URL);
+        const response = await fetch(
+          `${COLLECTION_API}?type=both&from=${fromDate}&to=${toDate}`
+        );
 
         if (!response.ok) {
-          throw new Error("Unable to fetch farmers");
+          throw new Error("Unable to fetch collection data");
         }
 
         const data = await response.json();
 
-        const farmerList = Array.isArray(data)
+        const collectionList = Array.isArray(data)
           ? data
-          : data.farmers ?? data.data ?? [];
+          : data.collections ?? data.data ?? [];
 
-        setFarmers(
-          farmerList.filter(
-            (farmer) =>
-              getFarmerCode(farmer) && getFarmerName(farmer)
-          )
-        );
+        const uniqueFarmers = new Map();
+
+        collectionList.forEach((record) => {
+          const code = getFarmerCode(record);
+          const name = getFarmerName(record);
+
+          if (code && name && !uniqueFarmers.has(code)) {
+            uniqueFarmers.set(code, {
+              ...record,
+              code,
+              name,
+            });
+          }
+        });
+
+        if (!cancelled) {
+          setFarmers(Array.from(uniqueFarmers.values()));
+          setSelectedFarmers([]);
+          setLeftSelection([]);
+          setRightSelection([]);
+        }
       } catch (error) {
-        console.error("Error fetching farmers:", error);
+        if (!cancelled) {
+          setFarmers([]);
+          setSelectedFarmers([]);
+          setLeftSelection([]);
+          setRightSelection([]);
+          console.error("Error fetching collections:", error);
+        }
       }
     };
 
-    fetchFarmers();
-  }, []);
+    fetchCollectionData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fromDate, toDate]);
 
   const moveSelectedRight = () => {
     const moving = farmers.filter((farmer) =>
@@ -91,8 +137,7 @@ export default function GenerateBill() {
       return [
         ...previous,
         ...moving.filter(
-          (farmer) =>
-            !existingCodes.has(getFarmerCode(farmer))
+          (farmer) => !existingCodes.has(getFarmerCode(farmer))
         ),
       ];
     });
@@ -114,8 +159,7 @@ export default function GenerateBill() {
       return [
         ...previous,
         ...farmers.filter(
-          (farmer) =>
-            !existingCodes.has(getFarmerCode(farmer))
+          (farmer) => !existingCodes.has(getFarmerCode(farmer))
         ),
       ];
     });
@@ -135,8 +179,7 @@ export default function GenerateBill() {
       return [
         ...previous,
         ...moving.filter(
-          (farmer) =>
-            !existingCodes.has(getFarmerCode(farmer))
+          (farmer) => !existingCodes.has(getFarmerCode(farmer))
         ),
       ];
     });
