@@ -56,15 +56,7 @@ export default function GenerateBill() {
     let cancelled = false;
 
     const fetchCollectionData = async () => {
-      if (!fromDate || !toDate) {
-        setFarmers([]);
-        setSelectedFarmers([]);
-        setLeftSelection([]);
-        setRightSelection([]);
-        return;
-      }
-
-      if (fromDate > toDate) {
+      if (!fromDate || !toDate || fromDate > toDate) {
         setFarmers([]);
         setSelectedFarmers([]);
         setLeftSelection([]);
@@ -115,6 +107,7 @@ export default function GenerateBill() {
           setLeftSelection([]);
           setRightSelection([]);
           console.error("Error fetching collections:", error);
+          alert("Unable to load collection data. Please try again.");
         }
       }
     };
@@ -227,16 +220,25 @@ export default function GenerateBill() {
       return;
     }
 
-    console.log("Generate bill for:", {
-      fromDate,
-      toDate,
-      currentDate,
-      farmers: selectedFarmers,
+    const farmerCodes = selectedFarmers.map(getFarmerCode);
+
+    const params = new URLSearchParams({
+      from: fromDate,
+      to: toDate,
+      billDate: currentDate,
+      farmers: JSON.stringify(farmerCodes),
     });
 
-    alert(
-      `${selectedFarmers.length} farmer(s) selected for billing.`
-    );
+    const baseUrl = window.location.href.split("#")[0];
+    const billUrl = `${baseUrl}#/bill-statement?${params.toString()}`;
+
+    const newTab = window.open(billUrl, "_blank");
+
+    if (!newTab) {
+      alert(
+        "The new tab was blocked by your browser. Please allow pop-ups and click Bill again."
+      );
+    }
   };
 
   const renderFarmerTable = (list, side, selection) => (

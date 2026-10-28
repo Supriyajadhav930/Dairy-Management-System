@@ -1,0 +1,470 @@
+
+* {
+  box-sizing: border-box;
+}
+
+/* =========================
+   NORMAL SCREEN DISPLAY
+========================= */
+
+.bill-page {
+  min-height: 100vh;
+  width: 100%;
+  padding: 24px;
+  background: #f5f7f6;
+  color: #173247;
+  font-family: "Times New Roman", serif;
+}
+
+.bill-toolbar {
+  max-width: 1100px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.bill-toolbar h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #075b3e;
+}
+
+.bill-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bill-back-button,
+.bill-pdf-button {
+  border-radius: 5px;
+  padding: 10px 18px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.bill-back-button {
+  border: 1px solid #075b3e;
+  background: white;
+  color: #075b3e;
+}
+
+.bill-back-button:hover {
+  background: #eff7f3;
+}
+
+.bill-pdf-button {
+  border: 1px solid #075b3e;
+  background: #075b3e;
+  color: white;
+}
+
+.bill-pdf-button:hover {
+  background: #064a33;
+}
+
+.bill-print-area {
+  width: 100%;
+}
+
+.farmer-bill {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto 24px;
+  padding: 12px;
+  border: 1px solid #acd8df;
+  border-radius: 6px;
+  background: #fff;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  overflow: hidden;
+}
+
+.bill-centre-title {
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #a8c5d2;
+  color: #075b3e;
+  text-align: center;
+  font-size: 25px;
+  line-height: 1.2;
+}
+
+.bill-divider {
+  display: none;
+}
+
+.bill-details {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 10px 0;
+  font-size: 13px;
+}
+
+.bill-farmer-details,
+.bill-period-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.bill-details p {
+  display: grid;
+  grid-template-columns: 100px 10px minmax(0, 1fr);
+  gap: 4px;
+  align-items: baseline;
+  margin: 4px 0;
+}
+
+.bill-period-details p {
+  grid-template-columns: 75px 10px minmax(0, 1fr);
+}
+
+.bill-details strong {
+  white-space: nowrap;
+}
+
+.bill-collections {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.bill-collection {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #c2e1dc;
+  border-radius: 5px;
+}
+
+.bill-collection-title {
+  padding: 7px 4px;
+  background: #eff7f3;
+  border-bottom: 1px solid #c2e1dc;
+  text-align: center;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.bill-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 10px;
+}
+
+.bill-data-table th,
+.bill-data-table td {
+  padding: 4px 2px;
+  border: 1px solid #d5e5e6;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.bill-data-table th {
+  background: #f5faf8;
+  font-weight: bold;
+  line-height: 1.15;
+}
+
+.bill-data-table td {
+  line-height: 1.1;
+}
+
+.bill-summary {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 6px;
+  border: 1px solid #c2e1dc;
+  border-radius: 5px;
+  background: #f2f8f5;
+  font-size: 10px;
+  text-align: center;
+}
+
+.bill-summary div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.bill-summary strong,
+.bill-summary span {
+  white-space: normal;
+}
+
+.bill-message {
+  padding: 30px;
+  text-align: center;
+  font-size: 18px;
+}
+
+/* =========================
+   MOBILE DISPLAY
+========================= */
+
+@media screen and (max-width: 700px) {
+  .bill-page {
+    padding: 10px;
+  }
+
+  .bill-toolbar {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .bill-toolbar h2 {
+    font-size: 20px;
+  }
+
+  .farmer-bill {
+    padding: 8px;
+  }
+
+  .bill-details {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .bill-collections {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bill-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* =========================
+   PDF / PRINT SETTINGS
+========================= */
+
+@page {
+  size: A4 portrait;
+  margin: 5mm;
+}
+
+@media print {
+  html,
+  body,
+  #root {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide page controls */
+  .bill-toolbar,
+  .bill-message {
+    display: none !important;
+  }
+
+  .bill-page {
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  .bill-print-area {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Three bills per A4 portrait page */
+  .farmer-bill {
+    display: block !important;
+    width: 100% !important;
+    height: 92mm !important;
+    min-height: 92mm !important;
+    max-height: 92mm !important;
+    margin: 0 0 3mm !important;
+    padding: 3mm !important;
+    border: 0.3mm solid #acd8df !important;
+    border-radius: 1.5mm !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .bill-centre-title {
+    margin: 0 !important;
+    padding: 0 0 1.5mm !important;
+    border-bottom: 0.2mm solid #a8c5d2 !important;
+    color: #075b3e !important;
+    text-align: center !important;
+    font-size: 15pt !important;
+    line-height: 1.15 !important;
+  }
+
+  .bill-divider {
+    display: none !important;
+  }
+
+  /* Farmer information */
+  .bill-details {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    gap: 3mm !important;
+    padding: 1.5mm 0 !important;
+    margin: 0 !important;
+    font-size: 7.5pt !important;
+    line-height: 1.15 !important;
+  }
+
+  .bill-farmer-details,
+  .bill-period-details {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+  }
+
+  .bill-details p,
+  .bill-period-details p {
+    display: grid !important;
+    grid-template-columns: 21mm 2mm minmax(0, 1fr) !important;
+    gap: 0.5mm !important;
+    align-items: baseline !important;
+    margin: 0.7mm 0 !important;
+    padding: 0 !important;
+  }
+
+  .bill-details strong {
+    white-space: nowrap !important;
+  }
+
+  /* Morning and evening side by side */
+  .bill-collections {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 2mm !important;
+    width: 100% !important;
+    margin: 1mm 0 0 !important;
+  }
+
+  .bill-collection {
+    display: block !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: 0.25mm solid #c2e1dc !important;
+    border-radius: 1mm !important;
+  }
+
+  .bill-collection-title {
+    padding: 1.2mm 0.5mm !important;
+    background: #eff7f3 !important;
+    border-bottom: 0.2mm solid #c2e1dc !important;
+    text-align: center !important;
+    font-size: 7.5pt !important;
+    line-height: 1.1 !important;
+  }
+
+  /* Collection tables */
+  .bill-data-table {
+    display: table !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border-collapse: collapse !important;
+    table-layout: fixed !important;
+    font-size: 6.5pt !important;
+    line-height: 1.05 !important;
+  }
+
+  .bill-data-table thead {
+    display: table-header-group !important;
+  }
+
+  .bill-data-table tbody {
+    display: table-row-group !important;
+  }
+
+  .bill-data-table tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .bill-data-table th,
+  .bill-data-table td {
+    padding: 0.8mm 0.3mm !important;
+    border: 0.2mm solid #d5e5e6 !important;
+    text-align: center !important;
+    line-height: 1.1 !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  .bill-data-table th {
+    background: #f5faf8 !important;
+    font-size: 6.5pt !important;
+    font-weight: bold !important;
+  }
+
+  .bill-data-table td {
+    font-size: 6.5pt !important;
+  }
+
+  /* Compact horizontal summary */
+  .bill-summary {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 0.8mm !important;
+    margin: 1.5mm 0 0 !important;
+    padding: 1.5mm 0.5mm !important;
+    border: 0.2mm solid #c2e1dc !important;
+    border-radius: 1mm !important;
+    background: #f2f8f5 !important;
+    font-size: 5.8pt !important;
+    line-height: 1.1 !important;
+    text-align: center !important;
+  }
+
+  .bill-summary div {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 0.7mm !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .bill-summary strong,
+  .bill-summary span {
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+  }
+
+  .farmer-bill,
+  .farmer-bill * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
