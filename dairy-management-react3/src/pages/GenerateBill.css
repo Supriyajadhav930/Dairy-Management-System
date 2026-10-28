@@ -1,0 +1,293 @@
+
+.gb-page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 20px;
+  background: #f3f9f5;
+  color: #075b3e;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.gb-page *,
+.gb-page *::before,
+.gb-page *::after {
+  box-sizing: border-box;
+}
+
+.gb-container {
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #d5e9dd;
+  border-radius: 16px;
+  box-shadow: 0 5px 22px rgba(26, 103, 71, 0.06);
+}
+
+.gb-date-section {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  padding: 20px 24px;
+  background: #ffffff;
+  border: 1px solid #dcefe5;
+  border-radius: 14px;
+}
+
+.gb-date-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gb-date-field label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #087346;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.gb-date-field label img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.gb-date-field input {
+  width: 100%;
+  height: 54px;
+  padding: 0 14px;
+  color: #315f4e;
+  background: #ffffff;
+  border: 1px solid #cce6d8;
+  border-radius: 10px;
+  outline: none;
+  font-family: inherit;
+  font-size: 16px;
+}
+
+.gb-date-field input:focus {
+  border-color: #4eb98b;
+  box-shadow: 0 0 0 3px rgba(78, 185, 139, 0.12);
+}
+
+.gb-date-field input[readonly] {
+  background: #f1f8f3;
+  color: #638a79;
+}
+
+.gb-farmers-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 100px minmax(0, 1fr);
+  align-items: center;
+  gap: 20px;
+  margin-top: 18px;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #dcefe5;
+  border-radius: 14px;
+}
+
+.gb-table-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #bce9d6;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+.gb-table-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 12px 18px;
+  color: #087346;
+  background: #f5fbf7;
+  border-bottom: 1px solid #dcefe5;
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.gb-table-heading img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.gb-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.gb-farmer-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.gb-farmer-table th,
+.gb-farmer-table td {
+  height: 46px;
+  padding: 10px 14px;
+  text-align: left;
+  overflow-wrap: anywhere;
+  border-right: 1px solid #e0f0e8;
+  border-bottom: 1px solid #e0f0e8;
+  font-size: 15px;
+}
+
+.gb-farmer-table th {
+  height: 54px;
+  color: #086c47;
+  background: #e8f5ec;
+  font-weight: 700;
+}
+
+.gb-farmer-table th:first-child,
+.gb-farmer-table td:first-child {
+  width: 32%;
+}
+
+.gb-farmer-table th:last-child,
+.gb-farmer-table td:last-child {
+  border-right: none;
+}
+
+.gb-farmer-table tbody tr:not(.gb-empty-row) {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.gb-farmer-table tbody tr:not(.gb-empty-row):hover {
+  background: #f0faf4;
+}
+
+.gb-farmer-table tbody tr.gb-row-selected {
+  background: #d9f2e4;
+}
+
+.gb-farmer-table .gb-empty-row {
+  height: 46px;
+  background: #ffffff;
+}
+
+.gb-transfer-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.gb-transfer-controls button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 60px;
+  padding: 10px;
+  cursor: pointer;
+  background: #f3faf5;
+  border: 1px solid #cdebdc;
+  border-radius: 11px;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.gb-transfer-controls button:hover {
+  background: #e1f4e9;
+  border-color: #80d1aa;
+}
+
+.gb-transfer-controls button img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.gb-bottom-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 24px;
+}
+
+.gb-bill-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 240px;
+  min-height: 68px;
+  padding: 14px 24px;
+  color: #087346;
+  background: #f2faf5;
+  border: 1px solid #91d9b7;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.gb-bill-button:hover {
+  background: #e1f4e9;
+  transform: translateY(-1px);
+}
+
+.gb-bill-button img {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+}
+
+@media (max-width: 900px) {
+  .gb-page {
+    padding: 10px;
+  }
+
+  .gb-container {
+    padding: 12px;
+  }
+
+  .gb-date-section {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .gb-farmers-section {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding: 12px;
+  }
+
+  .gb-transfer-controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .gb-transfer-controls button {
+    width: 58px;
+    height: 48px;
+  }
+
+  .gb-table-heading {
+    font-size: 18px;
+  }
+
+  .gb-farmer-table th,
+  .gb-farmer-table td {
+    padding: 9px;
+    font-size: 13px;
+  }
+}

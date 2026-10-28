@@ -1,3 +1,4 @@
+
 import "./dash.css";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +19,6 @@ function openPage(pageName) {
 }
 
 function Dash() {
-
     const navigate = useNavigate();
 
     // =========================
@@ -37,7 +37,6 @@ function Dash() {
 
     return (
         <div className="page">
-
             <div className="dashboard-container">
 
                 {/* HEADER */}
@@ -50,7 +49,6 @@ function Dash() {
                         <span></span>
                     </div>
                 </header>
-
 
                 {/* DASHBOARD GRID */}
                 <div className="dashboard-grid">
@@ -68,10 +66,8 @@ function Dash() {
                                     alt="Morning Collection"
                                 />
                             </div>
-
                             <span>Morning Collection</span>
                         </button>
-
 
                         <button
                             className="dashboard-card"
@@ -83,10 +79,8 @@ function Dash() {
                                     alt="Evening Collection"
                                 />
                             </div>
-
                             <span>Evening Collection</span>
                         </button>
-
 
                         <button
                             className="dashboard-card"
@@ -98,10 +92,8 @@ function Dash() {
                                     alt="Rate Management"
                                 />
                             </div>
-
                             <span>Rate Management</span>
                         </button>
-
 
                         <button
                             className="dashboard-card"
@@ -113,14 +105,13 @@ function Dash() {
                                     alt="Farmer Management"
                                 />
                             </div>
-
                             <span>Farmer Management</span>
                         </button>
 
-
+                        {/* GENERATE BILLS - CONNECTED */}
                         <button
                             className="dashboard-card"
-                            onClick={() => openPage("Generate Bills")}
+                            onClick={() => navigate("/generate-bill")}
                         >
                             <div className="icon-container">
                                 <img
@@ -128,16 +119,13 @@ function Dash() {
                                     alt="Generate Bills"
                                 />
                             </div>
-
                             <span>Generate Bills</span>
                         </button>
 
                     </div>
 
-
                     {/* CENTER LINE */}
                     <div className="divider"></div>
-
 
                     {/* RIGHT COLUMN */}
                     <div className="dashboard-column">
@@ -152,10 +140,8 @@ function Dash() {
                                     alt="Bill Statement"
                                 />
                             </div>
-
                             <span>Bill Statement</span>
                         </button>
-
 
                         <button
                             className="dashboard-card"
@@ -167,10 +153,8 @@ function Dash() {
                                     alt="Analytics"
                                 />
                             </div>
-
                             <span>Analytics</span>
                         </button>
-
 
                         <button
                             className="dashboard-card"
@@ -182,10 +166,8 @@ function Dash() {
                                     alt="Advance Management"
                                 />
                             </div>
-
                             <span>Advance Management</span>
                         </button>
-
 
                         <button
                             className="dashboard-card"
@@ -197,10 +179,8 @@ function Dash() {
                                     alt="Farmers Details"
                                 />
                             </div>
-
                             <span>Farmers Details</span>
                         </button>
-
 
                         <button
                             className="dashboard-card"
@@ -212,16 +192,12 @@ function Dash() {
                                     alt="Payment"
                                 />
                             </div>
-
                             <span>Payment</span>
                         </button>
 
                     </div>
-
                 </div>
-
             </div>
-
         </div>
     );
 }
