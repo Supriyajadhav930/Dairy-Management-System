@@ -116,7 +116,7 @@ function Rate() {
                     Number(item.snf).toFixed(1) === snf
                 );
 
-                rates[snf] = oldItem?.rate ?? "0.00";
+               rates[snf] = oldItem?.rate ?? ""; 
               });
 
               return { fat, rates };
@@ -331,7 +331,7 @@ function Rate() {
     const data = fatValues.map((fat) => ({
       fat,
       rates: Object.fromEntries(
-        columns.map((snf) => [snf, "0.00"])
+        columns.map((snf) => [snf, ""])
       ),
     }));
 
@@ -522,7 +522,7 @@ function Rate() {
                           type="number"
                           min="0"
                           step="0.01"
-                          value={item.rates[snf] ?? "0.00"}
+                          value={item.rates[snf] ?? ""}
                           aria-label={`Rate for FAT ${item.fat}, SNF ${snf}`}
                           onChange={(e) =>
                             updateRateValue(
