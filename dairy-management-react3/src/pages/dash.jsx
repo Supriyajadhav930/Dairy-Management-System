@@ -84,7 +84,7 @@ function Dash() {
 
                         <button
                             className="dashboard-card"
-                            onClick={() => openPage("Rate Management")}
+                            onClick={() => navigate("/rate")}
                         >
                             <div className="icon-container">
                                 <img

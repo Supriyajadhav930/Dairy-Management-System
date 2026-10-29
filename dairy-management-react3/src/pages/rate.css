@@ -1,0 +1,542 @@
+
+* {
+  box-sizing: border-box;
+}
+
+/* =====================================================
+   MAIN PAGE
+===================================================== */
+
+.rate-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 18px 30px 16px;
+  background: #f4fbf7;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #176f4b;
+}
+
+/* =====================================================
+   TITLE
+===================================================== */
+
+.page-title {
+  margin: 5px 0 14px;
+  text-align: center;
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 700;
+  color: #117b4e;
+}
+
+/* =====================================================
+   TOP SECTION
+===================================================== */
+
+.top-section {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.03fr 1.38fr 1.38fr 0.66fr;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+/* =====================================================
+   TOP CARDS
+===================================================== */
+
+.input-card,
+.generate-card {
+  min-height: 98px;
+  border: 1px solid #d4e9df;
+  border-radius: 11px;
+  background: rgba(246, 252, 249, 0.68);
+}
+
+/* =====================================================
+   DATE / FAT / SNF CARD PADDING
+===================================================== */
+
+.input-card {
+  padding: 9px 15px;
+}
+
+/* =====================================================
+   FIELD TITLE
+===================================================== */
+
+.field-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #176f4b;
+}
+
+.field-title img {
+  width: 27px;
+  height: 27px;
+  object-fit: contain;
+  display: block;
+}
+
+/* =====================================================
+   TOP DATE
+===================================================== */
+
+.date-input-wrapper {
+  width: 100%;
+}
+
+.date-input-wrapper input {
+  width: 100%;
+  height: 39px;
+  padding: 0 10px;
+  border: 1px solid #cfe5dc;
+  border-radius: 8px;
+  outline: none;
+  background: #fbfefc;
+  color: #303838;
+  font-size: 14px;
+}
+
+/* =====================================================
+   FROM / TO LABELS
+===================================================== */
+
+.range-labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+  margin-bottom: 2px;
+  color: #247f59;
+  font-size: 12px;
+}
+
+/* =====================================================
+   FROM / TO INPUTS
+===================================================== */
+
+.range-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+}
+
+.range-inputs input {
+  width: 100%;
+  height: 39px;
+  padding: 0 10px;
+  border: 1px solid #cfe5dc;
+  border-radius: 8px;
+  outline: none;
+  background: #fbfefc;
+  color: #46524e;
+  font-size: 14px;
+}
+
+.range-inputs input::placeholder {
+  color: #9bb0a7;
+}
+
+.range-inputs input:focus {
+  border-color: #087548;
+}
+
+/* REMOVE NUMBER INPUT ARROWS */
+
+.range-inputs input::-webkit-inner-spin-button,
+.range-inputs input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.range-inputs input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* =====================================================
+   GENERATE CARD
+===================================================== */
+
+.generate-card {
+  padding: 22px 11px 12px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.generate-button {
+  width: 100%;
+  height: 44px;
+  border: 1px solid #c6e2d6;
+  border-radius: 9px;
+  background: #f8fcfa;
+  color: #19744f;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  cursor: pointer;
+}
+
+.generate-button img {
+  width: 27px;
+  height: 27px;
+  object-fit: contain;
+  display: block;
+}
+
+.generate-button:hover {
+  background: #f0faf5;
+}
+
+/* =====================================================
+   RATE CHART OUTER SECTION
+===================================================== */
+
+.chart-section {
+  width: 100%;
+  height: 375px;
+  padding: 9px 10px 10px;
+  border: 1px solid #d4e9df;
+  border-radius: 11px;
+  background: rgba(247, 252, 249, 0.55);
+  margin-bottom: 9px;
+}
+
+/* =====================================================
+   RATE CHART HEADING
+===================================================== */
+
+.chart-heading {
+  height: 27px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-left: 2px;
+  color: #176f4b;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.chart-heading img {
+  width: 27px;
+  height: 27px;
+  object-fit: contain;
+  display: block;
+}
+
+/* =====================================================
+   INNER CHART
+===================================================== */
+
+.chart-content {
+  width: 100%;
+  height: 328px;
+  margin-top: 0;
+  border: 1px solid #deece6;
+  border-radius: 10px;
+  background: rgba(248, 253, 250, 0.65);
+  overflow: auto;
+  position: relative;
+}
+
+/* =====================================================
+   RATE CHART MATRIX
+===================================================== */
+
+.rate-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+  font-size: 13px;
+  color: #315b49;
+}
+
+/* TABLE HEADER */
+
+.rate-table thead th {
+  padding: 7px 10px;
+  background: #f0f8f4;
+  border-bottom: 1px solid #dbeae3;
+  border-right: 1px solid #dbeae3;
+  text-align: center;
+  font-weight: 700;
+  white-space: nowrap;
+  height: 35px;
+}
+
+/* SNF COLUMN HEADINGS */
+
+.rate-table .snf-heading {
+  min-width: 78px;
+}
+
+/* FAT HEADER AND FIRST COLUMN */
+
+.rate-table .fat-heading,
+.rate-table .fat-cell {
+  position: sticky;
+  left: 0;
+  min-width: 75px;
+  width: 75px;
+  background: #edf7f1;
+  border-right: 1px solid #dbeae3;
+}
+
+/* Keep the FAT heading above the sticky FAT cells. */
+
+.rate-table .fat-heading {
+  z-index: 4;
+  top: 0;
+}
+
+/* TABLE BODY */
+
+.rate-table tbody th,
+.rate-table tbody td {
+  height: 39px;
+  padding: 4px 5px;
+  border-bottom: 1px solid #dbeae3;
+  border-right: 1px solid #dbeae3;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.rate-table .fat-cell {
+  z-index: 2;
+  font-weight: 700;
+  background: #f0f8f4;
+}
+
+/* INDIVIDUAL RATE INPUTS */
+
+.rate-table td input {
+  display: block;
+  width: 68px;
+  min-width: 68px;
+  height: 28px;
+  margin: 0 auto;
+  padding: 3px 5px;
+  border: 1px solid #cfe5dc;
+  border-radius: 5px;
+  background: #fbfefc;
+  color: #315b49;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  text-align: center;
+  outline: none;
+}
+
+.rate-table td input:focus {
+  border-color: #087548;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(8, 117, 72, 0.08);
+}
+
+/* SELECTED ROW */
+
+.rate-table tbody tr.selected-row > th,
+.rate-table tbody tr.selected-row > td {
+  background: #edf8f3;
+}
+
+.rate-table tbody tr.selected-row .fat-cell {
+  background: #e1f2e9;
+}
+
+/* =====================================================
+   BOTTOM SECTION
+===================================================== */
+
+.bottom-section {
+  width: 100%;
+  min-height: 70px;
+  padding: 8px 10px 8px 15px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #d4e9df;
+  border-radius: 11px;
+  background: rgba(247, 252, 249, 0.55);
+}
+
+/* =====================================================
+   BOTTOM DATE
+===================================================== */
+
+.bottom-date {
+  width: 320px;
+}
+
+.bottom-date-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 3px;
+  color: #176f4b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.bottom-date-label img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  display: block;
+}
+
+.bottom-date-input {
+  width: 100%;
+  height: 39px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #cfe5dc;
+  border-radius: 8px;
+  background: #fbfefc;
+  padding: 0 10px;
+}
+
+.bottom-date-input input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #303838;
+  font-size: 13px;
+}
+
+/* =====================================================
+   ACTION BUTTONS
+===================================================== */
+
+.action-buttons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.action-button {
+  min-width: 130px;
+  height: 43px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid #c6e2d6;
+  border-radius: 9px;
+  background: #f8fcfa;
+  color: #19744f;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.action-button img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  display: block;
+}
+
+.action-button:hover {
+  background: #f0faf5;
+}
+
+/* =====================================================
+   EMPTY MESSAGE
+===================================================== */
+
+.empty-message {
+  display: none;
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 1100px) {
+  .top-section {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .generate-card {
+    padding: 18px;
+  }
+
+  .bottom-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .bottom-date {
+    width: 100%;
+  }
+
+  .action-buttons {
+    margin-left: 0;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 700px) {
+  .rate-page {
+    padding: 15px 10px;
+  }
+
+  .page-title {
+    font-size: 32px;
+  }
+
+  .top-section {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-section {
+    height: 360px;
+  }
+
+  .chart-content {
+    height: 315px;
+  }
+
+  .action-button {
+    min-width: 115px;
+  }
+
+  .field-title img {
+    width: 26px;
+    height: 26px;
+  }
+
+  .generate-button img {
+    width: 26px;
+    height: 26px;
+  }
+
+  .chart-heading img {
+    width: 26px;
+    height: 26px;
+  }
+
+  .bottom-date-label img {
+    width: 25px;
+    height: 25px;
+  }
+
+  .action-button img {
+    width: 25px;
+    height: 25px;
+  }
+}

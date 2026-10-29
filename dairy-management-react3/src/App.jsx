@@ -12,6 +12,7 @@ import Evening from "./pages/Evening";
 import AddFarmer from "./pages/Add_Farmer";
 import GenerateBill from "./pages/GenerateBill";
 import Bill from "./pages/Bill";
+import Rate from "./pages/rate";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/add-farmer" element={<AddFarmer />} />
         <Route path="/generate-bill" element={<GenerateBill />} />
         <Route path="/bill-statement" element={<Bill />} />
+        <Route path="/rate" element={<Rate />} />
       </Routes>
     </HashRouter>
   );
