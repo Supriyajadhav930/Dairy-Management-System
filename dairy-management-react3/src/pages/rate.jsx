@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import "./rate.css";
 
@@ -38,12 +37,14 @@ function Rate() {
   const [snfFrom, setSnfFrom] = useState("");
   const [snfTo, setSnfTo] = useState("");
 
-  // Each row contains one FAT value and a rates object.
-  // Example: { fat: "2.5", rates: { "7.5": "0.00" } }
   const [rateData, setRateData] = useState([]);
   const [snfValues, setSnfValues] = useState([]);
 
   const [selectedRow, setSelectedRow] = useState(null);
+
+  // Multiple saved charts, indexed by date.
+  const [savedCharts, setSavedCharts] = useState({});
+  const [selectedSavedDate, setSelectedSavedDate] = useState("");
 
   // =====================================================
   // INPUT REFERENCES
@@ -55,58 +56,86 @@ function Rate() {
   const snfToRef = useRef(null);
   const generateButtonRef = useRef(null);
 
+  const rateInputRefs = useRef([]);
+
   // =====================================================
-  // SAVE MATRIX TO LOCAL STORAGE
+  // SAVE MULTIPLE CHARTS BY DATE
   // =====================================================
 
-  const persistRateChart = (data, columns, chartDate) => {
-    localStorage.setItem("rateChart", JSON.stringify(data));
-    localStorage.setItem("rateChartSnfValues", JSON.stringify(columns));
-    localStorage.setItem("rateChartDate", chartDate);
+  const persistSavedCharts = (charts) => {
+    localStorage.setItem("rateChartsByDate", JSON.stringify(charts));
+    setSavedCharts(charts);
   };
 
   // =====================================================
-  // LOAD SAVED RATE CHART
+  // LOAD SAVED CHARTS
   // =====================================================
 
   useEffect(() => {
     try {
+      const savedChartsData = localStorage.getItem("rateChartsByDate");
       const savedRateChart = localStorage.getItem("rateChart");
       const savedDate = localStorage.getItem("rateChartDate");
       const savedSnfValues = localStorage.getItem("rateChartSnfValues");
 
-      if (savedRateChart) {
+      let charts = savedChartsData ? JSON.parse(savedChartsData) : {};
+
+      if (!charts || typeof charts !== "object" || Array.isArray(charts)) {
+        charts = {};
+      }
+
+      // Migrate an existing single saved chart without deleting it.
+      if (
+        savedRateChart &&
+        savedDate &&
+        !charts[savedDate]
+      ) {
         const parsedData = JSON.parse(savedRateChart);
 
         if (Array.isArray(parsedData) && parsedData.length > 0) {
-          // New matrix format
-          if (parsedData[0].rates && typeof parsedData[0].rates === "object") {
-            let columns = savedSnfValues
-              ? JSON.parse(savedSnfValues)
-              : [];
+          let columns = savedSnfValues
+            ? JSON.parse(savedSnfValues)
+            : [];
 
-            // Recover SNF columns from the saved rows if necessary.
-            if (!Array.isArray(columns) || columns.length === 0) {
+          if (!Array.isArray(columns) || columns.length === 0) {
+            if (
+              parsedData[0].rates &&
+              typeof parsedData[0].rates === "object"
+            ) {
               columns = [
                 ...new Set(
-                  parsedData.flatMap((row) => Object.keys(row.rates || {}))
+                  parsedData.flatMap((row) =>
+                    Object.keys(row.rates || {})
+                  )
+                ),
+              ].sort((a, b) => Number(a) - Number(b));
+            } else {
+              columns = [
+                ...new Set(
+                  parsedData.map((item) =>
+                    Number(item.snf).toFixed(1)
+                  )
                 ),
               ].sort((a, b) => Number(a) - Number(b));
             }
+          }
 
-            setRateData(parsedData);
-            setSnfValues(columns);
-          } else {
-            // Convert an older flat chart into a matrix.
-            const columns = [
-              ...new Set(parsedData.map((item) => Number(item.snf).toFixed(1))),
-            ].sort((a, b) => Number(a) - Number(b));
+          let rows = parsedData;
 
+          // Convert older flat chart data into matrix format.
+          if (
+            !parsedData[0].rates ||
+            typeof parsedData[0].rates !== "object"
+          ) {
             const fatValues = [
-              ...new Set(parsedData.map((item) => Number(item.fat).toFixed(1))),
+              ...new Set(
+                parsedData.map((item) =>
+                  Number(item.fat).toFixed(1)
+                )
+              ),
             ].sort((a, b) => Number(a) - Number(b));
 
-            const convertedData = fatValues.map((fat) => {
+            rows = fatValues.map((fat) => {
               const rates = {};
 
               columns.forEach((snf) => {
@@ -116,18 +145,83 @@ function Rate() {
                     Number(item.snf).toFixed(1) === snf
                 );
 
-               rates[snf] = oldItem?.rate ?? ""; 
+                rates[snf] = oldItem?.rate ?? "";
               });
 
               return { fat, rates };
             });
-
-            setRateData(convertedData);
-            setSnfValues(columns);
           }
-        } else {
-          setRateData([]);
-          setSnfValues([]);
+
+          charts[savedDate] = {
+            rateData: rows,
+            snfValues: columns,
+          };
+        }
+      }
+
+      setSavedCharts(charts);
+
+      // Keep the existing single-chart display compatible.
+      // Do not automatically load the chart after Save has cleared it.
+      if (savedRateChart && !savedChartsData) {
+        const parsedData = JSON.parse(savedRateChart);
+
+        if (Array.isArray(parsedData) && parsedData.length > 0) {
+          let columns = savedSnfValues
+            ? JSON.parse(savedSnfValues)
+            : [];
+
+          let rows = parsedData;
+
+          if (
+            parsedData[0].rates &&
+            typeof parsedData[0].rates === "object"
+          ) {
+            if (!Array.isArray(columns) || columns.length === 0) {
+              columns = [
+                ...new Set(
+                  parsedData.flatMap((row) =>
+                    Object.keys(row.rates || {})
+                  )
+                ),
+              ].sort((a, b) => Number(a) - Number(b));
+            }
+          } else {
+            columns = [
+              ...new Set(
+                parsedData.map((item) =>
+                  Number(item.snf).toFixed(1)
+                )
+              ),
+            ].sort((a, b) => Number(a) - Number(b));
+
+            const fatValues = [
+              ...new Set(
+                parsedData.map((item) =>
+                  Number(item.fat).toFixed(1)
+                )
+              ),
+            ].sort((a, b) => Number(a) - Number(b));
+
+            rows = fatValues.map((fat) => {
+              const rates = {};
+
+              columns.forEach((snf) => {
+                const oldItem = parsedData.find(
+                  (item) =>
+                    Number(item.fat).toFixed(1) === fat &&
+                    Number(item.snf).toFixed(1) === snf
+                );
+
+                rates[snf] = oldItem?.rate ?? "";
+              });
+
+              return { fat, rates };
+            });
+          }
+
+          setRateData(rows);
+          setSnfValues(columns);
         }
       }
 
@@ -135,13 +229,13 @@ function Rate() {
         setDate(savedDate);
       }
     } catch (error) {
-      console.error("Unable to load saved rate chart:", error);
+      console.error("Unable to load saved rate charts:", error);
       alert("The saved rate chart could not be loaded.");
     }
   }, []);
 
   // =====================================================
-  // KEYBOARD NAVIGATION
+  // TOP SECTION KEYBOARD NAVIGATION
   // =====================================================
 
   const handleInputKeyDown = (e, nextRef = null, previousRef = null) => {
@@ -149,25 +243,214 @@ function Rate() {
       e.preventDefault();
 
       if (e.shiftKey) {
-        if (previousRef?.current) {
-          previousRef.current.focus();
-        }
+        previousRef?.current?.focus();
         return;
       }
 
-      if (nextRef?.current) {
-        nextRef.current.focus();
+      nextRef?.current?.focus();
+      return;
+    }
+
+    if (
+      e.key === "Backspace" &&
+      e.currentTarget.value === "" &&
+      previousRef?.current
+    ) {
+      e.preventDefault();
+      previousRef.current.focus();
+    }
+  };
+
+  // =====================================================
+  // FOCUS RATE INPUT
+  // =====================================================
+
+  const focusRateInput = (rowIndex, columnIndex) => {
+    requestAnimationFrame(() => {
+      const input = rateInputRefs.current[rowIndex]?.[columnIndex];
+
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    });
+  };
+
+  // =====================================================
+  // UPDATE INDIVIDUAL RATE CELL
+  // =====================================================
+
+  const updateRateValue = (rowIndex, snf, value) => {
+    setRateData((previousData) =>
+      previousData.map((row, index) =>
+        index === rowIndex
+          ? {
+              ...row,
+              rates: {
+                ...row.rates,
+                [snf]: value,
+              },
+            }
+          : row
+      )
+    );
+  };
+
+  // =====================================================
+  // FIRST ROW RATE DIFFERENCES
+  // =====================================================
+
+  const getFirstRowDifferences = () => {
+    if (rateData.length === 0 || snfValues.length === 0) {
+      return null;
+    }
+
+    const firstRow = rateData[0];
+    const firstRate = firstRow.rates[snfValues[0]];
+
+    const allRatesEntered = snfValues.every((snf) => {
+      const value = firstRow.rates[snf];
+
+      return (
+        value !== "" &&
+        value !== null &&
+        value !== undefined &&
+        Number.isFinite(Number(value))
+      );
+    });
+
+    if (
+      !allRatesEntered ||
+      firstRate === "" ||
+      !Number.isFinite(Number(firstRate))
+    ) {
+      return null;
+    }
+
+    return snfValues.map(
+      (snf) => Number(firstRow.rates[snf]) - Number(firstRate)
+    );
+  };
+
+  // =====================================================
+  // AUTOMATIC RATE CALCULATION
+  // =====================================================
+
+  const calculateRowRates = (rowIndex, startingRate) => {
+    const differences = getFirstRowDifferences();
+
+    if (!differences) {
+      alert(
+        "Please complete all rates in the first row before calculating the next row."
+      );
+      return false;
+    }
+
+    if (
+      startingRate === "" ||
+      !Number.isFinite(Number(startingRate))
+    ) {
+      return false;
+    }
+
+    const start = Number(startingRate);
+    const calculatedRates = {};
+
+    snfValues.forEach((snf, columnIndex) => {
+      calculatedRates[snf] = Number(
+        (start + differences[columnIndex]).toFixed(2)
+      ).toString();
+    });
+
+    setRateData((previousData) =>
+      previousData.map((row, index) =>
+        index === rowIndex
+          ? { ...row, rates: calculatedRates }
+          : row
+      )
+    );
+
+    return true;
+  };
+
+  // =====================================================
+  // RATE INPUT KEYBOARD NAVIGATION
+  // =====================================================
+
+  const handleRateKeyDown = (e, rowIndex, columnIndex) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+
+      if (rowIndex === 0) {
+        if (columnIndex < snfValues.length - 1) {
+          focusRateInput(rowIndex, columnIndex + 1);
+        } else if (rateData.length > 1) {
+          focusRateInput(1, 0);
+        }
+
+        return;
+      }
+
+      if (columnIndex === 0) {
+        const calculated = calculateRowRates(
+          rowIndex,
+          e.currentTarget.value
+        );
+
+        if (calculated && rowIndex < rateData.length - 1) {
+          focusRateInput(rowIndex + 1, 0);
+        }
+
+        return;
+      }
+
+      if (columnIndex < snfValues.length - 1) {
+        focusRateInput(rowIndex, columnIndex + 1);
+      } else if (rowIndex < rateData.length - 1) {
+        focusRateInput(rowIndex + 1, 0);
       }
 
       return;
     }
 
     if (e.key === "Backspace" && e.currentTarget.value === "") {
-      if (previousRef?.current) {
+      if (columnIndex > 0) {
         e.preventDefault();
-        previousRef.current.focus();
+        focusRateInput(rowIndex, columnIndex - 1);
+      } else if (rowIndex > 0) {
+        e.preventDefault();
+        focusRateInput(rowIndex - 1, snfValues.length - 1);
       }
     }
+  };
+
+  // =====================================================
+  // LOAD CHART FOR A SELECTED DATE
+  // =====================================================
+
+  const loadSavedChart = (savedDate) => {
+    setSelectedSavedDate(savedDate);
+
+    if (!savedDate) {
+      setDate(getTodayDate());
+      setRateData([]);
+      setSnfValues([]);
+      setSelectedRow(null);
+      rateInputRefs.current = [];
+      return;
+    }
+
+    const chart = savedCharts[savedDate];
+
+    if (!chart) {
+      return;
+    }
+
+    setDate(savedDate);
+    setRateData(chart.rateData);
+    setSnfValues(chart.snfValues);
+    setSelectedRow(null);
+    rateInputRefs.current = [];
   };
 
   // =====================================================
@@ -180,17 +463,50 @@ function Rate() {
       return;
     }
 
-    persistRateChart(rateData, snfValues, date);
-    alert("Rate chart saved successfully!");
+    if (!date) {
+      alert("Please select a date before saving.");
+      return;
+    }
+
+    const updatedCharts = {
+      ...savedCharts,
+      [date]: {
+        rateData: rateData.map((row) => ({
+          ...row,
+          rates: { ...row.rates },
+        })),
+        snfValues: [...snfValues],
+      },
+    };
+
+    try {
+      persistSavedCharts(updatedCharts);
+
+      // Clear old single-chart storage to avoid restoring a stale chart.
+      localStorage.removeItem("rateChart");
+      localStorage.removeItem("rateChartSnfValues");
+      localStorage.removeItem("rateChartDate");
+
+      setSelectedSavedDate("");
+      setRateData([]);
+      setSnfValues([]);
+      setSelectedRow(null);
+      rateInputRefs.current = [];
+
+      alert("Rate chart saved successfully!");
+    } catch (error) {
+      console.error("Unable to save rate chart:", error);
+      alert("Unable to save the rate chart.");
+    }
   };
 
   // =====================================================
-  // CANCEL WHOLE RATE CHART
+  // CANCEL CURRENT CHART
   // =====================================================
 
   const cancelRateChart = () => {
     const confirmCancel = window.confirm(
-      "Are you sure you want to cancel and clear the rate chart?"
+      "Are you sure you want to cancel and clear the current rate chart?"
     );
 
     if (!confirmCancel) {
@@ -198,6 +514,7 @@ function Rate() {
     }
 
     setDate(getTodayDate());
+    setSelectedSavedDate("");
 
     setFatFrom("");
     setFatTo("");
@@ -207,16 +524,18 @@ function Rate() {
     setRateData([]);
     setSnfValues([]);
     setSelectedRow(null);
+    rateInputRefs.current = [];
 
+    // Do not delete other saved charts.
     localStorage.removeItem("rateChart");
     localStorage.removeItem("rateChartSnfValues");
     localStorage.removeItem("rateChartDate");
 
-    alert("Rate chart cancelled!");
+    alert("Current rate chart cancelled!");
   };
 
   // =====================================================
-  // UPDATE RATE CHART
+  // UPDATE SELECTED CHART
   // =====================================================
 
   const updateRateChart = () => {
@@ -225,8 +544,30 @@ function Rate() {
       return;
     }
 
-    persistRateChart(rateData, snfValues, date);
-    alert("Rate chart updated successfully!");
+    if (!date) {
+      alert("Please select a date before updating.");
+      return;
+    }
+
+    const updatedCharts = {
+      ...savedCharts,
+      [date]: {
+        rateData: rateData.map((row) => ({
+          ...row,
+          rates: { ...row.rates },
+        })),
+        snfValues: [...snfValues],
+      },
+    };
+
+    try {
+      persistSavedCharts(updatedCharts);
+      setSelectedSavedDate(date);
+      alert("Rate chart updated successfully!");
+    } catch (error) {
+      console.error("Unable to update rate chart:", error);
+      alert("Unable to update the rate chart.");
+    }
   };
 
   // =====================================================
@@ -258,8 +599,20 @@ function Rate() {
 
     setRateData(updatedData);
     setSelectedRow(null);
+    rateInputRefs.current = [];
 
-    persistRateChart(updatedData, snfValues, date);
+    // Update the selected chart's saved copy too.
+    if (selectedSavedDate && savedCharts[selectedSavedDate]) {
+      const updatedCharts = {
+        ...savedCharts,
+        [selectedSavedDate]: {
+          rateData: updatedData,
+          snfValues: [...snfValues],
+        },
+      };
+
+      persistSavedCharts(updatedCharts);
+    }
 
     alert("Selected FAT row deleted successfully!");
   };
@@ -280,18 +633,16 @@ function Rate() {
       (value) => value.trim() === ""
     );
 
-    const isValidNumber = (value) => Number.isFinite(value);
-
     const isOneDecimalStep = (value) =>
       Math.abs(value * 10 - Math.round(value * 10)) < 0.000001;
 
     if (
       !date ||
       hasEmptyInput ||
-      !isValidNumber(fatStart) ||
-      !isValidNumber(fatEnd) ||
-      !isValidNumber(snfStart) ||
-      !isValidNumber(snfEnd) ||
+      !Number.isFinite(fatStart) ||
+      !Number.isFinite(fatEnd) ||
+      !Number.isFinite(snfStart) ||
+      !Number.isFinite(snfEnd) ||
       fatStart < 0 ||
       snfStart < 0 ||
       fatStart > fatEnd ||
@@ -307,7 +658,6 @@ function Rate() {
       return;
     }
 
-    // Integer tenths prevent floating-point errors.
     const fatValues = [];
     const columns = [];
 
@@ -327,37 +677,16 @@ function Rate() {
       columns.push((value / 10).toFixed(1));
     }
 
-    // Each FAT row contains one rate cell for each SNF value.
     const data = fatValues.map((fat) => ({
       fat,
-      rates: Object.fromEntries(
-        columns.map((snf) => [snf, ""])
-      ),
+      rates: Object.fromEntries(columns.map((snf) => [snf, ""])),
     }));
 
     setSnfValues(columns);
     setRateData(data);
     setSelectedRow(null);
-  };
-
-  // =====================================================
-  // UPDATE INDIVIDUAL RATE CELL
-  // =====================================================
-
-  const updateRateValue = (rowIndex, snf, value) => {
-    setRateData((previousData) =>
-      previousData.map((row, index) =>
-        index === rowIndex
-          ? {
-              ...row,
-              rates: {
-                ...row.rates,
-                [snf]: value,
-              },
-            }
-          : row
-      )
-    );
+    setSelectedSavedDate("");
+    rateInputRefs.current = [];
   };
 
   // =====================================================
@@ -366,12 +695,9 @@ function Rate() {
 
   return (
     <div className="rate-page">
-      {/* TITLE */}
       <h1 className="page-title">Rate Chart</h1>
 
-      {/* TOP SECTION */}
       <div className="top-section">
-        {/* DATE */}
         <div className="input-card">
           <div className="field-title">
             <img src={dateIcon} alt="Date" />
@@ -387,7 +713,6 @@ function Rate() {
           </div>
         </div>
 
-        {/* FAT */}
         <div className="input-card">
           <div className="field-title">
             <img src={fatIcon} alt="FAT" />
@@ -428,7 +753,6 @@ function Rate() {
           </div>
         </div>
 
-        {/* SNF */}
         <div className="input-card">
           <div className="field-title">
             <img src={snfIcon} alt="SNF" />
@@ -469,7 +793,6 @@ function Rate() {
           </div>
         </div>
 
-        {/* GENERATE */}
         <div className="generate-card">
           <button
             ref={generateButtonRef}
@@ -483,7 +806,6 @@ function Rate() {
         </div>
       </div>
 
-      {/* RATE CHART */}
       <div className="chart-section">
         <div className="chart-heading">
           <img src={rateChartIcon} alt="Rate Chart" />
@@ -516,9 +838,17 @@ function Rate() {
                   >
                     <th className="fat-cell">{item.fat}</th>
 
-                    {snfValues.map((snf) => (
+                    {snfValues.map((snf, columnIndex) => (
                       <td key={snf}>
                         <input
+                          ref={(element) => {
+                            if (!rateInputRefs.current[rowIndex]) {
+                              rateInputRefs.current[rowIndex] = [];
+                            }
+
+                            rateInputRefs.current[rowIndex][columnIndex] =
+                              element;
+                          }}
                           type="number"
                           min="0"
                           step="0.01"
@@ -529,6 +859,13 @@ function Rate() {
                               rowIndex,
                               snf,
                               e.target.value
+                            )
+                          }
+                          onKeyDown={(e) =>
+                            handleRateKeyDown(
+                              e,
+                              rowIndex,
+                              columnIndex
                             )
                           }
                           onClick={(e) => {
@@ -546,9 +883,7 @@ function Rate() {
         </div>
       </div>
 
-      {/* BOTTOM SECTION */}
       <div className="bottom-section">
-        {/* BOTTOM DATE */}
         <div className="bottom-date">
           <div className="bottom-date-label">
             <img src={dateIcon} alt="Date" />
@@ -556,15 +891,34 @@ function Rate() {
           </div>
 
           <div className="bottom-date-input">
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
+            <select
+              value={selectedSavedDate}
+              onChange={(e) => loadSavedChart(e.target.value)}
+              aria-label="Select a saved rate chart date"
+              style={{
+                width: "100%",
+                height: "100%",
+                border: "none",
+                outline: "none",
+                background: "transparent",
+                color: "#303838",
+                fontSize: "13px",
+                cursor: "pointer",
+              }}
+            >
+              <option value="">Select saved chart date</option>
+
+              {Object.keys(savedCharts)
+                .sort((a, b) => b.localeCompare(a))
+                .map((savedDate) => (
+                  <option key={savedDate} value={savedDate}>
+                    {savedDate.split("-").reverse().join("/")}
+                  </option>
+                ))}
+            </select>
           </div>
         </div>
 
-        {/* ACTION BUTTONS */}
         <div className="action-buttons">
           <button
             type="button"

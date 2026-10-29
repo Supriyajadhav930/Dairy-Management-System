@@ -6,6 +6,7 @@ const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const collectionRoutes = require("./routes/collectionRoutes");
 const farmerRoutes = require("./routes/farmerRoutes");
+const rateChartRoutes = require("./routes/rateChartRoutes");
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/collections", collectionRoutes);
 app.use("/api/farmers", farmerRoutes);
+app.use("/api/ratecharts", rateChartRoutes);
 
 // MongoDB connection
 mongoose
