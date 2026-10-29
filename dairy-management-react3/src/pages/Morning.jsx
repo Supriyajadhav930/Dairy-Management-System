@@ -23,10 +23,11 @@ import farmerListIcon from "../assets/Morning_collections_img/farmer_list.png";
 import noRecordsIcon from "../assets/Morning_collections_img/no_records_document.png";
 import recordsCalendarIcon from "../assets/Morning_collections_img/records_calendar.png";
 
-/* ================= FARMER DATA ================= */
+/* ================= API URLS ================= */
 
 const FARMERS_API_URL = "http://localhost:5000/api/farmers";
 const COLLECTIONS_API_URL = "http://localhost:5000/api/collections";
+const RATECHARTS_API_URL = "http://localhost:5000/api/ratecharts";
 
 /* ================= TABLE STYLES ================= */
 
@@ -63,12 +64,11 @@ function Morning() {
 
     const [records, setRecords] = useState([]);
     const [farmers, setFarmers] = useState([]);
+    const [rateCharts, setRateCharts] = useState([]);
 
     const [showModal, setShowModal] = useState(false);
     const [farmerSearch, setFarmerSearch] = useState("");
     const [recordsDate, setRecordsDate] = useState("");
-
-    /* ================= EDITING RECORD ================= */
 
     const [editingRecordId, setEditingRecordId] = useState(null);
 
@@ -83,9 +83,7 @@ function Morning() {
     const degreeRef = useRef(null);
     const rateRef = useRef(null);
 
-    /* =========================================================
-       SET DATE + LOAD FARMERS + LOAD COLLECTION RECORDS
-       ========================================================= */
+    /* ================= INITIAL LOAD ================= */
 
     useEffect(() => {
         const today = new Date();
@@ -99,8 +97,6 @@ function Morning() {
         setDate(todayDate);
         setRecordsDate(todayDate);
 
-        /* ================= LOAD FARMERS ================= */
-
         fetch(FARMERS_API_URL)
             .then((response) => {
                 if (!response.ok) {
@@ -110,57 +106,35 @@ function Morning() {
                 return response.json();
             })
             .then((data) => {
-                setFarmers(
-                    Array.isArray(data)
-                        ? data
-                        : []
-                );
+                setFarmers(Array.isArray(data) ? data : []);
             })
             .catch((error) => {
-                console.error(
-                    "Error loading farmers:",
-                    error
-                );
+                console.error("Error loading farmers:", error);
             });
-
-        /* ================= LOAD COLLECTIONS ================= */
 
         fetch(`${COLLECTIONS_API_URL}?type=morning`)
             .then((response) => {
                 if (!response.ok) {
-                    throw new Error(
-                        "Failed to fetch morning records"
-                    );
+                    throw new Error("Failed to fetch morning records");
                 }
 
                 return response.json();
             })
             .then((data) => {
-                const recordsArray =
-                    Array.isArray(data)
-                        ? data
-                        : data.data || [];
+                const recordsArray = Array.isArray(data)
+                    ? data
+                    : data.data || [];
 
-                const formattedRecords =
-                    recordsArray.map((record) => ({
-                        ...record,
-
-                        id:
-                            record._id ||
-                            record.id,
-
-                        code:
-                            record.farmerCode ||
-                            record.code
-                    }));
+                const formattedRecords = recordsArray.map((record) => ({
+                    ...record,
+                    id: record._id || record.id,
+                    code: record.farmerCode || record.code
+                }));
 
                 setRecords(formattedRecords);
             })
             .catch((error) => {
-                console.error(
-                    "Error loading morning records:",
-                    error
-                );
+                console.error("Error loading morning records:", error);
             });
     }, []);
 
@@ -169,14 +143,10 @@ function Morning() {
     const handleDateChange = (e) => {
         const selectedDate = e.target.value;
 
-        if (!selectedDate) {
-            return;
-        }
+        if (!selectedDate) return;
 
         setDate(selectedDate);
         setRecordsDate(selectedDate);
-
-        /* Clear currently entered farmer/record fields */
 
         setFarmerCode("");
         setFarmerName("");
@@ -191,51 +161,38 @@ function Morning() {
     /* ================= FORMAT DATE ================= */
 
     const formatDate = (dateString) => {
-        if (!dateString) {
-            return "";
-        }
+        if (!dateString) return "";
 
         const parts = dateString.split("-");
 
-        if (parts.length !== 3) {
-            return dateString;
-        }
+        if (parts.length !== 3) return dateString;
 
         return `${parts[2]}/${parts[1]}/${parts[0]}`;
     };
 
-    /* =========================================================
-       LOAD EXISTING COLLECTION RECORD
-       ========================================================= */
+    /* ================= LOAD EXISTING RECORD ================= */
 
     const loadExistingRecord = (code) => {
-        const normalizedCode =
-            String(code || "")
+        const normalizedCode = String(code || "")
+            .trim()
+            .toUpperCase();
+
+        const existingRecord = records.find((record) => {
+            const recordCode = String(
+                record.farmerCode || record.code || ""
+            )
                 .trim()
                 .toUpperCase();
 
-        const existingRecord = records.find(
-            (record) => {
-                const recordCode =
-                    String(
-                        record.farmerCode ||
-                        record.code ||
-                        ""
-                    )
-                        .trim()
-                        .toUpperCase();
-
-                return (
-                    record.type === "morning" &&
-                    recordCode === normalizedCode &&
-                    record.date === date
-                );
-            }
-        );
+            return (
+                record.type === "morning" &&
+                recordCode === normalizedCode &&
+                record.date === date
+            );
+        });
 
         if (!existingRecord) {
             setEditingRecordId(null);
-
             setLitres("");
             setFat("");
             setSnf("");
@@ -245,43 +202,36 @@ function Morning() {
             return false;
         }
 
-        const recordId =
-            existingRecord.id ||
-            existingRecord._id;
+        const recordId = existingRecord.id || existingRecord._id;
 
         setEditingRecordId(recordId);
 
         setLitres(
-            existingRecord.litres !== undefined &&
-            existingRecord.litres !== null
+            existingRecord.litres != null
                 ? String(existingRecord.litres)
                 : ""
         );
 
         setFat(
-            existingRecord.fat !== undefined &&
-            existingRecord.fat !== null
+            existingRecord.fat != null
                 ? String(existingRecord.fat)
                 : ""
         );
 
         setSnf(
-            existingRecord.snf !== undefined &&
-            existingRecord.snf !== null
+            existingRecord.snf != null
                 ? String(existingRecord.snf)
                 : ""
         );
 
         setDegree(
-            existingRecord.degree !== undefined &&
-            existingRecord.degree !== null
+            existingRecord.degree != null
                 ? String(existingRecord.degree)
                 : ""
         );
 
         setRate(
-            existingRecord.rate !== undefined &&
-            existingRecord.rate !== null
+            existingRecord.rate != null
                 ? String(existingRecord.rate)
                 : ""
         );
@@ -292,32 +242,21 @@ function Morning() {
     /* ================= SEARCH FARMER ================= */
 
     const handleFarmerSearch = () => {
-        const code =
-            farmerCode
-                .trim()
-                .toUpperCase();
+        const code = farmerCode.trim().toUpperCase();
 
         if (!code) {
             setFarmerName("");
             setEditingRecordId(null);
-
             alert("Please enter Farmer Code.");
-
             return;
         }
 
-        /* ================= FIND FARMER ================= */
-
-        const farmer =
-            farmers.find(
-                (item) =>
-                    String(
-                        item.code || ""
-                    )
-                        .trim()
-                        .toUpperCase() ===
-                    code
-            );
+        const farmer = farmers.find(
+            (item) =>
+                String(item.code || "")
+                    .trim()
+                    .toUpperCase() === code
+        );
 
         if (!farmer) {
             setFarmerName("");
@@ -330,23 +269,11 @@ function Morning() {
             setRate("");
 
             alert("Farmer not found.");
-
             return;
         }
 
-        setFarmerCode(
-            String(farmer.code)
-                .trim()
-                .toUpperCase()
-        );
-
-        setFarmerName(
-            farmer.name || ""
-        );
-
-        /* =====================================================
-           CHECK EXISTING COLLECTION FOR SELECTED DATE
-           ===================================================== */
+        setFarmerCode(String(farmer.code).trim().toUpperCase());
+        setFarmerName(farmer.name || "");
 
         loadExistingRecord(code);
     };
@@ -354,10 +281,7 @@ function Morning() {
     /* ================= FARMER CODE INPUT ================= */
 
     const handleFarmerCodeChange = (value) => {
-        const code =
-            value
-                .trim()
-                .toUpperCase();
+        const code = value.trim().toUpperCase();
 
         setFarmerCode(code);
 
@@ -374,91 +298,172 @@ function Morning() {
             return;
         }
 
-        const farmer =
-            farmers.find(
-                (item) =>
-                    String(
-                        item.code || ""
-                    )
-                        .trim()
-                        .toUpperCase() ===
-                    code
-            );
+        const farmer = farmers.find(
+            (item) =>
+                String(item.code || "")
+                    .trim()
+                    .toUpperCase() === code
+        );
 
-        if (farmer) {
-            setFarmerName(
-                farmer.name || ""
-            );
-        } else {
-            setFarmerName("");
-        }
-
-        /*
-         * Do not load record while typing.
-         * Record is loaded when Search or Enter is pressed.
-         */
+        setFarmerName(farmer ? farmer.name || "" : "");
     };
 
     /* ================= REFRESH FARMERS ================= */
 
     const refreshFarmers = async () => {
         try {
-            const response =
-                await fetch(
-                    FARMERS_API_URL
-                );
+            const response = await fetch(FARMERS_API_URL);
 
             if (!response.ok) {
-                throw new Error(
-                    "Failed to fetch farmers"
-                );
+                throw new Error("Failed to fetch farmers");
             }
 
-            const data =
-                await response.json();
+            const data = await response.json();
 
-            setFarmers(
-                Array.isArray(data)
-                    ? data
-                    : []
-            );
+            setFarmers(Array.isArray(data) ? data : []);
         } catch (error) {
-            console.error(
-                "Error refreshing farmers:",
-                error
-            );
+            console.error("Error refreshing farmers:", error);
         }
     };
+
+    /* ================= LOAD RATE CHARTS ================= */
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadRateCharts = async () => {
+            try {
+                const response = await fetch(RATECHARTS_API_URL);
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to fetch rate charts (${response.status})`
+                    );
+                }
+
+                const result = await response.json();
+
+                const charts = Array.isArray(result)
+                    ? result
+                    : Array.isArray(result.data)
+                    ? result.data
+                    : Array.isArray(result.charts)
+                    ? result.charts
+                    : [];
+
+                if (isMounted) {
+                    setRateCharts(charts);
+                    console.log("Loaded rate charts:", charts);
+                }
+            } catch (error) {
+                console.error("Error loading rate charts:", error);
+
+                if (isMounted) {
+                    setRateCharts([]);
+                }
+            }
+        };
+
+        loadRateCharts();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    /* ================= AUTO-FILL RATE ================= */
+
+    useEffect(() => {
+        if (!date || fat === "" || snf === "") {
+            setRate("");
+            return;
+        }
+
+        const normalizeDate = (value) =>
+            String(value || "").slice(0, 10);
+
+        const normalizeNumber = (value) => {
+            const number = Number(value);
+            return Number.isFinite(number) ? number.toFixed(1) : "";
+        };
+
+        /*
+         * Select the latest chart whose date is on or before
+         * the collection date.
+         *
+         * Example:
+         * Chart dated 10 October applies from 10 October onward,
+         * until a newer chart becomes effective.
+         */
+        const selectedDate = normalizeDate(date);
+
+        const selectedChart = rateCharts
+            .filter((chart) => {
+                const chartDate = normalizeDate(chart.date);
+                return chartDate && chartDate <= selectedDate;
+            })
+            .sort((a, b) =>
+                normalizeDate(b.date).localeCompare(
+                    normalizeDate(a.date)
+                )
+            )[0];
+
+        if (
+            !selectedChart ||
+            !Array.isArray(selectedChart.rateData)
+        ) {
+            setRate("");
+            return;
+        }
+
+        const fatRow = selectedChart.rateData.find(
+            (row) =>
+                normalizeNumber(row.fat) === normalizeNumber(fat)
+        );
+
+        if (
+            !fatRow ||
+            !fatRow.rates ||
+            typeof fatRow.rates !== "object"
+        ) {
+            setRate("");
+            return;
+        }
+
+        const snfKey = Object.keys(fatRow.rates).find(
+            (key) =>
+                normalizeNumber(key) === normalizeNumber(snf)
+        );
+
+        const matchedRate =
+            snfKey !== undefined
+                ? fatRow.rates[snfKey]
+                : undefined;
+
+        setRate(
+            matchedRate !== undefined &&
+            matchedRate !== null &&
+            String(matchedRate).trim() !== ""
+                ? String(matchedRate)
+                : ""
+        );
+    }, [rateCharts, date, fat, snf]);
 
     /* ================= CALCULATE AMOUNT ================= */
 
     const amount =
         litres && rate
-            ? (
-                  Number(litres) *
-                  Number(rate)
-              ).toFixed(2)
+            ? (Number(litres) * Number(rate)).toFixed(2)
             : "0.00";
 
     /* ================= CALCULATE DEGREE ================= */
 
     useEffect(() => {
-        if (
-            fat !== "" &&
-            snf !== ""
-        ) {
+        if (fat !== "" && snf !== "") {
             const calculatedDegree =
-                4 *
-                (
-                    Number(snf) -
-                    0.21 *
-                        Number(fat) -
-                    0.36
-                );
+                4 * (Number(snf) - 0.21 * Number(fat) - 0.36);
 
-            setDegree(
-                calculatedDegree.toFixed(1)
-            );
+            setDegree(calculatedDegree.toFixed(1));
         } else {
             setDegree("");
         }
@@ -478,14 +483,11 @@ function Morning() {
 
         setEditingRecordId(null);
 
-        /* Return cursor to Farmer Code */
-
         setTimeout(() => {
             farmerCodeRef.current?.focus();
         }, 0);
     };
-
-    /* =========================================================
+        /* =========================================================
        SAVE / UPDATE RECORD
        ========================================================= */
 
@@ -496,9 +498,7 @@ function Morning() {
         }
 
         if (!farmerName.trim()) {
-            alert(
-                "Please search the Farmer Code first."
-            );
+            alert("Please search the Farmer Code first.");
             return;
         }
 
@@ -527,169 +527,102 @@ function Morning() {
             return;
         }
 
-        /* ================= RECORD DATA ================= */
-
         const collectionRecord = {
             type: "morning",
-
-            farmerCode:
-                farmerCode
-                    .trim()
-                    .toUpperCase(),
-
+            farmerCode: farmerCode.trim().toUpperCase(),
             farmerName,
-
-            /* CURRENTLY SELECTED DATE */
-
             date,
-
-            litres:
-                Number(litres),
-
-            fat:
-                Number(fat),
-
-            snf:
-                Number(snf),
-
-            degree:
-                Number(degree),
-
-            rate:
-                Number(rate),
-
-            amount:
-                Number(amount)
+            litres: Number(litres),
+            fat: Number(fat),
+            snf: Number(snf),
+            degree: Number(degree),
+            rate: Number(rate),
+            amount: Number(amount)
         };
 
         try {
-            /* =================================================
-               UPDATE EXISTING RECORD
-               ================================================= */
+            /* UPDATE EXISTING RECORD */
 
             if (editingRecordId) {
-                const response =
-                    await fetch(
-                        `${COLLECTIONS_API_URL}/${editingRecordId}`,
-                        {
-                            method: "PUT",
+                const response = await fetch(
+                    `${COLLECTIONS_API_URL}/${editingRecordId}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(collectionRecord)
+                    }
+                );
 
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body:
-                                JSON.stringify(
-                                    collectionRecord
-                                )
-                        }
-                    );
-
-                const result =
-                    await response.json();
+                const result = await response.json();
 
                 if (!response.ok) {
                     throw new Error(
                         result.message ||
-                            "Failed to update collection record"
+                        "Failed to update collection record"
                     );
                 }
 
-                const updatedData =
-                    result.data ||
-                    result;
+                const updatedData = result.data || result;
 
                 const updatedRecord = {
                     ...updatedData,
-
-                    id:
-                        updatedData._id ||
-                        editingRecordId,
-
+                    id: updatedData._id || editingRecordId,
                     code:
                         updatedData.farmerCode ||
                         collectionRecord.farmerCode
                 };
 
-                setRecords(
-                    (previousRecords) =>
-                        previousRecords.map(
-                            (record) => {
-                                const recordId =
-                                    record.id ||
-                                    record._id;
+                setRecords((previousRecords) =>
+                    previousRecords.map((record) => {
+                        const recordId = record.id || record._id;
 
-                                return recordId ===
-                                    editingRecordId
-                                    ? updatedRecord
-                                    : record;
-                            }
-                        )
+                        return recordId === editingRecordId
+                            ? updatedRecord
+                            : record;
+                    })
                 );
 
                 handleClear();
-
                 return;
             }
 
-            /* =================================================
-               CREATE NEW RECORD
-               ================================================= */
+            /* CREATE NEW RECORD */
 
-            const response =
-                await fetch(
-                    COLLECTIONS_API_URL,
-                    {
-                        method: "POST",
+            const response = await fetch(COLLECTIONS_API_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(collectionRecord)
+            });
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body:
-                            JSON.stringify(
-                                collectionRecord
-                            )
-                    }
-                );
-
-            const result =
-                await response.json();
+            const result = await response.json();
 
             if (!response.ok) {
                 throw new Error(
                     result.message ||
-                        "Failed to save collection record"
+                    "Failed to save collection record"
                 );
             }
 
-            const savedData =
-                result.data ||
-                result;
+            const savedData = result.data || result;
 
             const savedRecord = {
                 ...savedData,
-
-                id:
-                    savedData._id ||
-                    savedData.id,
-
+                id: savedData._id || savedData.id,
                 code:
                     savedData.farmerCode ||
                     collectionRecord.farmerCode
             };
 
-            setRecords(
-                (previousRecords) => [
-                    ...previousRecords,
-                    savedRecord
-                ]
-            );
+            setRecords((previousRecords) => [
+                ...previousRecords,
+                savedRecord
+            ]);
 
             handleClear();
-
         } catch (error) {
             console.error(
                 "Error saving/updating morning record:",
@@ -698,7 +631,7 @@ function Morning() {
 
             alert(
                 error.message ||
-                    "Failed to save morning collection."
+                "Failed to save morning collection."
             );
         }
     };
@@ -715,43 +648,32 @@ function Morning() {
         }
 
         try {
-            const response =
-                await fetch(
-                    `${COLLECTIONS_API_URL}/${id}`,
-                    {
-                        method: "DELETE"
-                    }
-                );
+            const response = await fetch(
+                `${COLLECTIONS_API_URL}/${id}`,
+                {
+                    method: "DELETE"
+                }
+            );
 
-            const result =
-                await response.json();
+            const result = await response.json();
 
             if (!response.ok) {
                 throw new Error(
                     result.message ||
-                        "Failed to delete collection record"
+                    "Failed to delete collection record"
                 );
             }
 
-            setRecords(
-                (previousRecords) =>
-                    previousRecords.filter(
-                        (record) => {
-                            const recordId =
-                                record.id ||
-                                record._id;
-
-                            return (
-                                recordId !== id
-                            );
-                        }
-                    )
+            setRecords((previousRecords) =>
+                previousRecords.filter((record) => {
+                    const recordId = record.id || record._id;
+                    return recordId !== id;
+                })
             );
 
             alert(
                 "Morning collection record deleted successfully!"
             );
-
         } catch (error) {
             console.error(
                 "Error deleting morning record:",
@@ -768,9 +690,7 @@ function Morning() {
 
     const openFarmerModal = async () => {
         setFarmerSearch("");
-
         await refreshFarmers();
-
         setShowModal(true);
     };
 
@@ -779,152 +699,89 @@ function Morning() {
     };
 
     const selectFarmer = (farmer) => {
-        const selectedCode =
-            String(
-                farmer.code || ""
-            )
-                .trim()
-                .toUpperCase();
+        const selectedCode = String(farmer.code || "")
+            .trim()
+            .toUpperCase();
 
         setFarmerCode(selectedCode);
+        setFarmerName(farmer.name || "");
 
-        setFarmerName(
-            farmer.name || ""
-        );
-
-        /*
-         * Check existing record for
-         * the CURRENT selected date.
-         */
-
-        loadExistingRecord(
-            selectedCode
-        );
-
+        loadExistingRecord(selectedCode);
         setShowModal(false);
     };
 
     /* ================= FARMER SEARCH ================= */
 
-    const filteredFarmers =
-        farmers.filter(
-            (farmer) => {
-                const search =
-                    farmerSearch
-                        .trim()
-                        .toLowerCase();
+    const filteredFarmers = farmers.filter((farmer) => {
+        const search = farmerSearch.trim().toLowerCase();
 
-                return (
-                    String(
-                        farmer.code || ""
-                    )
-                        .toLowerCase()
-                        .includes(search) ||
-                    String(
-                        farmer.name || ""
-                    )
-                        .toLowerCase()
-                        .includes(search)
-                );
-            }
+        return (
+            String(farmer.code || "")
+                .toLowerCase()
+                .includes(search) ||
+            String(farmer.name || "")
+                .toLowerCase()
+                .includes(search)
         );
+    });
 
-    /* =========================================================
-       ORDER FARMER LIST
-       ========================================================= */
+    /* ================= ORDER FARMER LIST ================= */
 
-    const orderedFarmers =
-        [...filteredFarmers].sort(
-            (a, b) => {
-                return String(
-                    a.code || ""
-                ).localeCompare(
-                    String(
-                        b.code || ""
-                    ),
-                    undefined,
-                    {
-                        numeric: true
-                    }
-                );
-            }
-        );
+    const orderedFarmers = [...filteredFarmers].sort((a, b) =>
+        String(a.code || "").localeCompare(
+            String(b.code || ""),
+            undefined,
+            { numeric: true }
+        )
+    );
 
-    /* =========================================================
-       RECORDS FOR CURRENTLY SELECTED DATE
-       ========================================================= */
+    /* ================= FILTER RECORDS BY DATE ================= */
 
-    const filteredRecords =
-        records.filter(
-            (record) =>
-                record.type === "morning" &&
-                record.date === recordsDate
-        );
+    const filteredRecords = records.filter(
+        (record) =>
+            record.type === "morning" &&
+            record.date === recordsDate
+    );
 
     return (
         <div className="morning-container">
 
-            {/* ================= TITLE ================= */}
+            {/* TITLE */}
 
-            <h1>
-                Morning Collection
-            </h1>
+            <h1>Morning Collection</h1>
 
-            {/* ================= COLLECTION CARD ================= */}
+            {/* COLLECTION CARD */}
 
             <div className="collection-card">
 
-                {/* ================= TOP ROW ================= */}
+                {/* TOP ROW */}
 
                 <div className="top-row">
 
                     {/* FARMER CODE */}
 
                     <div className="field-group">
-
                         <label>
-                            <img
-                                src={
-                                    farmerCodeIcon
-                                }
-                                alt="Farmer Code"
-                            />
-
+                            <img src={farmerCodeIcon} alt="Farmer Code" />
                             Farmer Code
                         </label>
 
                         <div className="input-wrapper">
-
                             <input
                                 ref={farmerCodeRef}
                                 type="text"
-                                value={
-                                    farmerCode
+                                value={farmerCode}
+                                onChange={(e) =>
+                                    handleFarmerCodeChange(e.target.value)
                                 }
-                                onChange={(
-                                    e
-                                ) =>
-                                    handleFarmerCodeChange(
-                                        e.target.value
-                                    )
-                                }
-                                onKeyDown={(
-                                    e
-                                ) => {
-                                    if (
-                                        e.key ===
-                                        "Enter"
-                                    ) {
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
                                         e.preventDefault();
-
                                         handleFarmerSearch();
 
-                                        setTimeout(
-                                            () => {
-                                                litresRef.current?.focus();
-                                            },
-                                            0
-                                        );
+                                        setTimeout(() => {
+                                            litresRef.current?.focus();
+                                        }, 0);
                                     }
                                 }}
                                 placeholder="Enter Farmer Code"
@@ -933,195 +790,99 @@ function Morning() {
                             <button
                                 type="button"
                                 className="farmer-search-btn"
-                                onClick={
-                                    handleFarmerSearch
-                                }
+                                onClick={handleFarmerSearch}
                             >
-                                <img
-                                    src={
-                                        searchIcon
-                                    }
-                                    alt="Search"
-                                />
+                                <img src={searchIcon} alt="Search" />
                             </button>
-
                         </div>
                     </div>
 
                     {/* FARMER NAME */}
 
                     <div className="field-group">
-
                         <label>
-                            <img
-                                src={
-                                    farmerNameIcon
-                                }
-                                alt="Farmer Name"
-                            />
-
+                            <img src={farmerNameIcon} alt="Farmer Name" />
                             Farmer Name
                         </label>
 
                         <input
                             type="text"
-                            value={
-                                farmerName
-                            }
+                            value={farmerName}
                             readOnly
                             className="readonly-input"
                             placeholder="(Name will appear here)"
                         />
-
                     </div>
 
                     {/* DATE */}
 
                     <div className="field-group">
-
                         <label>
-                            <img
-                                src={
-                                    calendarIcon
-                                }
-                                alt="Date"
-                            />
-
+                            <img src={calendarIcon} alt="Date" />
                             Date
                         </label>
 
                         <div className="date-wrapper">
-
                             <input
                                 ref={dateRef}
                                 type="date"
-                                value={
-                                    date
-                                }
-                                onChange={
-                                    handleDateChange
-                                }
-                                onKeyDown={(
-                                    e
-                                ) => {
-                                    if (
-                                        e.key ===
-                                        "Enter"
-                                    ) {
+                                value={date}
+                                onChange={handleDateChange}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
                                         e.preventDefault();
 
-                                        /*
-                                         * Keep the selected
-                                         * date unchanged and
-                                         * move to Farmer Code.
-                                         *
-                                         * Native browser date
-                                         * controls manage their
-                                         * internal day/month/year
-                                         * segments themselves.
-                                         */
-
-                                        setTimeout(
-                                            () => {
-                                                farmerCodeRef.current?.focus();
-                                            },
-                                            0
-                                        );
+                                        setTimeout(() => {
+                                            farmerCodeRef.current?.focus();
+                                        }, 0);
                                     }
                                 }}
                             />
 
-                            <img
-                                src={
-                                    dateChevronIcon
-                                }
-                                alt=""
-                            />
-
+                            <img src={dateChevronIcon} alt="" />
                         </div>
-
                     </div>
-
                 </div>
 
-                {/* ================= MILK DETAILS ================= */}
+                {/* MILK DETAILS */}
 
                 <div className="milk-details">
-
                     <MilkField
-                        icon={
-                            litresIcon
-                        }
+                        icon={litresIcon}
                         label="Litres (L)"
-                        value={
-                            litres
-                        }
-                        setValue={
-                            setLitres
-                        }
-                        inputRef={
-                            litresRef
-                        }
-                        nextRef={
-                            fatRef
-                        }
+                        value={litres}
+                        setValue={setLitres}
+                        inputRef={litresRef}
+                        nextRef={fatRef}
                         placeholder="Enter Litres"
                     />
 
                     <MilkField
-                        icon={
-                            fatIcon
-                        }
+                        icon={fatIcon}
                         label="Fat"
-                        value={
-                            fat
-                        }
-                        setValue={
-                            setFat
-                        }
-                        inputRef={
-                            fatRef
-                        }
-                        nextRef={
-                            snfRef
-                        }
+                        value={fat}
+                        setValue={setFat}
+                        inputRef={fatRef}
+                        nextRef={snfRef}
                         placeholder="Enter Fat"
                     />
 
                     <MilkField
-                        icon={
-                            snfIcon
-                        }
+                        icon={snfIcon}
                         label="SNF"
-                        value={
-                            snf
-                        }
-                        setValue={
-                            setSnf
-                        }
-                        inputRef={
-                            snfRef
-                        }
-                        nextRef={
-                            rateRef
-                        }
+                        value={snf}
+                        setValue={setSnf}
+                        inputRef={snfRef}
+                        nextRef={rateRef}
                         placeholder="Enter SNF"
                     />
 
                     <MilkField
-                        icon={
-                            degreeIcon
-                        }
+                        icon={degreeIcon}
                         label="Degree"
-                        value={
-                            degree
-                        }
-                        inputRef={
-                            degreeRef
-                        }
-                        nextRef={
-                            rateRef
-                        }
+                        value={degree}
+                        inputRef={degreeRef}
+                        nextRef={rateRef}
                         placeholder="Auto Calculated"
                         readOnly
                     />
@@ -1129,216 +890,110 @@ function Morning() {
                     {/* RATE */}
 
                     <div className="milk-field">
-
                         <label>
-
-                            <span className="rupee-icon-badge">
-                                ₹
-                            </span>
-
+                            <span className="rupee-icon-badge">₹</span>
                             Rate (₹/L)
-
                         </label>
 
                         <input
-                            ref={
-                                rateRef
-                            }
+                            ref={rateRef}
                             type="number"
-                            value={
-                                rate
-                            }
-                            onChange={(
-                                e
-                            ) =>
-                                setRate(
-                                    e.target.value
-                                )
-                            }
-                            onKeyDown={(
-                                e
-                            ) => {
-                                if (
-                                    e.key ===
-                                    "Enter"
-                                ) {
+                            value={rate}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
                                     e.preventDefault();
-
                                     handleSave();
                                 }
                             }}
-                            placeholder="Enter Rate"
+                            placeholder="Auto-filled from Rate Chart"
+                            readOnly
                             min="0"
                             step="0.01"
                         />
-
                     </div>
 
                     {/* AMOUNT */}
 
                     <div className="milk-field">
-
                         <label>
-
-                            <img
-                                src={
-                                    amountIcon
-                                }
-                                alt="Amount"
-                            />
-
+                            <img src={amountIcon} alt="Amount" />
                             Amount (₹)
-
                         </label>
 
                         <input
                             type="text"
-                            value={
-                                amount ===
-                                "0.00"
-                                    ? ""
-                                    : amount
-                            }
+                            value={amount === "0.00" ? "" : amount}
                             placeholder="Auto Calculated"
                             readOnly
                             className="amount-input"
                         />
-
                     </div>
-
                 </div>
 
-                {/* ================= ACTION BUTTONS ================= */}
+                {/* ACTION BUTTONS */}
 
                 <div className="action-buttons">
-
                     <button
                         type="button"
                         className="save-btn"
-                        onClick={
-                            handleSave
-                        }
+                        onClick={handleSave}
                     >
-                        <img
-                            src={
-                                saveIcon
-                            }
-                            alt="Save"
-                        />
-
+                        <img src={saveIcon} alt="Save" />
                         Save
                     </button>
 
                     <button
                         type="button"
                         className="clear-btn"
-                        onClick={
-                            handleClear
-                        }
+                        onClick={handleClear}
                     >
-                        <img
-                            src={
-                                clearIcon
-                            }
-                            alt="Clear"
-                        />
-
+                        <img src={clearIcon} alt="Clear" />
                         Clear
                     </button>
 
                     <button
                         type="button"
                         className="farmer-list-btn"
-                        onClick={
-                            openFarmerModal
-                        }
+                        onClick={openFarmerModal}
                     >
-                        <img
-                            src={
-                                farmerListIcon
-                            }
-                            alt="Farmer List"
-                        />
-
+                        <img src={farmerListIcon} alt="Farmer List" />
                         Farmer List
                     </button>
-
                 </div>
-
             </div>
 
-            {/* ================= RECORDS SECTION ================= */}
+            {/* RECORDS SECTION */}
 
             <div className="records-section">
-
                 <div className="records-header">
-
                     <div className="records-title">
-
-                        <img
-                            src={
-                                noRecordsIcon
-                            }
-                            alt="Records"
-                        />
-
-                        <h2>
-                            Today's Records
-                        </h2>
-
+                        <img src={noRecordsIcon} alt="Records" />
+                        <h2>Today's Records</h2>
                     </div>
 
                     <div className="records-right">
-
                         <div className="records-date">
-
-                            <img
-                                src={
-                                    recordsCalendarIcon
-                                }
-                                alt="Date"
-                            />
-
-                            <span>
-                                Date:
-                            </span>
+                            <img src={recordsCalendarIcon} alt="Date" />
+                            <span>Date:</span>
 
                             <span className="date-display-text">
-                                {formatDate(
-                                    recordsDate
-                                )}
+                                {formatDate(recordsDate)}
                             </span>
 
                             <input
                                 type="date"
                                 className="hidden-date-picker"
-                                value={
-                                    recordsDate
-                                }
-                                onChange={(
-                                    e
-                                ) => {
-                                    const selectedDate =
-                                        e.target.value;
+                                value={recordsDate}
+                                onChange={(e) => {
+                                    const selectedDate = e.target.value;
 
                                     if (
                                         /^\d{4}-\d{2}-\d{2}$/.test(
                                             selectedDate
                                         )
                                     ) {
-                                        setRecordsDate(
-                                            selectedDate
-                                        );
-
-                                        /*
-                                         * Keep the main
-                                         * selected date
-                                         * synchronized.
-                                         */
-
-                                        setDate(
-                                            selectedDate
-                                        );
+                                        setRecordsDate(selectedDate);
+                                        setDate(selectedDate);
 
                                         setFarmerCode("");
                                         setFarmerName("");
@@ -1351,374 +1006,209 @@ function Morning() {
                                     }
                                 }}
                             />
-
                         </div>
 
                         <div className="total-records">
-
                             Total Records:{" "}
-
-                            <span>
-                                {
-                                    filteredRecords.length
-                                }
-                            </span>
-
+                            <span>{filteredRecords.length}</span>
                         </div>
-
                     </div>
-
                 </div>
 
-                {/* ================= TABLE ================= */}
+                {/* RECORDS TABLE */}
 
                 <div className="table-container">
-
                     <table className="records-table">
-
                         <thead>
-
                             <tr>
-
-                                <th>
-                                    Sr. No.
-                                </th>
-
-                                <th>
-                                    Code
-                                </th>
-
-                                <th>
-                                    Farmer Name
-                                </th>
-
-                                <th>
-                                    Litres (L)
-                                </th>
-
-                                <th>
-                                    Fat
-                                </th>
-
-                                <th>
-                                    SNF
-                                </th>
-
-                                <th>
-                                    Degree
-                                </th>
-
-                                <th>
-                                    Rate (₹/L)
-                                </th>
-
-                                <th>
-                                    Amount (₹)
-                                </th>
-
-                                <th>
-                                    Action
-                                </th>
-
+                                <th>Sr. No.</th>
+                                <th>Code</th>
+                                <th>Farmer Name</th>
+                                <th>Litres (L)</th>
+                                <th>Fat</th>
+                                <th>SNF</th>
+                                <th>Degree</th>
+                                <th>Rate (₹/L)</th>
+                                <th>Amount (₹)</th>
+                                <th>Action</th>
                             </tr>
-
                         </thead>
 
                         <tbody>
-
-                            {filteredRecords.length ===
-                            0 ? (
-
+                            {filteredRecords.length === 0 ? (
                                 <tr className="empty-record-row">
-
                                     <td colSpan="10">
-
                                         <div className="no-records">
-
                                             <div className="no-records-divider">
-
                                                 <span className="divider-line"></span>
 
                                                 <img
-                                                    src={
-                                                        noRecordsIcon
-                                                    }
+                                                    src={noRecordsIcon}
                                                     alt="No records"
                                                 />
 
                                                 <span className="divider-line"></span>
-
                                             </div>
 
-                                            <p>
-                                                No records found
-                                            </p>
-
+                                            <p>No records found</p>
                                         </div>
-
                                     </td>
-
                                 </tr>
-
                             ) : (
+                                filteredRecords.map((record, index) => (
+                                    <tr
+                                        key={
+                                            record.id ||
+                                            record._id ||
+                                            index
+                                        }
+                                    >
+                                        <td>{index + 1}</td>
 
-                                filteredRecords.map(
-                                    (
-                                        record,
-                                        index
-                                    ) => (
+                                        <td>
+                                            {record.code || record.farmerCode}
+                                        </td>
 
-                                        <tr
-                                            key={
-                                                record.id ||
-                                                record._id ||
-                                                index
-                                            }
-                                        >
+                                        <td>{record.farmerName}</td>
+                                        <td>{record.litres}</td>
+                                        <td>{record.fat}</td>
+                                        <td>{record.snf}</td>
+                                        <td>{record.degree}</td>
 
-                                            <td>
-                                                {
-                                                    index +
-                                                    1
+                                        <td>
+                                            ₹{Number(record.rate).toFixed(2)}
+                                        </td>
+
+                                        <td>
+                                            ₹{Number(record.amount).toFixed(2)}
+                                        </td>
+
+                                        <td>
+                                            <button
+                                                type="button"
+                                                className="table-delete-btn"
+                                                title="Delete record"
+                                                onClick={() =>
+                                                    handleDeleteRecord(
+                                                        record.id || record._id
+                                                    )
                                                 }
-                                            </td>
-
-                                            <td>
-                                                {
-                                                    record.code ||
-                                                    record.farmerCode
-                                                }
-                                            </td>
-
-                                            <td>
-                                                {
-                                                    record.farmerName
-                                                }
-                                            </td>
-
-                                            <td>
-                                                {
-                                                    record.litres
-                                                }
-                                            </td>
-
-                                            <td>
-                                                {
-                                                    record.fat
-                                                }
-                                            </td>
-
-                                            <td>
-                                                {
-                                                    record.snf
-                                                }
-                                            </td>
-
-                                            <td>
-                                                {
-                                                    record.degree
-                                                }
-                                            </td>
-
-                                            <td>
-                                                ₹
-                                                {Number(
-                                                    record.rate
-                                                ).toFixed(2)}
-                                            </td>
-
-                                            <td>
-                                                ₹
-                                                {Number(
-                                                    record.amount
-                                                ).toFixed(2)}
-                                            </td>
-
-                                            <td>
-
-                                                <button
-                                                    type="button"
-                                                    className="table-delete-btn"
-                                                    title="Delete record"
-                                                    onClick={() =>
-                                                        handleDeleteRecord(
-                                                            record.id ||
-                                                            record._id
-                                                        )
-                                                    }
+                                            >
+                                                <svg
+                                                    width="16"
+                                                    height="16"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
                                                 >
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
 
-                                                    <svg
-                                                        width="16"
-                                                        height="16"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="2"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                    >
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
 
-                                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <line
+                                                        x1="10"
+                                                        y1="11"
+                                                        x2="10"
+                                                        y2="17"
+                                                    ></line>
 
-                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-
-                                                        <line
-                                                            x1="10"
-                                                            y1="11"
-                                                            x2="10"
-                                                            y2="17"
-                                                        ></line>
-
-                                                        <line
-                                                            x1="14"
-                                                            y1="11"
-                                                            x2="14"
-                                                            y2="17"
-                                                        ></line>
-
-                                                    </svg>
-
-                                                </button>
-
-                                            </td>
-
-                                        </tr>
-
-                                    )
-                                )
-
+                                                    <line
+                                                        x1="14"
+                                                        y1="11"
+                                                        x2="14"
+                                                        y2="17"
+                                                    ></line>
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
                             )}
-
                         </tbody>
-
                     </table>
-
                 </div>
-
             </div>
 
-            {/* ================= FARMER MODAL ================= */}
+            {/* FARMER MODAL */}
 
             {showModal && (
-
                 <div
                     className="modal active"
                     onClick={(e) => {
-                        if (
-                            e.target ===
-                            e.currentTarget
-                        ) {
+                        if (e.target === e.currentTarget) {
                             closeFarmerModal();
                         }
                     }}
                 >
-
                     <div className="modal-content">
-
                         <div className="modal-header">
-
-                            <h2>
-                                Farmer List
-                            </h2>
+                            <h2>Farmer List</h2>
 
                             <button
                                 type="button"
                                 className="close-modal"
-                                onClick={
-                                    closeFarmerModal
-                                }
+                                onClick={closeFarmerModal}
                             >
                                 ×
                             </button>
-
                         </div>
 
                         <div className="farmer-search">
-
                             <input
                                 type="text"
                                 placeholder="Search farmer..."
-                                value={
-                                    farmerSearch
-                                }
-                                onChange={(
-                                    e
-                                ) =>
-                                    setFarmerSearch(
-                                        e.target.value
-                                    )
+                                value={farmerSearch}
+                                onChange={(e) =>
+                                    setFarmerSearch(e.target.value)
                                 }
                             />
-
                         </div>
 
                         <div
                             className="farmer-list"
                             style={{
-                                overflowX:
-                                    "auto",
-                                width:
-                                    "100%"
+                                overflowX: "auto",
+                                width: "100%"
                             }}
                         >
-
-                            {orderedFarmers.length >
-                            0 ? (
-
+                            {orderedFarmers.length > 0 ? (
                                 <table
                                     style={{
-                                        width:
-                                            "100%",
-                                        minWidth:
-                                            "850px",
-                                        borderCollapse:
-                                            "collapse",
-                                        background:
-                                            "#fff"
+                                        width: "100%",
+                                        minWidth: "850px",
+                                        borderCollapse: "collapse",
+                                        background: "#fff"
                                     }}
                                 >
-
                                     <thead>
-
                                         <tr>
-
                                             <th style={tableHeadStyle}>
                                                 Sr. No.
                                             </th>
-
                                             <th style={tableHeadStyle}>
                                                 Farmer Code
                                             </th>
-
                                             <th style={tableHeadStyle}>
                                                 Farmer Name
                                             </th>
-
                                             <th style={tableHeadStyle}>
                                                 Phone
                                             </th>
-
                                             <th style={tableHeadStyle}>
                                                 Email
                                             </th>
-
                                             <th style={tableHeadStyle}>
                                                 PhonePe
                                             </th>
-
                                         </tr>
-
                                     </thead>
 
                                     <tbody>
-
                                         {orderedFarmers.map(
-                                            (
-                                                farmer,
-                                                index
-                                            ) => (
-
+                                            (farmer, index) => (
                                                 <tr
                                                     key={
                                                         farmer._id ||
@@ -1726,89 +1216,52 @@ function Morning() {
                                                         index
                                                     }
                                                     onClick={() =>
-                                                        selectFarmer(
-                                                            farmer
-                                                        )
+                                                        selectFarmer(farmer)
                                                     }
                                                     style={{
-                                                        cursor:
-                                                            "pointer"
+                                                        cursor: "pointer"
                                                     }}
                                                 >
-
                                                     <td style={tableCellStyle}>
-                                                        {
-                                                            index +
-                                                            1
-                                                        }
+                                                        {index + 1}
                                                     </td>
 
                                                     <td style={tableCellStyle}>
-                                                        {
-                                                            farmer.code ||
-                                                            "-"
-                                                        }
+                                                        {farmer.code || "-"}
                                                     </td>
 
                                                     <td style={tableCellStyle}>
-                                                        {
-                                                            farmer.name ||
-                                                            "-"
-                                                        }
+                                                        {farmer.name || "-"}
                                                     </td>
 
                                                     <td style={tableCellStyle}>
-                                                        {
-                                                            farmer.phone ||
-                                                            "-"
-                                                        }
+                                                        {farmer.phone || "-"}
                                                     </td>
 
                                                     <td style={tableCellStyle}>
-                                                        {
-                                                            farmer.email ||
-                                                            "-"
-                                                        }
+                                                        {farmer.email || "-"}
                                                     </td>
 
                                                     <td style={tableCellStyle}>
-                                                        {
-                                                            farmer.phonePay ||
+                                                        {farmer.phonePay ||
                                                             farmer.phonepay ||
                                                             farmer.phonePe ||
-                                                            "-"
-                                                        }
+                                                            "-"}
                                                     </td>
-
                                                 </tr>
-
                                             )
                                         )}
-
                                     </tbody>
-
                                 </table>
-
                             ) : (
-
                                 <div className="no-records">
-
-                                    <p>
-                                        No farmer found
-                                    </p>
-
+                                    <p>No farmer found</p>
                                 </div>
-
                             )}
-
                         </div>
-
                     </div>
-
                 </div>
-
             )}
-
         </div>
     );
 }
@@ -1829,16 +1282,9 @@ function MilkField({
 }) {
     return (
         <div className="milk-field">
-
             <label>
-
-                <img
-                    src={icon}
-                    alt={label}
-                />
-
+                <img src={icon} alt={label} />
                 {label}
-
             </label>
 
             <input
@@ -1846,34 +1292,21 @@ function MilkField({
                 type="number"
                 value={value}
                 onChange={(e) => {
-                    if (
-                        !readOnly &&
-                        setValue
-                    ) {
-                        setValue(
-                            e.target.value
-                        );
+                    if (!readOnly && setValue) {
+                        setValue(e.target.value);
                     }
                 }}
                 onKeyDown={(e) => {
-                    if (
-                        e.key ===
-                            "Enter" &&
-                        nextRef
-                    ) {
+                    if (e.key === "Enter" && nextRef) {
                         e.preventDefault();
-
                         nextRef.current?.focus();
                     }
                 }}
-                placeholder={
-                    placeholder
-                }
+                placeholder={placeholder}
                 readOnly={readOnly}
                 min="0"
                 step="0.01"
             />
-
         </div>
     );
 }

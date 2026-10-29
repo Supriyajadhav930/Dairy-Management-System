@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef } from "react";
 import "./evening.css";
 
@@ -6,21 +7,17 @@ import "./evening.css";
 import farmerCodeIcon from "../assets/Evening_collection_img/farmer_code_user.png";
 import searchIcon from "../assets/Evening_collection_img/search.png";
 import farmerNameIcon from "../assets/Evening_collection_img/farmer_name_user.png";
-
 import calendarIcon from "../assets/Evening_collection_img/date_calendar.png";
 import dateChevronIcon from "../assets/Evening_collection_img/date_dropdown_chevron.png";
-
 import litresIcon from "../assets/Evening_collection_img/litres_milk_can.png";
 import fatIcon from "../assets/Evening_collection_img/fat_droplet.png";
 import snfIcon from "../assets/Evening_collection_img/snf_molecule.png";
 import degreeIcon from "../assets/Evening_collection_img/degree_thermometer.png";
 import rateIcon from "../assets/Evening_collection_img/rate_rupee.png";
 import amountIcon from "../assets/Evening_collection_img/amount_calculator.png";
-
 import saveIcon from "../assets/Evening_collection_img/save.png";
 import clearIcon from "../assets/Evening_collection_img/clear_refresh.png";
 import farmerListIcon from "../assets/Evening_collection_img/farmer_list.png";
-
 import noRecordsIcon from "../assets/Evening_collection_img/no_records_document.png";
 import recordsCalendarIcon from "../assets/Evening_collection_img/records_calendar.png";
 
@@ -28,6 +25,7 @@ import recordsCalendarIcon from "../assets/Evening_collection_img/records_calend
 
 const FARMERS_API_URL = "http://localhost:5000/api/farmers";
 const COLLECTIONS_API_URL = "http://localhost:5000/api/collections";
+const RATECHARTS_API_URL = "http://localhost:5000/api/ratecharts";
 
 /* ================= TABLE STYLES ================= */
 
@@ -54,7 +52,6 @@ const tableCellStyle = {
 function Evening() {
     const [farmerCode, setFarmerCode] = useState("");
     const [farmerName, setFarmerName] = useState("");
-
     const [date, setDate] = useState("");
 
     const [litres, setLitres] = useState("");
@@ -65,14 +62,11 @@ function Evening() {
 
     const [records, setRecords] = useState([]);
     const [farmers, setFarmers] = useState([]);
+    const [rateCharts, setRateCharts] = useState([]);
 
     const [showModal, setShowModal] = useState(false);
     const [farmerSearch, setFarmerSearch] = useState("");
-
     const [recordsDate, setRecordsDate] = useState("");
-
-    /* ================= EDITING RECORD ================= */
-
     const [editingRecordId, setEditingRecordId] = useState(null);
 
     /* ================= INPUT REFS ================= */
@@ -82,13 +76,10 @@ function Evening() {
     const snfRef = useRef(null);
     const rateRef = useRef(null);
 
-    /* =========================================================
-       GET TODAY'S DATE
-       ========================================================= */
+    /* ================= DATE HELPERS ================= */
 
     const getTodayDate = () => {
         const today = new Date();
-
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, "0");
         const day = String(today.getDate()).padStart(2, "0");
@@ -96,9 +87,19 @@ function Evening() {
         return `${year}-${month}-${day}`;
     };
 
-    /* =========================================================
-       SET INITIAL DATE + LOAD DATA
-       ========================================================= */
+    const normalizeDate = (value) => String(value || "").slice(0, 10);
+
+    const formatDate = (dateString) => {
+        if (!dateString) return "";
+
+        const parts = dateString.split("-");
+
+        if (parts.length !== 3) return dateString;
+
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    };
+
+    /* ================= LOAD INITIAL DATA ================= */
 
     useEffect(() => {
         const todayDate = getTodayDate();
@@ -106,7 +107,7 @@ function Evening() {
         setDate(todayDate);
         setRecordsDate(todayDate);
 
-        /* ================= LOAD FARMERS ================= */
+        /* LOAD FARMERS */
 
         fetch(FARMERS_API_URL)
             .then((response) => {
@@ -123,7 +124,7 @@ function Evening() {
                 console.error("Error loading farmers:", error);
             });
 
-        /* ================= LOAD EVENING RECORDS ================= */
+        /* LOAD EVENING RECORDS */
 
         fetch(`${COLLECTIONS_API_URL}?type=evening`)
             .then((response) => {
@@ -137,40 +138,47 @@ function Evening() {
                 const formattedRecords = Array.isArray(data)
                     ? data.map((record) => ({
                           ...record,
-
                           id: record._id || record.id,
-
-                          code:
-                              record.farmerCode ||
-                              record.code
+                          code: record.farmerCode || record.code
                       }))
                     : [];
 
                 setRecords(formattedRecords);
             })
             .catch((error) => {
-                console.error(
-                    "Error loading evening records:",
-                    error
-                );
+                console.error("Error loading evening records:", error);
+            });
+
+        /* LOAD RATE CHARTS */
+
+        fetch(RATECHARTS_API_URL)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch rate charts");
+                }
+
+                return response.json();
+            })
+            .then((result) => {
+                const charts = Array.isArray(result)
+                    ? result
+                    : Array.isArray(result.data)
+                      ? result.data
+                      : [];
+
+                setRateCharts(charts);
+            })
+            .catch((error) => {
+                console.error("Error loading rate charts:", error);
             });
     }, []);
 
-    /* =========================================================
-       HANDLE DATE CHANGE
-       ========================================================= */
+    /* ================= HANDLE DATE CHANGE ================= */
 
     const handleDateChange = (newDate) => {
         setDate(newDate);
-
-        /* Records section follows selected date */
         setRecordsDate(newDate);
 
-        /*
-         * Clear current entry whenever date changes.
-         * This prevents an old-date record from accidentally
-         * being edited or updated on the new date.
-         */
         setFarmerCode("");
         setFarmerName("");
 
@@ -183,23 +191,85 @@ function Evening() {
         setEditingRecordId(null);
     };
 
-    /* =========================================================
-       FORMAT DATE
-       ========================================================= */
+    /* ================= EFFECTIVE RATE CHART ================= */
 
-    const formatDate = (dateString) => {
-        if (!dateString) return "";
+    /*
+     * Select the latest rate chart whose date is on or before
+     * the selected collection date.
+     *
+     * Example:
+     * Chart dated 10 October applies from 10 October until
+     * another chart with a later date becomes applicable.
+     *
+     * Older collection dates continue using older charts.
+     */
 
-        const parts = dateString.split("-");
+    const selectedChart = rateCharts
+        .filter((chart) => {
+            const chartDate = normalizeDate(chart.date);
+            const selectedDate = normalizeDate(date);
 
-        if (parts.length !== 3) return dateString;
+            return (
+                chartDate &&
+                selectedDate &&
+                chartDate <= selectedDate
+            );
+        })
+        .sort((a, b) =>
+            normalizeDate(b.date).localeCompare(normalizeDate(a.date))
+        )[0];
 
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
-    };
+    /* ================= AUTOMATIC RATE CALCULATION ================= */
 
-    /* =========================================================
-       LOAD EXISTING RECORD
-       ========================================================= */
+    useEffect(() => {
+        if (!date || fat === "" || snf === "") {
+            setRate("");
+            return;
+        }
+
+        if (!selectedChart || !Array.isArray(selectedChart.rateData)) {
+            setRate("");
+            return;
+        }
+
+        const normalizedFat = Number(fat).toFixed(1);
+        const normalizedSnf = Number(snf).toFixed(1);
+
+        const matchingRow = selectedChart.rateData.find(
+            (row) => Number(row.fat).toFixed(1) === normalizedFat
+        );
+
+        if (!matchingRow || !matchingRow.rates) {
+            setRate("");
+            return;
+        }
+
+        const rateKey = Object.keys(matchingRow.rates).find(
+            (key) => Number(key).toFixed(1) === normalizedSnf
+        );
+
+        if (rateKey === undefined) {
+            setRate("");
+            return;
+        }
+
+        const calculatedRate = matchingRow.rates[rateKey];
+
+        if (
+            calculatedRate === "" ||
+            calculatedRate === null ||
+            calculatedRate === undefined ||
+            !Number.isFinite(Number(calculatedRate)) ||
+            Number(calculatedRate) <= 0
+        ) {
+            setRate("");
+            return;
+        }
+
+        setRate(String(calculatedRate));
+    }, [date, fat, snf, selectedChart]);
+
+    /* ================= LOAD EXISTING RECORD ================= */
 
     const loadExistingRecord = (code) => {
         const normalizedCode = String(code || "")
@@ -208,25 +278,20 @@ function Evening() {
 
         const existingRecord = records.find((record) => {
             const recordCode = String(
-                record.farmerCode ||
-                    record.code ||
-                    ""
+                record.farmerCode || record.code || ""
             )
                 .trim()
                 .toUpperCase();
 
             return (
                 recordCode === normalizedCode &&
-                record.date === date &&
+                normalizeDate(record.date) === normalizeDate(date) &&
                 record.type === "evening"
             );
         });
 
-        /* ================= NO EXISTING RECORD ================= */
-
         if (!existingRecord) {
             setEditingRecordId(null);
-
             setLitres("");
             setFat("");
             setSnf("");
@@ -236,11 +301,7 @@ function Evening() {
             return false;
         }
 
-        /* ================= EXISTING RECORD FOUND ================= */
-
-        const recordId =
-            existingRecord.id ||
-            existingRecord._id;
+        const recordId = existingRecord.id || existingRecord._id;
 
         setEditingRecordId(recordId);
 
@@ -268,17 +329,10 @@ function Evening() {
                 : ""
         );
 
-        /*
-         * Degree is calculated automatically from
-         * Fat + SNF by the useEffect below.
-         */
-
         return true;
     };
 
-    /* =========================================================
-       SEARCH FARMER
-       ========================================================= */
+    /* ================= SEARCH FARMER ================= */
 
     const handleFarmerSearch = () => {
         const code = farmerCode.trim().toUpperCase();
@@ -291,9 +345,7 @@ function Evening() {
 
         const farmer = farmers.find(
             (item) =>
-                String(item.code || "")
-                    .trim()
-                    .toUpperCase() === code
+                String(item.code || "").trim().toUpperCase() === code
         );
 
         if (!farmer) {
@@ -310,29 +362,17 @@ function Evening() {
             return;
         }
 
-        setFarmerCode(
-            String(farmer.code || "")
-                .trim()
-                .toUpperCase()
-        );
-
+        setFarmerCode(String(farmer.code || "").trim().toUpperCase());
         setFarmerName(farmer.name || "");
 
-        /*
-         * Check existing EVENING record
-         * for the currently selected DATE.
-         */
         loadExistingRecord(code);
 
-        /* Move cursor to litres */
         setTimeout(() => {
             litresRef.current?.focus();
         }, 0);
     };
 
-    /* =========================================================
-       FARMER CODE INPUT
-       ========================================================= */
+    /* ================= FARMER CODE INPUT ================= */
 
     const handleFarmerCodeChange = (value) => {
         const code = value.trim().toUpperCase();
@@ -354,84 +394,51 @@ function Evening() {
 
         const farmer = farmers.find(
             (item) =>
-                String(item.code || "")
-                    .trim()
-                    .toUpperCase() === code
+                String(item.code || "").trim().toUpperCase() === code
         );
 
-        if (farmer) {
-            setFarmerName(farmer.name || "");
-        } else {
-            setFarmerName("");
-        }
+        setFarmerName(farmer ? farmer.name || "" : "");
     };
 
-    /* =========================================================
-       REFRESH FARMERS
-       ========================================================= */
+    /* ================= REFRESH FARMERS ================= */
 
     const refreshFarmers = async () => {
         try {
-            const response = await fetch(
-                FARMERS_API_URL
-            );
+            const response = await fetch(FARMERS_API_URL);
 
             if (!response.ok) {
-                throw new Error(
-                    "Failed to fetch farmers"
-                );
+                throw new Error("Failed to fetch farmers");
             }
 
             const data = await response.json();
 
-            setFarmers(
-                Array.isArray(data) ? data : []
-            );
+            setFarmers(Array.isArray(data) ? data : []);
         } catch (error) {
-            console.error(
-                "Error refreshing farmers:",
-                error
-            );
+            console.error("Error refreshing farmers:", error);
         }
     };
 
-    /* =========================================================
-       CALCULATE AMOUNT
-       ========================================================= */
+    /* ================= CALCULATE AMOUNT ================= */
 
     const amount =
-        litres && rate
-            ? (
-                  Number(litres) *
-                  Number(rate)
-              ).toFixed(2)
+        litres !== "" && rate !== ""
+            ? (Number(litres) * Number(rate)).toFixed(2)
             : "0.00";
 
-    /* =========================================================
-       CALCULATE DEGREE
-       ========================================================= */
+    /* ================= CALCULATE DEGREE ================= */
 
     useEffect(() => {
         if (fat !== "" && snf !== "") {
             const calculatedDegree =
-                4 *
-                (
-                    Number(snf) -
-                    0.21 * Number(fat) -
-                    0.36
-                );
+                4 * (Number(snf) - 0.21 * Number(fat) - 0.36);
 
-            setDegree(
-                calculatedDegree.toFixed(1)
-            );
+            setDegree(calculatedDegree.toFixed(1));
         } else {
             setDegree("");
         }
     }, [fat, snf]);
 
-    /* =========================================================
-       CLEAR FORM
-       ========================================================= */
+    /* ================= CLEAR FORM ================= */
 
     const handleClear = () => {
         setFarmerCode("");
@@ -443,13 +450,10 @@ function Evening() {
         setDegree("");
         setRate("");
 
-        /* Exit edit mode */
         setEditingRecordId(null);
     };
 
-    /* =========================================================
-       SAVE / UPDATE RECORD
-       ========================================================= */
+    /* ================= SAVE / UPDATE RECORD ================= */
 
     const handleSave = async () => {
         if (!farmerCode.trim()) {
@@ -458,9 +462,7 @@ function Evening() {
         }
 
         if (!farmerName.trim()) {
-            alert(
-                "Please search the Farmer Code first."
-            );
+            alert("Please search the Farmer Code first.");
             return;
         }
 
@@ -469,49 +471,38 @@ function Evening() {
             return;
         }
 
-        if (!litres || Number(litres) <= 0) {
+        if (litres === "" || Number(litres) <= 0) {
             alert("Please enter valid Litres.");
             return;
         }
 
-        if (!fat || Number(fat) <= 0) {
+        if (fat === "" || Number(fat) <= 0) {
             alert("Please enter valid Fat.");
             return;
         }
 
-        if (!snf || Number(snf) <= 0) {
+        if (snf === "" || Number(snf) <= 0) {
             alert("Please enter valid SNF.");
             return;
         }
 
         if (!degree) {
-            alert(
-                "Degree could not be calculated."
-            );
+            alert("Degree could not be calculated.");
             return;
         }
 
-        if (!rate || Number(rate) <= 0) {
-            alert("Please enter valid Rate.");
+        if (rate === "" || Number(rate) <= 0) {
+            alert(
+                "Valid Rate not found for this Fat, SNF and collection date. Please check the Rate Management chart."
+            );
             return;
         }
 
         const collectionRecord = {
             type: "evening",
-
-            farmerCode:
-                farmerCode
-                    .trim()
-                    .toUpperCase(),
-
+            farmerCode: farmerCode.trim().toUpperCase(),
             farmerName,
-
-            /*
-             * IMPORTANT:
-             * Save the currently selected date.
-             */
             date,
-
             litres: Number(litres),
             fat: Number(fat),
             snf: Number(snf),
@@ -521,43 +512,29 @@ function Evening() {
         };
 
         try {
-            /* =================================================
-               UPDATE EXISTING RECORD
-               ================================================= */
+            /* UPDATE EXISTING RECORD */
 
             if (editingRecordId) {
                 const response = await fetch(
                     `${COLLECTIONS_API_URL}/${editingRecordId}`,
                     {
                         method: "PUT",
-
                         headers: {
-                            "Content-Type":
-                                "application/json"
+                            "Content-Type": "application/json"
                         },
-
-                        body: JSON.stringify(
-                            collectionRecord
-                        )
+                        body: JSON.stringify(collectionRecord)
                     }
                 );
 
                 const contentType =
-                    response.headers.get(
-                        "content-type"
-                    ) || "";
+                    response.headers.get("content-type") || "";
 
-                if (
-                    !contentType.includes(
-                        "application/json"
-                    )
-                ) {
-                    const text =
-                        await response.text();
+                if (!contentType.includes("application/json")) {
+                    const responseText = await response.text();
 
                     console.error(
                         "Backend returned non-JSON response:",
-                        text
+                        responseText
                     );
 
                     throw new Error(
@@ -565,8 +542,7 @@ function Evening() {
                     );
                 }
 
-                const result =
-                    await response.json();
+                const result = await response.json();
 
                 if (!response.ok) {
                     throw new Error(
@@ -575,82 +551,50 @@ function Evening() {
                     );
                 }
 
-                const updatedData =
-                    result.data || result;
+                const updatedData = result.data || result;
 
                 const updatedRecord = {
+                    ...collectionRecord,
                     ...updatedData,
-
-                    id:
-                        updatedData._id ||
-                        editingRecordId,
-
+                    id: updatedData._id || editingRecordId,
                     code:
                         updatedData.farmerCode ||
                         collectionRecord.farmerCode
                 };
 
-                setRecords(
-                    (previousRecords) =>
-                        previousRecords.map(
-                            (record) => {
-                                const recordId =
-                                    record.id ||
-                                    record._id;
+                setRecords((previousRecords) =>
+                    previousRecords.map((record) => {
+                        const recordId = record.id || record._id;
 
-                                return String(
-                                    recordId
-                                ) ===
-                                    String(
-                                        editingRecordId
-                                    )
-                                    ? updatedRecord
-                                    : record;
-                            }
-                        )
+                        return String(recordId) === String(editingRecordId)
+                            ? updatedRecord
+                            : record;
+                    })
                 );
 
                 handleClear();
-
                 return;
             }
 
-            /* =================================================
-               CREATE NEW RECORD
-               ================================================= */
+            /* CREATE NEW RECORD */
 
-            const response = await fetch(
-                COLLECTIONS_API_URL,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify(
-                        collectionRecord
-                    )
-                }
-            );
+            const response = await fetch(COLLECTIONS_API_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(collectionRecord)
+            });
 
             const contentType =
-                response.headers.get(
-                    "content-type"
-                ) || "";
+                response.headers.get("content-type") || "";
 
-            if (
-                !contentType.includes(
-                    "application/json"
-                )
-            ) {
-                const text =
-                    await response.text();
+            if (!contentType.includes("application/json")) {
+                const responseText = await response.text();
 
                 console.error(
                     "Backend returned non-JSON response:",
-                    text
+                    responseText
                 );
 
                 throw new Error(
@@ -658,37 +602,29 @@ function Evening() {
                 );
             }
 
-            const result =
-                await response.json();
+            const result = await response.json();
 
             if (!response.ok) {
                 throw new Error(
-                    result.message ||
-                        "Failed to save collection record."
+                    result.message || "Failed to save collection record."
                 );
             }
 
-            const savedData =
-                result.data || result;
+            const savedData = result.data || result;
 
             const savedRecord = {
+                ...collectionRecord,
                 ...savedData,
-
-                id:
-                    savedData._id ||
-                    savedData.id,
-
+                id: savedData._id || savedData.id,
                 code:
                     savedData.farmerCode ||
                     collectionRecord.farmerCode
             };
 
-            setRecords(
-                (previousRecords) => [
-                    ...previousRecords,
-                    savedRecord
-                ]
-            );
+            setRecords((previousRecords) => [
+                ...previousRecords,
+                savedRecord
+            ]);
 
             handleClear();
         } catch (error) {
@@ -698,15 +634,12 @@ function Evening() {
             );
 
             alert(
-                error.message ||
-                    "Failed to save evening collection."
+                error.message || "Failed to save evening collection."
             );
         }
     };
 
-    /* =========================================================
-       DELETE RECORD
-       ========================================================= */
+    /* ================= DELETE RECORD ================= */
 
     const handleDeleteRecord = async (id) => {
         if (
@@ -726,17 +659,11 @@ function Evening() {
             );
 
             const contentType =
-                response.headers.get(
-                    "content-type"
-                ) || "";
+                response.headers.get("content-type") || "";
 
             let result = {};
 
-            if (
-                contentType.includes(
-                    "application/json"
-                )
-            ) {
+            if (contentType.includes("application/json")) {
                 result = await response.json();
             }
 
@@ -747,76 +674,42 @@ function Evening() {
                 );
             }
 
-            setRecords(
-                (previousRecords) =>
-                    previousRecords.filter(
-                        (record) => {
-                            const recordId =
-                                record.id ||
-                                record._id;
+            setRecords((previousRecords) =>
+                previousRecords.filter((record) => {
+                    const recordId = record.id || record._id;
 
-                            return (
-                                String(
-                                    recordId
-                                ) !== String(id)
-                            );
-                        }
-                    )
+                    return String(recordId) !== String(id);
+                })
             );
 
-            alert(
-                "Evening collection record deleted successfully!"
-            );
+            alert("Evening collection record deleted successfully!");
         } catch (error) {
-            console.error(
-                "Error deleting evening record:",
-                error
-            );
+            console.error("Error deleting evening record:", error);
 
-            alert(
-                "Failed to delete evening collection record."
-            );
+            alert("Failed to delete evening collection record.");
         }
     };
 
-    /* =========================================================
-       OPEN FARMER MODAL
-       ========================================================= */
+    /* ================= FARMER MODAL ================= */
 
     const openFarmerModal = async () => {
         setFarmerSearch("");
-
         await refreshFarmers();
-
         setShowModal(true);
     };
-
-    /* =========================================================
-       CLOSE FARMER MODAL
-       ========================================================= */
 
     const closeFarmerModal = () => {
         setShowModal(false);
     };
 
-    /* =========================================================
-       SELECT FARMER
-       ========================================================= */
-
     const selectFarmer = (farmer) => {
-        const selectedCode = String(
-            farmer.code || ""
-        )
+        const selectedCode = String(farmer.code || "")
             .trim()
             .toUpperCase();
 
         setFarmerCode(selectedCode);
         setFarmerName(farmer.name || "");
 
-        /*
-         * Load existing EVENING record
-         * for the currently selected DATE.
-         */
         loadExistingRecord(selectedCode);
 
         setShowModal(false);
@@ -826,15 +719,11 @@ function Evening() {
         }, 0);
     };
 
-    /* =========================================================
-       FILTER + SORT FARMERS
-       ========================================================= */
+    /* ================= FILTER + SORT FARMERS ================= */
 
     const filteredFarmers = farmers
         .filter((farmer) => {
-            const search = farmerSearch
-                .trim()
-                .toLowerCase();
+            const search = farmerSearch.trim().toLowerCase();
 
             return (
                 String(farmer.code || "")
@@ -845,94 +734,54 @@ function Evening() {
                     .includes(search)
             );
         })
-        .sort((a, b) => {
-            const codeA = String(
-                a.code || ""
-            ).toLowerCase();
-
-            const codeB = String(
-                b.code || ""
-            ).toLowerCase();
-
-            return codeA.localeCompare(
-                codeB,
+        .sort((a, b) =>
+            String(a.code || "").localeCompare(
+                String(b.code || ""),
                 undefined,
                 {
                     numeric: true,
                     sensitivity: "base"
                 }
-            );
-        });
+            )
+        );
 
-    /* =========================================================
-       FILTER RECORDS BY SELECTED DATE
-       ========================================================= */
+    /* ================= FILTER RECORDS BY DATE ================= */
 
     const todayRecords = records.filter(
         (record) =>
-            record.date === recordsDate &&
+            normalizeDate(record.date) === normalizeDate(recordsDate) &&
             record.type === "evening"
     );
 
-    /* =========================================================
-       JSX
-       ========================================================= */
+    /* ================= JSX ================= */
 
     return (
         <div className="container">
-
-            {/* ================= OUTER WHITE PAGE CARD ================= */}
-
             <div className="page-outer-card">
-
-                {/* ================= TITLE ================= */}
-
                 <h1 className="page-main-heading">
                     Evening Collection
                 </h1>
 
-                {/* ================= COLLECTION CARD ================= */}
-
                 <div className="collection-card">
-
-                    {/* ================= TOP ROW ================= */}
-
                     <div className="top-row">
-
                         {/* FARMER CODE */}
 
                         <div className="field-group">
-
                             <label>
-                                <img
-                                    src={
-                                        farmerCodeIcon
-                                    }
-                                    alt="Farmer Code"
-                                />
-
+                                <img src={farmerCodeIcon} alt="Farmer Code" />
                                 Farmer Code
                             </label>
 
                             <div className="input-wrapper">
-
                                 <input
                                     type="text"
-                                    value={
-                                        farmerCode
-                                    }
+                                    value={farmerCode}
                                     onChange={(e) =>
-                                        handleFarmerCodeChange(
-                                            e.target.value
-                                        )
+                                        handleFarmerCodeChange(e.target.value)
                                     }
                                     onKeyDown={(e) => {
-                                        if (
-                                            e.key ===
-                                            "Enter"
-                                        ) {
+                                        if (e.key === "Enter") {
                                             e.preventDefault();
-
                                             handleFarmerSearch();
                                         }
                                     }}
@@ -942,100 +791,60 @@ function Evening() {
                                 <button
                                     type="button"
                                     className="farmer-search-btn"
-                                    onClick={
-                                        handleFarmerSearch
-                                    }
+                                    onClick={handleFarmerSearch}
                                 >
-                                    <img
-                                        src={
-                                            searchIcon
-                                        }
-                                        alt="Search"
-                                    />
+                                    <img src={searchIcon} alt="Search" />
                                 </button>
-
                             </div>
-
                         </div>
 
                         {/* FARMER NAME */}
 
                         <div className="field-group">
-
                             <label>
-                                <img
-                                    src={
-                                        farmerNameIcon
-                                    }
-                                    alt="Farmer Name"
-                                />
-
+                                <img src={farmerNameIcon} alt="Farmer Name" />
                                 Farmer Name
                             </label>
 
                             <input
                                 type="text"
-                                value={
-                                    farmerName
-                                }
+                                value={farmerName}
                                 readOnly
                                 placeholder="(Name will appear here)"
                             />
-
                         </div>
 
                         {/* DATE */}
 
                         <div className="field-group">
-
                             <label>
-                                <img
-                                    src={
-                                        calendarIcon
-                                    }
-                                    alt="Date"
-                                />
-
+                                <img src={calendarIcon} alt="Date" />
                                 Date
                             </label>
 
                             <div className="date-wrapper">
-
                                 <input
                                     type="date"
                                     value={date}
                                     onChange={(e) =>
-                                        handleDateChange(
-                                            e.target.value
-                                        )
+                                        handleDateChange(e.target.value)
                                     }
                                 />
 
-                                <img
-                                    src={
-                                        dateChevronIcon
-                                    }
-                                    alt=""
-                                />
-
+                                <img src={dateChevronIcon} alt="" />
                             </div>
-
                         </div>
-
                     </div>
 
-                    {/* ================= MILK DETAILS ================= */}
+                    {/* MILK DETAILS */}
 
                     <div className="milk-details">
-
                         <MilkField
                             icon={litresIcon}
                             label="Litres (L)"
                             value={litres}
                             setValue={setLitres}
-                            inputRef={
-                                litresRef
-                            }
+                            inputRef={litresRef}
                             nextRef={fatRef}
                             placeholder="Enter Litres"
                         />
@@ -1074,526 +883,272 @@ function Evening() {
                             value={rate}
                             setValue={setRate}
                             inputRef={rateRef}
-                            placeholder="Enter Rate"
+                            placeholder="Auto Calculated"
                             onEnter={handleSave}
                         />
 
                         {/* AMOUNT */}
 
                         <div className="milk-field">
-
                             <label>
-                                <img
-                                    src={
-                                        amountIcon
-                                    }
-                                    alt="Amount"
-                                />
-
+                                <img src={amountIcon} alt="Amount" />
                                 Amount (₹)
                             </label>
 
                             <input
                                 type="text"
-                                value={
-                                    amount ===
-                                    "0.00"
-                                        ? ""
-                                        : amount
-                                }
+                                value={amount === "0.00" ? "" : amount}
                                 placeholder="Auto Calculated"
                                 readOnly
                             />
-
                         </div>
-
                     </div>
 
-                    {/* ================= ACTION BUTTONS ================= */}
+                    {/* ACTION BUTTONS */}
 
                     <div className="action-buttons">
-
                         <button
                             type="button"
                             className="save-btn"
-                            onClick={
-                                handleSave
-                            }
+                            onClick={handleSave}
                         >
-                            <img
-                                src={saveIcon}
-                                alt="Save"
-                            />
-
+                            <img src={saveIcon} alt="Save" />
                             Save
                         </button>
 
                         <button
                             type="button"
                             className="clear-btn"
-                            onClick={
-                                handleClear
-                            }
+                            onClick={handleClear}
                         >
-                            <img
-                                src={clearIcon}
-                                alt="Clear"
-                            />
-
+                            <img src={clearIcon} alt="Clear" />
                             Clear
                         </button>
 
                         <button
                             type="button"
                             className="farmer-list-btn"
-                            onClick={
-                                openFarmerModal
-                            }
+                            onClick={openFarmerModal}
                         >
-                            <img
-                                src={
-                                    farmerListIcon
-                                }
-                                alt="Farmer List"
-                            />
-
+                            <img src={farmerListIcon} alt="Farmer List" />
                             Farmer List
                         </button>
-
                     </div>
-
                 </div>
 
-                {/* ================= RECORDS SECTION ================= */}
+                {/* RECORDS SECTION */}
 
                 <div className="records-section">
-
                     <div className="records-header">
-
                         <div className="records-title">
-
-                            <img
-                                src={
-                                    noRecordsIcon
-                                }
-                                alt="Records"
-                            />
-
-                            <h2>
-                                Today's Records
-                            </h2>
-
+                            <img src={noRecordsIcon} alt="Records" />
+                            <h2>Today's Records</h2>
                         </div>
 
                         <div className="records-summary">
-
                             <div className="records-date">
-
-                                <img
-                                    src={
-                                        recordsCalendarIcon
-                                    }
-                                    alt="Date"
-                                />
-
-                                <span>
-                                    Date:
-                                </span>
-
-                                <strong>
-                                    {formatDate(
-                                        recordsDate
-                                    )}
-                                </strong>
-
+                                <img src={recordsCalendarIcon} alt="Date" />
+                                <span>Date:</span>
+                                <strong>{formatDate(recordsDate)}</strong>
                             </div>
 
                             <div className="total-records">
-                                Total Records:{" "}
-                                {
-                                    todayRecords.length
-                                }
+                                Total Records: {todayRecords.length}
                             </div>
-
                         </div>
-
                     </div>
 
-                    {/* ================= TABLE ================= */}
+                    {/* RECORDS TABLE */}
 
                     <div className="table-container">
-
                         <table className="records-table">
-
                             <thead>
-
                                 <tr>
-
-                                    <th>
-                                        Sr. No.
-                                    </th>
-
-                                    <th>
-                                        Code
-                                    </th>
-
-                                    <th>
-                                        Farmer Name
-                                    </th>
-
-                                    <th>
-                                        Litres (L)
-                                    </th>
-
-                                    <th>
-                                        Fat
-                                    </th>
-
-                                    <th>
-                                        SNF
-                                    </th>
-
-                                    <th>
-                                        Degree
-                                    </th>
-
-                                    <th>
-                                        Rate (₹/L)
-                                    </th>
-
-                                    <th>
-                                        Amount (₹)
-                                    </th>
-
-                                    <th>
-                                        Action
-                                    </th>
-
+                                    <th>Sr. No.</th>
+                                    <th>Code</th>
+                                    <th>Farmer Name</th>
+                                    <th>Litres (L)</th>
+                                    <th>Fat</th>
+                                    <th>SNF</th>
+                                    <th>Degree</th>
+                                    <th>Rate (₹/L)</th>
+                                    <th>Amount (₹)</th>
+                                    <th>Action</th>
                                 </tr>
-
                             </thead>
 
                             <tbody>
-
-                                {todayRecords.length >
-                                0 ? (
-
-                                    todayRecords.map(
-                                        (
-                                            record,
-                                            index
-                                        ) => (
-
-                                            <tr
-                                                key={
-                                                    record.id ||
-                                                    record._id ||
-                                                    index
-                                                }
-                                            >
-
-                                                <td>
-                                                    {
-                                                        index +
-                                                        1
+                                {todayRecords.length > 0 ? (
+                                    todayRecords.map((record, index) => (
+                                        <tr
+                                            key={
+                                                record.id ||
+                                                record._id ||
+                                                index
+                                            }
+                                        >
+                                            <td>{index + 1}</td>
+                                            <td>
+                                                {record.code ||
+                                                    record.farmerCode}
+                                            </td>
+                                            <td>{record.farmerName}</td>
+                                            <td>{record.litres}</td>
+                                            <td>{record.fat}</td>
+                                            <td>{record.snf}</td>
+                                            <td>{record.degree}</td>
+                                            <td>
+                                                ₹
+                                                {Number(record.rate).toFixed(2)}
+                                            </td>
+                                            <td>
+                                                ₹
+                                                {Number(
+                                                    record.amount
+                                                ).toFixed(2)}
+                                            </td>
+                                            <td>
+                                                <button
+                                                    type="button"
+                                                    className="table-delete-btn"
+                                                    title="Delete record"
+                                                    onClick={() =>
+                                                        handleDeleteRecord(
+                                                            record.id ||
+                                                                record._id
+                                                        )
                                                     }
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        record.code ||
-                                                        record.farmerCode
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        record.farmerName
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        record.litres
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        record.fat
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        record.snf
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        record.degree
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    ₹
-                                                    {Number(
-                                                        record.rate
-                                                    ).toFixed(
-                                                        2
-                                                    )}
-                                                </td>
-
-                                                <td>
-                                                    ₹
-                                                    {Number(
-                                                        record.amount
-                                                    ).toFixed(
-                                                        2
-                                                    )}
-                                                </td>
-
-                                                <td>
-
-                                                    <button
-                                                        type="button"
-                                                        className="table-delete-btn"
-                                                        title="Delete record"
-                                                        onClick={() =>
-                                                            handleDeleteRecord(
-                                                                record.id ||
-                                                                    record._id
-                                                            )
-                                                        }
+                                                >
+                                                    <svg
+                                                        width="16"
+                                                        height="16"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
                                                     >
-
-                                                        <svg
-                                                            width="16"
-                                                            height="16"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            strokeWidth="2"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                        >
-
-                                                            <polyline points="3 6 5 6 21 6"></polyline>
-
-                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-
-                                                            <line
-                                                                x1="10"
-                                                                y1="11"
-                                                                x2="10"
-                                                                y2="17"
-                                                            ></line>
-
-                                                            <line
-                                                                x1="14"
-                                                                y1="11"
-                                                                x2="14"
-                                                                y2="17"
-                                                            ></line>
-
-                                                        </svg>
-
-                                                    </button>
-
-                                                </td>
-
-                                            </tr>
-
-                                        )
-                                    )
-
+                                                        <polyline points="3 6 5 6 21 6" />
+                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                                        <line
+                                                            x1="10"
+                                                            y1="11"
+                                                            x2="10"
+                                                            y2="17"
+                                                        />
+                                                        <line
+                                                            x1="14"
+                                                            y1="11"
+                                                            x2="14"
+                                                            y2="17"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
                                 ) : (
-
                                     <tr className="empty-record-row">
-
                                         <td colSpan="10">
-
                                             <div className="no-records">
-
                                                 <div className="no-records-decoration">
-
                                                     <span></span>
-
                                                     <img
-                                                        src={
-                                                            noRecordsIcon
-                                                        }
+                                                        src={noRecordsIcon}
                                                         alt="No records"
                                                     />
-
                                                     <span></span>
-
                                                 </div>
 
-                                                <p>
-                                                    No records found
-                                                </p>
-
+                                                <p>No records found</p>
                                             </div>
-
                                         </td>
-
                                     </tr>
-
                                 )}
-
                             </tbody>
-
                         </table>
-
                     </div>
-
                 </div>
-
             </div>
 
-            {/* ================= FARMER MODAL ================= */}
+            {/* FARMER MODAL */}
 
             {showModal && (
-
                 <div
                     className="modal active"
                     onClick={(e) => {
-                        if (
-                            e.target ===
-                            e.currentTarget
-                        ) {
+                        if (e.target === e.currentTarget) {
                             closeFarmerModal();
                         }
                     }}
                 >
-
                     <div className="modal-content">
-
                         <div className="modal-header">
-
-                            <h2>
-                                Farmer List
-                            </h2>
+                            <h2>Farmer List</h2>
 
                             <button
                                 type="button"
                                 className="close-modal"
-                                onClick={
-                                    closeFarmerModal
-                                }
+                                onClick={closeFarmerModal}
                             >
                                 ×
                             </button>
-
                         </div>
 
                         <div className="farmer-search">
-
                             <input
                                 type="text"
                                 placeholder="Search farmer..."
-                                value={
-                                    farmerSearch
-                                }
+                                value={farmerSearch}
                                 onChange={(e) =>
-                                    setFarmerSearch(
-                                        e.target.value
-                                    )
+                                    setFarmerSearch(e.target.value)
                                 }
                             />
-
                         </div>
 
                         <div
                             className="farmer-list"
                             style={{
-                                overflowX:
-                                    "auto",
+                                overflowX: "auto",
                                 width: "100%"
                             }}
                         >
-
-                            {filteredFarmers.length >
-                            0 ? (
-
+                            {filteredFarmers.length > 0 ? (
                                 <table
                                     style={{
                                         width: "100%",
-                                        minWidth:
-                                            "850px",
-                                        borderCollapse:
-                                            "collapse",
-                                        background:
-                                            "#fff"
+                                        minWidth: "850px",
+                                        borderCollapse: "collapse",
+                                        background: "#fff"
                                     }}
                                 >
-
                                     <thead>
-
                                         <tr>
-
-                                            <th
-                                                style={
-                                                    tableHeadStyle
-                                                }
-                                            >
+                                            <th style={tableHeadStyle}>
                                                 Sr. No.
                                             </th>
-
-                                            <th
-                                                style={
-                                                    tableHeadStyle
-                                                }
-                                            >
+                                            <th style={tableHeadStyle}>
                                                 Farmer Code
                                             </th>
-
-                                            <th
-                                                style={
-                                                    tableHeadStyle
-                                                }
-                                            >
+                                            <th style={tableHeadStyle}>
                                                 Farmer Name
                                             </th>
-
-                                            <th
-                                                style={
-                                                    tableHeadStyle
-                                                }
-                                            >
+                                            <th style={tableHeadStyle}>
                                                 Phone
                                             </th>
-
-                                            <th
-                                                style={
-                                                    tableHeadStyle
-                                                }
-                                            >
+                                            <th style={tableHeadStyle}>
                                                 Email
                                             </th>
-
-                                            <th
-                                                style={
-                                                    tableHeadStyle
-                                                }
-                                            >
+                                            <th style={tableHeadStyle}>
                                                 PhonePe
                                             </th>
-
                                         </tr>
-
                                     </thead>
 
                                     <tbody>
-
                                         {filteredFarmers.map(
-                                            (
-                                                farmer,
-                                                index
-                                            ) => (
-
+                                            (farmer, index) => (
                                                 <tr
                                                     key={
                                                         farmer._id ||
@@ -1601,110 +1156,52 @@ function Evening() {
                                                         index
                                                     }
                                                     onClick={() =>
-                                                        selectFarmer(
-                                                            farmer
-                                                        )
+                                                        selectFarmer(farmer)
                                                     }
                                                     style={{
-                                                        cursor:
-                                                            "pointer"
+                                                        cursor: "pointer"
                                                     }}
                                                 >
-
-                                                    <td
-                                                        style={
-                                                            tableCellStyle
-                                                        }
-                                                    >
-                                                        {
-                                                            index +
-                                                            1
-                                                        }
+                                                    <td style={tableCellStyle}>
+                                                        {index + 1}
                                                     </td>
-
-                                                    <td
-                                                        style={
-                                                            tableCellStyle
-                                                        }
-                                                    >
-                                                        {farmer.code ||
-                                                            "-"}
+                                                    <td style={tableCellStyle}>
+                                                        {farmer.code || "-"}
                                                     </td>
-
-                                                    <td
-                                                        style={
-                                                            tableCellStyle
-                                                        }
-                                                    >
-                                                        {farmer.name ||
-                                                            "-"}
+                                                    <td style={tableCellStyle}>
+                                                        {farmer.name || "-"}
                                                     </td>
-
-                                                    <td
-                                                        style={
-                                                            tableCellStyle
-                                                        }
-                                                    >
-                                                        {farmer.phone ||
-                                                            "-"}
+                                                    <td style={tableCellStyle}>
+                                                        {farmer.phone || "-"}
                                                     </td>
-
-                                                    <td
-                                                        style={
-                                                            tableCellStyle
-                                                        }
-                                                    >
-                                                        {farmer.email ||
-                                                            "-"}
+                                                    <td style={tableCellStyle}>
+                                                        {farmer.email || "-"}
                                                     </td>
-
-                                                    <td
-                                                        style={
-                                                            tableCellStyle
-                                                        }
-                                                    >
+                                                    <td style={tableCellStyle}>
                                                         {farmer.phonePay ||
                                                             farmer.phonepay ||
                                                             farmer.phonePe ||
                                                             "-"}
                                                     </td>
-
                                                 </tr>
-
                                             )
                                         )}
-
                                     </tbody>
-
                                 </table>
-
                             ) : (
-
                                 <div className="no-records">
-
-                                    <p>
-                                        No farmer found
-                                    </p>
-
+                                    <p>No farmer found</p>
                                 </div>
-
                             )}
-
                         </div>
-
                     </div>
-
                 </div>
-
             )}
-
         </div>
     );
 }
 
-/* =========================================================
-   MILK FIELD COMPONENT
-   ========================================================= */
+/* ================= MILK FIELD COMPONENT ================= */
 
 function MilkField({
     icon,
@@ -1719,16 +1216,9 @@ function MilkField({
 }) {
     return (
         <div className="milk-field">
-
             <label>
-
-                <img
-                    src={icon}
-                    alt={label}
-                />
-
+                <img src={icon} alt={label} />
                 {label}
-
             </label>
 
             <input
@@ -1736,49 +1226,26 @@ function MilkField({
                 type="number"
                 value={value}
                 onChange={(e) => {
-                    if (
-                        !readOnly &&
-                        setValue
-                    ) {
-                        setValue(
-                            e.target.value
-                        );
+                    if (!readOnly && setValue) {
+                        setValue(e.target.value);
                     }
                 }}
                 onKeyDown={(e) => {
-
-                    if (
-                        e.key ===
-                        "Enter"
-                    ) {
-
+                    if (e.key === "Enter") {
                         e.preventDefault();
 
                         if (onEnter) {
-
                             onEnter();
-
-                        } else if (
-                            nextRef
-                        ) {
-
+                        } else if (nextRef) {
                             nextRef.current?.focus();
-
                         }
-
                     }
-
                 }}
-                placeholder={
-                    placeholder
-                }
-                readOnly={
-                    readOnly
-                }
+                placeholder={placeholder}
+                readOnly={readOnly}
                 min="0"
                 step="0.01"
             />
-
         </div>
     );
 }
