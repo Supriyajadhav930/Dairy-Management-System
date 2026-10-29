@@ -1,153 +1,349 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const Farmer = require("../models/Farmer");
 
-const router = express.Router();
+import { useState, useEffect } from "react";
+import "./Bill_statement.css";
 
+// Change this URL if your backend mounts farmerRoutes at a different path.
+const FARMERS_API = "http://localhost:5000/api/farmers";
 
-// =====================================================
-// ADD FARMER
-// =====================================================
-router.post("/", async (req, res) => {
-    try {
-        const farmer = new Farmer(req.body);
+function Bill_statement() {
+  const getToday = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
-        const savedFarmer = await farmer.save();
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [currentDate, setCurrentDate] = useState(getToday());
 
-        res.status(201).json({
-            message: "Farmer added successfully",
-            data: savedFarmer
+  const [farmerCode, setFarmerCode] = useState("");
+  const [farmerName, setFarmerName] = useState("");
+
+  const [farmers, setFarmers] = useState([]);
+  const [loadingFarmers, setLoadingFarmers] = useState(true);
+  const [farmersError, setFarmersError] = useState("");
+
+  const [generated, setGenerated] = useState(false);
+  const [error, setError] = useState("");
+
+  // Fetch farmers saved in Farmer Management.
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function fetchFarmers() {
+      try {
+        setLoadingFarmers(true);
+        setFarmersError("");
+
+        const response = await fetch(FARMERS_API, {
+          signal: controller.signal,
         });
 
-    } catch (error) {
-        console.error("Error adding farmer:", error);
-
-        // Duplicate farmer code
-        if (error.code === 11000) {
-            return res.status(400).json({
-                message: "Farmer code already exists"
-            });
+        if (!response.ok) {
+          throw new Error("Unable to load farmers from the backend.");
         }
 
-        res.status(500).json({
-            message: "Failed to add farmer",
-            error: error.message
-        });
+        const data = await response.json();
+
+        // Supports an array or an object containing a farmers array.
+        const farmerList = Array.isArray(data)
+          ? data
+          : Array.isArray(data.farmers)
+            ? data.farmers
+            : Array.isArray(data.data)
+              ? data.data
+              : null;
+
+        if (!farmerList) {
+          throw new Error("The backend returned an unexpected farmer list.");
+        }
+
+        setFarmers(farmerList);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("Error fetching farmers:", err);
+          setFarmersError(
+            "Could not load farmers. Check the backend connection and API URL."
+          );
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoadingFarmers(false);
+        }
+      }
     }
-});
 
+    fetchFarmers();
 
-// =====================================================
-// GET ALL FARMERS
-// =====================================================
-router.get("/", async (req, res) => {
-    try {
-        const farmers = await Farmer
-            .find()
-            .sort({ createdAt: -1 });
+    return () => controller.abort();
+  }, []);
 
-        res.status(200).json(farmers);
+  // Match the entered code with a saved Farmer Management record.
+  const handleCodeChange = (value) => {
+    setFarmerCode(value);
+    setGenerated(false);
+    setError("");
 
-    } catch (error) {
-        console.error("Error fetching farmers:", error);
+    const enteredCode = value.trim();
 
-        res.status(500).json({
-            message: "Failed to fetch farmers",
-            error: error.message
-        });
+    const farmer = farmers.find((item) => {
+      const savedCode =
+        item.farmerCode ??
+        item.farmer_code ??
+        item.code;
+
+      return (
+        savedCode !== undefined &&
+        savedCode !== null &&
+        String(savedCode).trim() === enteredCode
+      );
+    });
+
+    const savedName = farmer
+      ? farmer.farmerName ??
+        farmer.farmer_name ??
+        farmer.name ??
+        ""
+      : "";
+
+    setFarmerName(savedName);
+  };
+
+  const handleGenerate = (event) => {
+    event.preventDefault();
+    setError("");
+    setGenerated(false);
+
+    if (loadingFarmers) {
+      setError("Please wait while farmer records are loading.");
+      return;
     }
-});
 
-
-// =====================================================
-// UPDATE FARMER
-// =====================================================
-router.put("/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        // Check MongoDB ObjectId
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({
-                message: "Invalid farmer ID"
-            });
-        }
-
-        const updatedFarmer = await Farmer.findByIdAndUpdate(
-            id,
-            req.body,
-            {
-                new: true,
-                runValidators: true
-            }
-        );
-
-        if (!updatedFarmer) {
-            return res.status(404).json({
-                message: "Farmer not found"
-            });
-        }
-
-        res.status(200).json({
-            message: "Farmer updated successfully",
-            data: updatedFarmer
-        });
-
-    } catch (error) {
-        console.error("Error updating farmer:", error);
-
-        // Duplicate farmer code
-        if (error.code === 11000) {
-            return res.status(400).json({
-                message: "Farmer code already exists"
-            });
-        }
-
-        res.status(500).json({
-            message: "Failed to update farmer",
-            error: error.message
-        });
+    if (farmersError) {
+      setError("Farmer records could not be loaded. Please check the backend.");
+      return;
     }
-});
 
-
-// =====================================================
-// DELETE FARMER
-// =====================================================
-router.delete("/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        // Check MongoDB ObjectId
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({
-                message: "Invalid farmer ID"
-            });
-        }
-
-        const deletedFarmer =
-            await Farmer.findByIdAndDelete(id);
-
-        if (!deletedFarmer) {
-            return res.status(404).json({
-                message: "Farmer not found"
-            });
-        }
-
-        res.status(200).json({
-            message: "Farmer deleted successfully",
-            data: deletedFarmer
-        });
-
-    } catch (error) {
-        console.error("Error deleting farmer:", error);
-
-        res.status(500).json({
-            message: "Failed to delete farmer",
-            error: error.message
-        });
+    if (
+      !fromDate ||
+      !toDate ||
+      !currentDate ||
+      !farmerCode.trim()
+    ) {
+      setError("Please fill in all fields.");
+      return;
     }
-});
 
+    const selectedFarmer = farmers.find((item) => {
+      const savedCode =
+        item.farmerCode ??
+        item.farmer_code ??
+        item.code;
 
-module.exports = router;
+      return (
+        savedCode !== undefined &&
+        savedCode !== null &&
+        String(savedCode).trim() === farmerCode.trim()
+      );
+    });
+
+    if (!selectedFarmer) {
+      setFarmerName("");
+      setError("Farmer not found. Please enter a valid Farmer Code.");
+      return;
+    }
+
+    if (fromDate > toDate) {
+      setError("From Date cannot be after To Date.");
+      return;
+    }
+
+    if (toDate > currentDate || fromDate > currentDate) {
+      setError("Statement dates cannot be after Current Date.");
+      return;
+    }
+
+    setFarmerName(
+      selectedFarmer.farmerName ??
+      selectedFarmer.farmer_name ??
+      selectedFarmer.name ??
+      ""
+    );
+
+    setGenerated(true);
+  };
+
+  const formatDate = (date) => {
+    if (!date) return "";
+    const [year, month, day] = date.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
+  return (
+    <div className="bill-page">
+      <h1 className="main-title">Bill Statement</h1>
+
+      <form onSubmit={handleGenerate}>
+        <div className="top-layout">
+          <section className="input-panel date-panel">
+            <div className="field">
+              <label htmlFor="fromDate">
+                <span className="field-icon">▦</span> From Date
+              </label>
+              <input
+                id="fromDate"
+                type="date"
+                value={fromDate}
+                max={currentDate}
+                onChange={(e) => {
+                  setFromDate(e.target.value);
+                  setGenerated(false);
+                  setError("");
+                }}
+              />
+            </div>
+
+            <div className="field">
+              <label htmlFor="toDate">
+                <span className="field-icon">▦</span> To Date
+              </label>
+              <input
+                id="toDate"
+                type="date"
+                value={toDate}
+                min={fromDate || undefined}
+                max={currentDate}
+                onChange={(e) => {
+                  setToDate(e.target.value);
+                  setGenerated(false);
+                  setError("");
+                }}
+              />
+            </div>
+
+            <div className="field">
+              <label htmlFor="currentDate">
+                <span className="field-icon">▦</span> Current Date
+              </label>
+              <input
+                id="currentDate"
+                type="date"
+                value={currentDate}
+                onChange={(e) => {
+                  setCurrentDate(e.target.value);
+                  setGenerated(false);
+                  setError("");
+                }}
+              />
+            </div>
+          </section>
+
+          <section className="input-panel farmer-panel">
+            <div className="field">
+              <label htmlFor="farmerCode">
+                <span className="field-icon">♙</span> Farmer Selection
+              </label>
+
+              <input
+                id="farmerCode"
+                type="text"
+                placeholder={
+                  loadingFarmers
+                    ? "Loading farmers..."
+                    : "Enter Code"
+                }
+                value={farmerCode}
+                onChange={(e) => handleCodeChange(e.target.value)}
+                disabled={loadingFarmers || Boolean(farmersError)}
+              />
+            </div>
+
+            <div className="field farmer-name-field">
+              <label htmlFor="farmerName" className="farmer-label">
+                <span className="field-icon">♙</span> Farmer Name
+              </label>
+
+              <input
+                id="farmerName"
+                type="text"
+                placeholder={
+                  farmersError
+                    ? "Unable to load farmers"
+                    : "Farmer Name"
+                }
+                value={farmerName}
+                readOnly
+              />
+            </div>
+          </section>
+        </div>
+
+        {farmersError && (
+          <p className="error-message">{farmersError}</p>
+        )}
+
+        {error && <p className="error-message">{error}</p>}
+
+        {!loadingFarmers && !farmersError && (
+          <div className="generate-wrapper">
+            <button type="submit" className="generate-button">
+              Generate Statement
+            </button>
+          </div>
+        )}
+
+        {loadingFarmers && (
+          <p>Loading farmer records...</p>
+        )}
+      </form>
+
+      <section className="statement-preview">
+        {!generated ? (
+          <div className="empty-preview">
+            Generated statement will appear here after clicking the button.
+          </div>
+        ) : (
+          <div className="generated-content">
+            <h2>Sairaj Milk Dairy</h2>
+            <h3>Farmer Bill Statement</h3>
+
+            <div className="generated-details">
+              <p>
+                <strong>Farmer Code:</strong> {farmerCode}
+              </p>
+              <p>
+                <strong>Farmer Name:</strong> {farmerName}
+              </p>
+              <p>
+                <strong>From Date:</strong> {formatDate(fromDate)}
+              </p>
+              <p>
+                <strong>To Date:</strong> {formatDate(toDate)}
+              </p>
+              <p>
+                <strong>Current Date:</strong> {formatDate(currentDate)}
+              </p>
+            </div>
+
+            <div className="billing-message">
+              Billing records are not connected yet. Connect your database
+              to display milk quantity, rate, and total amount.
+            </div>
+
+            <button
+              type="button"
+              className="print-button"
+              onClick={() => window.print()}
+            >
+              Print Statement
+            </button>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+export default Bill_statement;

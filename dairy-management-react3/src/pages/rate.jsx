@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import "./rate.css";
 
@@ -59,7 +60,7 @@ function Rate() {
   const rateInputRefs = useRef([]);
 
   // =====================================================
-  // SAVE MULTIPLE CHARTS BY DATE
+  // SAVE MULTIPLE CHARTS LOCALLY
   // =====================================================
 
   const persistSavedCharts = (charts) => {
@@ -85,11 +86,7 @@ function Rate() {
       }
 
       // Migrate an existing single saved chart without deleting it.
-      if (
-        savedRateChart &&
-        savedDate &&
-        !charts[savedDate]
-      ) {
+      if (savedRateChart && savedDate && !charts[savedDate]) {
         const parsedData = JSON.parse(savedRateChart);
 
         if (Array.isArray(parsedData) && parsedData.length > 0) {
@@ -454,10 +451,10 @@ function Rate() {
   };
 
   // =====================================================
-  // SAVE RATE CHART
+  // SAVE RATE CHART TO MONGODB
   // =====================================================
 
-  const saveRateChart = () => {
+  const saveRateChart = async () => {
     if (rateData.length === 0) {
       alert("Please generate the rate chart first.");
       return;
@@ -468,18 +465,47 @@ function Rate() {
       return;
     }
 
-    const updatedCharts = {
-      ...savedCharts,
-      [date]: {
-        rateData: rateData.map((row) => ({
-          ...row,
-          rates: { ...row.rates },
-        })),
-        snfValues: [...snfValues],
-      },
-    };
-
     try {
+      const response = await fetch(
+        "http://localhost:5000/api/ratecharts",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            date,
+            rateData: rateData.map((row) => ({
+              fat: Number(row.fat),
+              rates: row.rates,
+            })),
+            snfValues,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || "Failed to save rate chart."
+        );
+      }
+
+      const savedChart = result.data;
+
+      const updatedCharts = {
+        ...savedCharts,
+        [savedChart.date]: {
+          rateData: savedChart.rateData.map((row) => ({
+            fat: String(row.fat),
+            rates: row.rates,
+          })),
+          snfValues: savedChart.snfValues,
+        },
+      };
+
+      // Keep the existing localStorage functionality.
       persistSavedCharts(updatedCharts);
 
       // Clear old single-chart storage to avoid restoring a stale chart.
@@ -493,10 +519,10 @@ function Rate() {
       setSelectedRow(null);
       rateInputRefs.current = [];
 
-      alert("Rate chart saved successfully!");
+      alert("Rate chart saved successfully to MongoDB!");
     } catch (error) {
-      console.error("Unable to save rate chart:", error);
-      alert("Unable to save the rate chart.");
+      console.error("Error saving rate chart:", error);
+      alert(`Unable to save rate chart: ${error.message}`);
     }
   };
 

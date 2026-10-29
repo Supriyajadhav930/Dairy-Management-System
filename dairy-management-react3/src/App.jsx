@@ -13,6 +13,7 @@ import AddFarmer from "./pages/Add_Farmer";
 import GenerateBill from "./pages/GenerateBill";
 import Bill from "./pages/Bill";
 import Rate from "./pages/rate";
+import BillStatement from "./pages/Bill_statement";
 
 function App() {
   return (
@@ -23,12 +24,15 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+
         <Route path="/dashboard" element={<Dash />} />
         <Route path="/morning" element={<Morning />} />
         <Route path="/evening" element={<Evening />} />
         <Route path="/add-farmer" element={<AddFarmer />} />
+
         <Route path="/generate-bill" element={<GenerateBill />} />
-        <Route path="/bill-statement" element={<Bill />} />
+        <Route path="/bill-statement" element={<BillStatement />} />
+
         <Route path="/rate" element={<Rate />} />
       </Routes>
     </HashRouter>

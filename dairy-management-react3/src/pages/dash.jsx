@@ -14,6 +14,7 @@ import advanceManagement from "../assets/Dashboard/advance_management.png";
 import farmersDetails from "../assets/Dashboard/farmers_details.png";
 import payment from "../assets/Dashboard/payment.png";
 
+
 function openPage(pageName) {
     alert(pageName + " selected");
 }
@@ -132,7 +133,7 @@ function Dash() {
 
                         <button
                             className="dashboard-card"
-                            onClick={() => openPage("Bill Statement")}
+                           onClick={() => navigate("/bill-statement")}
                         >
                             <div className="icon-container">
                                 <img
