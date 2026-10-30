@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from "react";
 
 import "./Add_farmer.css";
@@ -61,9 +62,20 @@ const Add_Farmer = () => {
 
       const data = await response.json();
 
-      setFarmers(data);
+      // FIX: Extract the farmer array from the backend response
+      const farmersArray = Array.isArray(data.farmers)
+        ? data.farmers
+        : Array.isArray(data.data)
+        ? data.data
+        : Array.isArray(data)
+        ? data
+        : [];
+
+      setFarmers(farmersArray);
+
     } catch (error) {
       console.error("Error fetching farmers:", error);
+      setFarmers([]);
     }
   };
 
@@ -363,15 +375,16 @@ const Add_Farmer = () => {
      SEARCH
      ========================================================= */
 
- const filteredFarmers = [...farmers]
-  .filter((farmer) => {
-    const value = search.toLowerCase();
-    return (
-      farmer.code.toLowerCase().includes(value) ||
-      farmer.name.toLowerCase().includes(value)
-    );
-  })
-  .sort((a, b) => Number(a.code) - Number(b.code));
+  const filteredFarmers = [...farmers]
+    .filter((farmer) => {
+      const value = search.toLowerCase();
+
+      return (
+        String(farmer.code || "").toLowerCase().includes(value) ||
+        String(farmer.name || "").toLowerCase().includes(value)
+      );
+    })
+    .sort((a, b) => Number(a.code) - Number(b.code));
 
   return (
     <div className="add-farmer-page">

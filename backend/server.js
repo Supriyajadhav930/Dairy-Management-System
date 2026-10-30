@@ -40,5 +40,5 @@ mongoose
     })
     .catch((error) => {
         console.error("MongoDB connection failed:");
-        console.error(error.message);
+        console.error(error);
     });

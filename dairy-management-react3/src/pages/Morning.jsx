@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef } from "react";
 import "./morning.css";
 
@@ -106,7 +107,16 @@ function Morning() {
                 return response.json();
             })
             .then((data) => {
-                setFarmers(Array.isArray(data) ? data : []);
+                // FIX: Backend returns farmers inside data.farmers
+                const farmersArray = Array.isArray(data.farmers)
+                    ? data.farmers
+                    : Array.isArray(data.data)
+                    ? data.data
+                    : Array.isArray(data)
+                    ? data
+                    : [];
+
+                setFarmers(farmersArray);
             })
             .catch((error) => {
                 console.error("Error loading farmers:", error);
@@ -320,7 +330,16 @@ function Morning() {
 
             const data = await response.json();
 
-            setFarmers(Array.isArray(data) ? data : []);
+            // FIX: Handle the backend response object correctly
+            const farmersArray = Array.isArray(data.farmers)
+                ? data.farmers
+                : Array.isArray(data.data)
+                ? data.data
+                : Array.isArray(data)
+                ? data
+                : [];
+
+            setFarmers(farmersArray);
         } catch (error) {
             console.error("Error refreshing farmers:", error);
         }
@@ -487,7 +506,8 @@ function Morning() {
             farmerCodeRef.current?.focus();
         }, 0);
     };
-        /* =========================================================
+
+    /* =========================================================
        SAVE / UPDATE RECORD
        ========================================================= */
 
