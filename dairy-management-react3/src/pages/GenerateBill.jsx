@@ -204,6 +204,7 @@ export default function GenerateBill() {
     );
   };
 
+  // Opens the existing Bill.jsx PDF generation page
   const handleBill = () => {
     if (!fromDate || !toDate) {
       alert("Please select From Date and To Date.");
@@ -230,7 +231,7 @@ export default function GenerateBill() {
     });
 
     const baseUrl = window.location.href.split("#")[0];
-    const billUrl = `${baseUrl}#/bill-statement?${params.toString()}`;
+    const billUrl = `${baseUrl}#/bill?${params.toString()}`;
 
     const newTab = window.open(billUrl, "_blank");
 

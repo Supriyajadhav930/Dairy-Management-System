@@ -14,6 +14,8 @@ import GenerateBill from "./pages/GenerateBill";
 import Bill from "./pages/Bill";
 import Rate from "./pages/rate";
 import BillStatement from "./pages/Bill_statement";
+import AdvanceManagement from "./pages/Advance_Management";
+
 
 function App() {
   return (
@@ -29,9 +31,11 @@ function App() {
         <Route path="/morning" element={<Morning />} />
         <Route path="/evening" element={<Evening />} />
         <Route path="/add-farmer" element={<AddFarmer />} />
+        <Route path="/bill" element={<Bill />} />
 
         <Route path="/generate-bill" element={<GenerateBill />} />
         <Route path="/bill-statement" element={<BillStatement />} />
+        <Route path="/advance-management" element={<AdvanceManagement />} />
 
         <Route path="/rate" element={<Rate />} />
       </Routes>

@@ -8,6 +8,7 @@ const collectionRoutes = require("./routes/collectionRoutes");
 const farmerRoutes = require("./routes/farmerRoutes");
 const rateChartRoutes = require("./routes/rateChartRoutes");
 
+
 dotenv.config();
 
 const app = express();

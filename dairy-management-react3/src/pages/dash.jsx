@@ -157,10 +157,10 @@ function Dash() {
                             <span>Analytics</span>
                         </button>
 
-                        <button
-                            className="dashboard-card"
-                            onClick={() => openPage("Advance Management")}
-                        >
+                     <button
+                                className="dashboard-card"
+                               onClick={() => navigate("/advance-management")}
+               >
                             <div className="icon-container">
                                 <img
                                     src={advanceManagement}
